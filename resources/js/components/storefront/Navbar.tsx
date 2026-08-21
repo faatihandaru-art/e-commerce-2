@@ -68,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                                     <span className="text-vgs-silver-bright">S</span>
                                 </div>
                                 <span className="text-[9px] font-mono tracking-widest text-vgs-silver-muted uppercase leading-tight mt-0.5">
-                                    VORTIX GEAR
+                                    VORTIX GAMING STORE
                                 </span>
                             </div>
                         </Link>
