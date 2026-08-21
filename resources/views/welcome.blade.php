@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopEase — Modern Online Store</title>
+    <title>VGS— Vortix Gaming Store</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* ---------- RESET & VARIABLES ---------- */
@@ -948,7 +948,7 @@
     <section class="section" id="features">
         <div class="section-header">
             <div>
-                <h2 class="section-title">Why ShopEase?</h2>
+                <h2 class="section-title">VGS?</h2>
                 <p class="section-subtitle">Shopping made simple.</p>
             </div>
         </div>
@@ -989,7 +989,7 @@
                 <div><strong>Help</strong><a href="#">FAQ</a><a href="#">Contact</a></div>
             </div>
         </div>
-        <div class="copyright"><span>© 2026 ShopEase. All rights reserved.</span><span>Made with ♥ for modern shoppers</span></div>
+        <div class="copyright"><span>© 2026 VGS. All rights reserved.</span><span>Made with ♥ for modern shoppers</span></div>
     </footer>
 
     <script>
