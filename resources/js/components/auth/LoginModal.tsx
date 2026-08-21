@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
-import AuthLayout from '@/layouts/AuthLayout';
+import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
-export default function Login() {
+export interface LoginModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess?: () => void;
+}
+
+export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
     const [isLoading, setIsLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [loginSuccess, setLoginSuccess] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,35 +42,36 @@ export default function Login() {
         setErrors({});
         setIsLoading(true);
 
-        // Simulate login request
         setTimeout(() => {
             setIsLoading(false);
-            setIsSuccess(true);
+            setLoginSuccess(true);
             setTimeout(() => {
-                router.visit('/');
-            }, 1000);
-        }, 1200);
+                setLoginSuccess(false);
+                if (onSuccess) onSuccess();
+                onClose();
+            }, 800);
+        }, 1000);
     };
 
     return (
-        <AuthLayout
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
             title="Masuk ke Akun VGS"
-            subtitle="Akses profil turnamen, garansi gear, & riwayat pesanan Anda."
+            size="md"
         >
-            <Head title="Masuk — Vortix Gaming Store" />
-
-            {isSuccess ? (
-                <div className="py-8 flex flex-col items-center justify-center text-center gap-3 animate-in fade-in duration-300">
-                    <div className="w-14 h-14 rounded-2xl bg-vgs-success/20 text-vgs-success border border-vgs-success/40 flex items-center justify-center shadow-lg">
-                        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+            {loginSuccess ? (
+                <div className="py-8 flex flex-col items-center justify-center text-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-vgs-success/20 text-vgs-success flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                     </div>
-                    <h3 className="font-display font-bold text-xl text-white">
-                        Otentikasi Berhasil!
+                    <h3 className="font-display font-bold text-lg text-white">
+                        Berhasil Masuk!
                     </h3>
                     <p className="text-xs text-vgs-silver-muted font-mono">
-                        Mengarahkan kembali ke beranda toko...
+                        Selamat datang kembali di Vortix Gaming Store.
                     </p>
                 </div>
             ) : (
@@ -77,11 +83,6 @@ export default function Login() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         error={errors.email}
-                        prefix={
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                            </svg>
-                        }
                         required
                     />
 
@@ -92,11 +93,6 @@ export default function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         error={errors.password}
-                        prefix={
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        }
                         suffix={
                             <button
                                 type="button"
@@ -119,7 +115,6 @@ export default function Login() {
                         required
                     />
 
-                    {/* Remember me & Forgot Password */}
                     <div className="flex items-center justify-between text-xs pt-1">
                         <label className="flex items-center gap-2 text-vgs-silver-mid cursor-pointer select-none">
                             <input
@@ -128,14 +123,13 @@ export default function Login() {
                                 onChange={(e) => setRememberMe(e.target.checked)}
                                 className="rounded bg-vgs-black-surface border-vgs-gray-border text-vgs-blue-electric focus:ring-vgs-blue-electric cursor-pointer"
                             />
-                            <span>Ingat saya</span>
+                            <span>Ingat saya di perangkat ini</span>
                         </label>
                         <a href="#forgot" className="text-vgs-blue-electric hover:underline font-medium">
-                            Lupa kata sandi?
+                            Lupa sandi?
                         </a>
                     </div>
 
-                    {/* Submit Button */}
                     <div className="pt-2">
                         <Button
                             variant="primary"
@@ -148,15 +142,16 @@ export default function Login() {
                         </Button>
                     </div>
 
-                    {/* Register Option */}
-                    <div className="text-center pt-4 border-t border-vgs-gray-border/60 text-xs text-vgs-silver-muted">
-                        <span>Belum memiliki akun VGS? </span>
+                    <div className="text-center pt-2 text-xs text-vgs-silver-muted">
+                        <span>Belum punya akun? </span>
                         <a href="#register" className="text-vgs-blue-electric font-semibold hover:underline">
                             Daftar Sekarang
                         </a>
                     </div>
                 </form>
             )}
-        </AuthLayout>
+        </Modal>
     );
-}
+};
+
+export default LoginModal;

@@ -3,9 +3,11 @@ import { Link, usePage } from '@inertiajs/react';
 
 export interface NavbarProps {
     cartCount?: number;
+    onOpenCart?: () => void;
+    onOpenLogin?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0 }) => {
+export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpenLogin }) => {
     const { url } = usePage();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -99,29 +101,40 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0 }) => {
                     {/* Right Side Actions (Cart, Login, Mobile Toggle) */}
                     <div className="flex items-center gap-3 sm:gap-4">
                         {/* Cart Trigger with Badge */}
-                        <Link
-                            href="/cart"
-                            className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-vgs-black-surface border border-vgs-gray-border text-vgs-silver-bright hover:text-white hover:border-vgs-blue-electric hover:bg-vgs-blue-electric/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric"
-                            aria-label="Keranjang Belanja"
+                        <button
+                            type="button"
+                            onClick={onOpenCart}
+                            className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-vgs-black-surface border border-vgs-gray-border text-vgs-silver-bright hover:text-white hover:border-vgs-blue-electric hover:bg-vgs-blue-electric/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric cursor-pointer"
+                            aria-label="Buka Keranjang Belanja"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
 
                             {cartCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-vgs-blue-electric text-white text-[11px] font-mono font-bold flex items-center justify-center border-2 border-vgs-black-void shadow-sm animate-pulse">
+                                <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-vgs-blue-electric text-white text-[11px] font-mono font-bold flex items-center justify-center border-2 border-vgs-black-void shadow-sm">
                                     {cartCount > 99 ? '99+' : cartCount}
                                 </span>
                             )}
-                        </Link>
+                        </button>
 
                         {/* Login Button (Leading to Login Orang 2) */}
-                        <Link
-                            href="/login"
-                            className="inline-flex items-center justify-center px-4 sm:px-5 py-2.5 rounded-xl bg-vgs-blue-electric text-white text-xs sm:text-sm font-bold tracking-wide hover:bg-vgs-blue-deep transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-vgs-blue-electric min-h-[44px]"
-                        >
-                            Masuk
-                        </Link>
+                        {onOpenLogin ? (
+                            <button
+                                type="button"
+                                onClick={onOpenLogin}
+                                className="inline-flex items-center justify-center px-4 sm:px-5 py-2.5 rounded-xl bg-vgs-blue-electric text-white text-xs sm:text-sm font-bold tracking-wide hover:bg-vgs-blue-deep transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-vgs-blue-electric min-h-[44px] cursor-pointer"
+                            >
+                                Masuk
+                            </button>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="inline-flex items-center justify-center px-4 sm:px-5 py-2.5 rounded-xl bg-vgs-blue-electric text-white text-xs sm:text-sm font-bold tracking-wide hover:bg-vgs-blue-deep transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-vgs-blue-electric min-h-[44px]"
+                            >
+                                Masuk
+                            </Link>
+                        )}
 
                         {/* Mobile Hamburger Toggle */}
                         <button

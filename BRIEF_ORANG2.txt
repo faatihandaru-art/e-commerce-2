@@ -1,0 +1,466 @@
+====================================================================
+VORTIX GAMING STORE (VGS) — BRIEF & PROMPT UNTUK ORANG 2
+Tugas: PRODUCT LISTING, PRODUCT DETAIL, CART, LOGIN
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+File ini berisi SEMUANYA yang kamu butuhkan dalam satu tempat:
+brief desain lengkap + instruksi kerja untuk AI (Antigravity,
+OpenCode, atau Copilot, tools apapun yang kamu pakai).
+
+Cara pakai: buka AI coding tool kamu, tempel SELURUH isi file ini
+sebagai prompt awal. Simpan juga file ini di project sebagai
+BRIEF_ORANG2.md supaya AI bisa baca ulang kapan saja selama sesi
+kerja berlangsung.
+
+PENTING -- BACA INI DULU:
+Ada rekan kamu (Orang 1) yang mengerjakan bagian LAIN dari web yang
+sama (Home, About, Navbar, Footer, DAN komponen dasar di
+components/ui/, layouts/, types/product.ts, data/dummy-products.ts)
+memakai file BRIEF_ORANG1.md yang isinya identitas brand SAMA
+PERSIS dengan file ini, hanya beda di bagian tugas. Supaya hasil
+kerja kalian berdua nyambung dan tidak beda gaya saat digabung
+nanti, KAMU WAJIB mengikuti token desain (warna, font, gaya
+komponen) di bagian 1-3 file ini PERSIS seperti yang tertulis --
+JANGAN mengubah atau menambah warna baru, font baru, atau gaya baru
+yang tidak disebutkan di sini, walau AI kamu punya ide desain lain
+yang menurutnya lebih bagus.
+
+KAMU MULAI SETELAH ORANG 1 SELESAI BAGIAN FONDASI. Sebelum mulai,
+pastikan Orang 1 sudah commit ke git minimal: types/product.ts,
+data/dummy-products.ts, komponen di components/ui/ (Button, Badge,
+Input, QuantityStepper, Chip, RatingStars, Modal), dan
+StorefrontLayout.tsx + AuthLayout.tsx. Kamu akan MEMAKAI ULANG
+semua komponen ini, bukan membuat versi barumu sendiri -- kalau
+komponen yang kamu butuhkan ternyata belum dibuat Orang 1 atau
+tidak sesuai kebutuhan, beri tahu Orang 1 untuk melengkapinya,
+jangan langsung membuat komponen serupa versi kamu sendiri (nanti
+jadi dua Button yang beda gaya).
+
+====================================================================
+BAGIAN 1: IDENTITAS BRAND (SAMA PERSIS DENGAN FILE ORANG 1)
+====================================================================
+
+Nama toko   : Vortix Gaming Store (disingkat VGS)
+Tagline     : "Gear Up. Play Hard. Win."
+Jenis bisnis: Toko online (e-commerce) perlengkapan gaming
+Logo        : Bentuk perisai/badge heksagonal, headset gaming
+              melingkari huruf "V" bergaya sayap/falcon di tengah,
+              tulisan "VGS" besar dengan huruf V dan S berwarna
+              silver/chrome metalik dan huruf G berwarna biru,
+              latar belakang hitam pekat
+
+KEPRIBADIAN BRAND:
+- Kompetitif tapi tidak murahan/norak -- lebih ke arah "esports
+  professional gear" daripada "warna-warni RGB kekanakan"
+- Presisi dan teknikal -- seperti membuka casing PC gaming
+  berkualitas, bukan seperti mainan
+- Gelap dan fokus -- suasana gaming room dengan lighting minim tapi
+  terarah, bukan gelap gulita tanpa hierarki
+
+HAL YANG WAJIB DIHINDARI (supaya tidak terlihat "template AI generic"):
+- JANGAN pakai gradient ungu-ke-pink generic yang sering muncul di
+  landing page SaaS/AI tools
+- JANGAN pakai warna orange/terracotta (contoh: #D97757 dan
+  sejenisnya)
+- JANGAN pakai bintang/partikel/efek glow berlebihan tersebar acak
+  di background -- kalau pakai glow, harus punya alasan teknis
+  jelas (misal menandakan hover pada satu elemen spesifik)
+- JANGAN pakai font default seperti Inter/Roboto begitu saja tanpa
+  dipertimbangkan -- pakai font yang ditentukan di bagian 3
+- JANGAN buat card generic kotak putih dengan shadow tipis ala
+  template Bootstrap/Tailwind UI biasa
+- JANGAN taruh badge angka bulat (01/02/03) kalau tidak benar-benar
+  menunjukkan urutan proses nyata
+
+====================================================================
+BAGIAN 2: PALET WARNA (WAJIB DIPAKAI PERSIS, SAMA DENGAN ORANG 1)
+====================================================================
+
+Definisikan warna-warna ini sebagai Tailwind theme extension /
+CSS custom properties -- JANGAN hardcode hex berulang di banyak
+tempat. CEK LEBIH DULU tailwind.config yang sudah dibuat Orang 1 --
+kemungkinan besar warna-warna ini SUDAH terdaftar di sana, kamu
+tinggal PAKAI, bukan mendaftar ulang.
+
+--vgs-black-void      : #0A0A0C   (background utama, paling gelap)
+--vgs-black-surface   : #14161B   (permukaan card, sedikit lebih
+                                   terang dari background supaya
+                                   ada depth tanpa perlu shadow)
+--vgs-black-elevated  : #1C1F26   (elemen "terangkat": navbar
+                                   sticky, modal, dropdown)
+
+--vgs-blue-electric   : #2B6FF6   (aksen utama: tombol CTA utama,
+                                   link aktif, harga produk, badge
+                                   diskon)
+--vgs-blue-deep       : #1740A8   (hover state dari blue-electric)
+--vgs-blue-glow       : #4C8CFF  (glow tipis border card saat
+                                   hover, TERBATAS, jangan jadi
+                                   fill besar)
+
+--vgs-silver-bright   : #E8E9ED   (teks judul besar, logo text)
+--vgs-silver-mid      : #A7ABB8   (teks body/paragraf di background
+                                   gelap)
+--vgs-silver-muted    : #6B6F7B   (teks tersier, placeholder,
+                                   caption, metadata)
+
+--vgs-gray-border     : #2A2D35   (garis pembatas antar section,
+                                   border card kondisi normal)
+
+Warna fungsional (dipakai SANGAT terbatas, hanya untuk makna
+fungsional bukan dekorasi):
+--vgs-success         : #3DD68C   (stok tersedia, checkout sukses)
+--vgs-warning         : #F5A623   (stok menipis)
+--vgs-danger          : #F0473E   (habis stok, hapus item)
+
+ATURAN PEMAKAIAN:
+- Rasio dominasi: 60% hitam/gelap, 30% silver/abu-abu untuk teks
+  dan elemen netral, 10% biru untuk aksen dan CTA. Biru adalah
+  AKSEN, bukan warna dominan.
+- Kontras teks WAJIB lolos WCAG AA (rasio 4.5:1 untuk teks body,
+  3:1 untuk teks besar/judul) di atas semua warna background gelap.
+
+====================================================================
+BAGIAN 3: TIPOGRAFI (SAMA PERSIS DENGAN ORANG 1)
+====================================================================
+
+Font Display (judul besar, nama produk di hero, angka harga besar):
+- Karakter tegas, sedikit "industrial/technical" -- arahan:
+  Rajdhani, Chakra Petch, atau Orbitron, dipakai DENGAN RESTRAINT
+- Alternatif lebih netral tapi tetap tegas: Space Grotesk atau
+  General Sans untuk heading
+
+Font Body (paragraf, deskripsi, label form):
+- Sans-serif mudah dibaca di background gelap: Inter, IBM Plex
+  Sans, atau Manrope
+
+Font Mono (khusus SKU produk, kode kupon, nomor pesanan):
+- JetBrains Mono atau IBM Plex Mono
+
+PENTING: Orang 1 sudah MENENTUKAN font mana persisnya yang dipakai
+dari opsi-opsi di atas, dan mencatatnya di komentar paling atas
+tailwind.config. CEK file itu dulu dan pakai font yang SAMA -- JANGAN
+memilih font berbeda dari opsi yang sama walau kedengarannya cocok
+juga, karena harus konsisten satu web.
+
+Skala ukuran (boleh disesuaikan proporsinya, ikuti yang sudah
+dipakai Orang 1 di komponen yang sudah ada):
+- Hero heading: 48-64px (mobile: 32-40px)
+- Section heading: 28-36px
+- Card title: 16-18px, font-weight 600
+- Body text: 15-16px, line-height 1.6
+- Caption/metadata: 12-13px
+
+====================================================================
+BAGIAN 4: TECH STACK & STRUKTUR FOLDER (SAMA DENGAN ORANG 1)
+====================================================================
+
+Stack:
+- Laravel 13 (PHP 8.3+), fokus tahap ini HANYA sisi frontend
+  (Inertia + React), backend/route boleh sangat sederhana/dummy
+- Inertia 3 + React 19 + TypeScript
+- Tailwind CSS -- semua warna dan font WAJIB memakai yang sudah
+  didaftarkan Orang 1 di tailwind.config, JANGAN hex hardcode
+
+Struktur folder frontend (ikuti dokumen arsitektur Laravel yang
+sudah ada):
+
+resources/js/
+├── components/
+│   ├── storefront/     <- dikerjakan Orang 1 (Navbar, Footer,
+│   │                       HeroSection, CategoryGrid, PromoBanner)
+│   ├── product/         <- KAMU: ProductGallery,
+│   │                       ProductGalleryThumbnail,
+│   │                       VariantSelector, SpecTable,
+│   │                       RelatedProducts, ProductFilterSidebar
+│   ├── cart/              <- KAMU: CartDropdown, CartItem,
+│   │                          CartSummary
+│   ├── order/               <- belum dipakai tahap ini
+│   ├── admin/                 <- belum dipakai tahap ini
+│   └── ui/                      <- dikerjakan Orang 1 (Button,
+│                                    Badge, Input, QuantityStepper,
+│                                    Chip, RatingStars, Modal) --
+│                                    KAMU PAKAI, jangan buat ulang
+├── hooks/
+├── layouts/
+│   ├── StorefrontLayout.tsx   <- dikerjakan Orang 1, kamu pakai
+│   │                               untuk halaman Product dan Cart
+│   ├── AuthLayout.tsx          <- kerangka dari Orang 1, KAMU isi
+│   │                               untuk halaman Login
+│   ├── AccountLayout.tsx        <- belum dipakai tahap ini
+│   └── AdminLayout.tsx           <- belum dipakai tahap ini
+├── lib/
+├── pages/
+│   └── Storefront/
+│       ├── Home.tsx        <- dikerjakan Orang 1
+│       ├── About.tsx        <- dikerjakan Orang 1
+│       ├── Product/           <- KAMU: Index.tsx (listing),
+│       │                          Show.tsx (detail)
+│       ├── Cart.tsx            <- KAMU
+│       └── Login.tsx (atau modal, lihat Bagian 9) <- KAMU
+├── data/
+│   └── dummy-products.ts    <- dibuat Orang 1, KAMU PAKAI lewat
+│                                fungsi helper (getProducts, dst),
+│                                jangan import array-nya langsung
+└── types/
+    └── product.ts             <- dibuat Orang 1, KAMU PAKAI
+
+CATATAN PEMBAGIAN KERJA:
+Orang 1 membangun fondasi (komponen ui/, layout, data, types) dan
+halaman Home/About. Kamu membangun halaman yang lebih kompleks
+secara interaksi: listing produk dengan filter, detail produk
+dengan galeri multi-gambar (ini yang paling detail, lihat Bagian
+7), cart, dan login. Kamu BERGANTUNG pada hasil Orang 1 -- pastikan
+sudah ada sebelum mulai.
+
+====================================================================
+BAGIAN 5: DATA & TYPES YANG SUDAH DISIAPKAN ORANG 1 (KAMU PAKAI)
+====================================================================
+
+14 KATEGORI PRODUK (referensi, datanya sudah ada di
+data/dummy-products.ts buatan Orang 1):
+1.  Gaming Mouse
+2.  Mechanical Keyboard
+3.  Gaming Headset
+4.  Gaming Microphone
+5.  Gaming Monitor
+6.  Game Controller
+7.  Gaming Mousepad
+8.  Gaming Chair
+9.  Gaming Desk
+10. Laptop Cooling Pad
+11. USB Hub
+12. DisplayPort Cable
+13. USB Type-C Cable
+14. Desk Mat
+
+types/product.ts (dibuat Orang 1) berisi interface Product,
+Category, ProductVariant, CartItem -- BACA file ini dulu untuk tahu
+field apa saja yang tersedia sebelum membangun komponen yang
+menampilkan data produk.
+
+data/dummy-products.ts (dibuat Orang 1) berisi array 14 kategori,
+28-42 produk dummy dengan MINIMAL 3-4 URL gambar per produk (field
+images: string[]) -- ini yang kamu pakai untuk ProductGallery, dan
+fungsi helper getProducts(), getProductBySlug(slug),
+getProductsByCategory(categoryId), getFeaturedProducts(). SELALU
+pakai fungsi-fungsi ini untuk ambil data, JANGAN import array
+dummy secara langsung ke komponen kamu.
+
+Jika field yang kamu butuhkan ternyata belum ada di interface
+Product atau data dummy (misal butuh field baru untuk kebutuhan
+detail produk), koordinasikan dengan Orang 1 untuk menambahkannya
+di sumbernya, jangan membuat struktur data terpisah sendiri.
+
+====================================================================
+BAGIAN 6: TUGAS DETAIL KAMU -- HALAMAN PRODUCT LISTING
+====================================================================
+
+pages/Storefront/Product/Index.tsx +
+components/product/ProductFilterSidebar.tsx:
+
+- Sidebar/panel filter (desktop: sidebar kiri tetap terlihat;
+  mobile: filter dibuka lewat tombol/drawer dari bawah)
+  Filter berdasarkan:
+  * Kategori (14 kategori dari data dummy)
+  * Rentang harga (pakai Input dari ui/ buatan Orang 1)
+  * Ketersediaan stok
+- Grid produk: 2 kolom (mobile), 3 kolom (tablet), 4 kolom
+  (desktop)
+- Pakai komponen ProductCard -- CEK DULU apakah Orang 1 sudah
+  membuat ProductCard (kemungkinan besar sudah, karena dipakai di
+  Home juga). Jika sudah ada, PAKAI ULANG, jangan buat versi baru.
+  Jika field yang kamu perlukan di ProductCard belum ada (misal
+  butuh tampilan beda untuk grid vs featured), tambahkan lewat
+  props opsional, bukan komponen terpisah.
+
+Setiap PRODUCT CARD (referensi jika ternyata kamu yang harus buat):
+- Gambar produk (rasio 1:1 atau 4:3, object-fit cover)
+- Badge kecil di pojok gambar jika relevan ("Baru", "Diskon",
+  "Stok Terbatas") pakai Badge dari ui/
+- Nama produk (maks 2 baris, truncate ellipsis jika lebih)
+- Kategori/tipe produk (teks kecil, vgs-silver-muted)
+- Harga (font display/mono, vgs-blue-electric atau
+  vgs-silver-bright, tampilkan harga coret jika ada diskon)
+- Rating pakai RatingStars dari ui/ + jumlah ulasan
+- Hover state: card sedikit terangkat (translateY kecil), border
+  jadi vgs-blue-glow tipis -- TANPA shadow blur besar generic
+
+====================================================================
+BAGIAN 7: TUGAS DETAIL KAMU -- HALAMAN PRODUCT DETAIL
+(BAGIAN PALING PENTING -- gaya galeri Shopee/Tokopedia)
+====================================================================
+
+pages/Storefront/Product/Show.tsx +
+components/product/ProductGallery.tsx +
+components/product/ProductGalleryThumbnail.tsx +
+components/product/VariantSelector.tsx +
+components/product/SpecTable.tsx +
+components/product/RelatedProducts.tsx:
+
+GALERI GAMBAR (kiri pada desktop, atas pada mobile) -- INI YANG
+PALING DITEKANKAN, produk harus punya BEBERAPA gambar, bukan satu:
+- Gambar utama besar di atas
+- Di bawah gambar utama: strip thumbnail kecil (4-6 thumbnail
+  terlihat sekaligus, scrollable horizontal jika lebih banyak)
+- Klik/tap thumbnail mengganti gambar utama (tanpa reload halaman,
+  pakai React state biasa: useState untuk index gambar aktif)
+- Highlight thumbnail aktif dengan border vgs-blue-electric
+- Di mobile: galeri jadi carousel swipe dengan dot indicator di
+  bawah gambar (bukan strip thumbnail kecil yang susah di-tap
+  jari) -- boleh pakai library carousel ringan seperti
+  embla-carousel-react atau swiper jika dibutuhkan, pilih salah
+  satu dan konsisten
+- Sertakan interaksi zoom/pembesaran saat gambar utama di-hover
+  (desktop) atau di-tap (mobile) -- opsional tapi sangat disarankan
+  untuk pengalaman seperti marketplace
+
+INFO PRODUK (kanan pada desktop, bawah galeri pada mobile):
+- Nama produk (heading besar, font display)
+- RatingStars + jumlah terjual/ulasan
+- Harga besar dan jelas (harga coret jika diskon + badge persentase
+  diskon)
+- VariantSelector jika produk punya varian (misal warna mouse,
+  ukuran mousepad) -- pakai komponen Chip/Swatch dari ui/ buatan
+  Orang 1, chip aktif diberi border vgs-blue-electric
+- QuantityStepper dari ui/ (tombol -, input angka, +)
+- Dua tombol aksi pakai Button dari ui/: "Tambah ke Keranjang"
+  (varian secondary/outline) dan "Beli Sekarang" (varian primary,
+  lebih menonjol dengan vgs-blue-electric)
+- Info tambahan: status stok, estimasi pengiriman (boleh dummy)
+
+TAB/SECTION DI BAWAH:
+- Tab atau accordion: "Deskripsi", "Spesifikasi", "Ulasan"
+- SpecTable: tabel key-value rapi untuk spesifikasi (misal mouse:
+  DPI, jumlah tombol, konektivitas, berat -- ambil dari field
+  specifications di data produk)
+- RelatedProducts: grid kecil ProductCard dari kategori yang sama
+  di paling bawah, pakai fungsi getProductsByCategory()
+
+====================================================================
+BAGIAN 8: TUGAS DETAIL KAMU -- CART
+====================================================================
+
+components/cart/CartDropdown.tsx, CartItem.tsx, CartSummary.tsx,
+pages/Storefront/Cart.tsx:
+
+Karena database belum jalan, cart dibuat sebagai:
+- CartDropdown: dropdown/drawer dari ikon keranjang di navbar
+  (ikon dan trigger-nya sudah disiapkan Orang 1 di Navbar, kamu isi
+  komponen dropdown-nya) berisi state dummy/lokal (React state,
+  belum terhubung backend)
+- CartItem: thumbnail kecil, nama produk, varian, QuantityStepper
+  dari ui/, harga, tombol hapus
+- CartSummary: subtotal di bawah + tombol "Lihat Keranjang" (ke
+  halaman Cart.tsx penuh) dan "Checkout" (boleh dummy/disabled
+  dulu karena backend belum ada)
+- Cart.tsx: halaman cart penuh, list CartItem + CartSummary, layout
+  lebih lega dibanding dropdown
+
+Koordinasikan dengan Orang 1 soal bagaimana state cart di-share ke
+Navbar (misal pakai React Context sederhana atau state di
+StorefrontLayout yang di-passing ke Navbar dan halaman Cart) --
+jangan buat dua sumber state cart yang terpisah.
+
+====================================================================
+BAGIAN 9: TUGAS DETAIL KAMU -- LOGIN
+====================================================================
+
+- Putuskan: modal (muncul di atas halaman saat ini) atau halaman
+  terpisah pakai AuthLayout.tsx yang kerangkanya sudah disiapkan
+  Orang 1 -- pilih salah satu dan konsisten, lalu beri tahu Orang 1
+  keputusan ini karena tombol Login di Navbar (punya Orang 1) perlu
+  tahu apakah dia trigger modal atau link ke halaman
+- Form sederhana: Input dari ui/ untuk email dan password, Button
+  primary "Masuk", link "Belum punya akun? Daftar", link "Lupa
+  password?"
+- Karena backend belum ada, form BOLEH belum benar-benar submit ke
+  server -- cukup validasi frontend dasar (format email, password
+  tidak kosong) dan tampilkan state loading dummy saat submit
+  ditekan
+
+====================================================================
+BAGIAN 10: RESPONSIVENESS (WAJIB, SAMA DENGAN ORANG 1)
+====================================================================
+
+Breakpoint yang harus diuji:
+- Mobile   : 375px - 428px
+- Tablet   : 768px - 1024px
+- Desktop  : 1280px ke atas
+
+Aturan wajib untuk SEMUA yang kamu bangun:
+- Grid produk menyesuaikan kolom (2/3/4 sesuai Bagian 6)
+- Galeri produk detail berubah dari layout 2 kolom (desktop) jadi
+  1 kolom stack dengan carousel (mobile), lihat Bagian 7
+- Filter sidebar jadi drawer/bottom-sheet di mobile
+- Semua tombol/elemen tap-able minimal 44x44px di mobile
+- Teks tidak overflow/terpotong di layar sempit -- pakai
+  truncate/line-clamp
+- Uji juga orientasi landscape di mobile untuk halaman dengan
+  galeri gambar
+
+====================================================================
+BAGIAN 11: KUALITAS & AKSESIBILITAS (WAJIB, SAMA DENGAN ORANG 1)
+====================================================================
+
+- Fokus keyboard terlihat jelas (ring vgs-blue-electric) di semua
+  elemen interaktif termasuk thumbnail galeri -- jangan hilangkan
+  outline default tanpa menggantinya
+- Semua gambar produk punya alt text deskriptif (ambil dari nama
+  produk, jangan generic seperti "image1")
+- Kontras warna WAJIB lolos WCAG AA (lihat Bagian 2)
+- Hormati prefers-reduced-motion -- kurangi/hilangkan animasi
+  (terutama transisi galeri dan hover card)
+- Form Login dan filter bisa dioperasikan penuh dengan keyboard
+  (tab, enter, arrow keys untuk galeri jika relevan)
+
+====================================================================
+BAGIAN 12: INSTRUKSI UNTUK AI (TEMPEL SELURUH FILE INI SEBAGAI PROMPT)
+====================================================================
+
+Instruksi tambahan untuk AI yang kamu pakai:
+
+1. Baca SELURUH isi file ini dari atas ke bawah sebelum menulis
+   kode apapun.
+2. SEBELUM mulai, cek file-file yang sudah dibuat Orang 1 di
+   project (tailwind.config, types/product.ts,
+   data/dummy-products.ts, komponen di components/ui/,
+   StorefrontLayout.tsx, AuthLayout.tsx) -- pahami apa yang sudah
+   tersedia sebelum membangun apapun, supaya tidak membuat ulang
+   sesuatu yang sudah ada.
+3. Kerjakan dengan urutan: (a) components/product/ dan
+   components/cart/ dasar dulu (ProductGallery paling prioritas
+   karena paling kompleks), (b) pages/Storefront/Product/Index.tsx,
+   (c) pages/Storefront/Product/Show.tsx, (d) pages/Storefront/
+   Cart.tsx, (e) halaman/modal Login.
+4. Jangan mengerjakan semuanya sekaligus dalam satu generate besar.
+   Selesaikan satu bagian, tampilkan hasilnya, baru lanjut ke
+   bagian berikutnya -- supaya saya bisa cek dan commit ke git
+   bertahap.
+5. Semua warna dan font WAJIB memakai nama yang SUDAH didaftarkan
+   Orang 1 di tailwind.config -- JANGAN mendaftarkan warna/font
+   baru atau membuat keputusan desain baru sendiri walau menurutmu
+   ada pilihan yang lebih bagus. Konsistensi dengan hasil Orang 1
+   lebih penting daripada preferensi estetika AI.
+6. SELALU pakai ulang komponen dari components/ui/ yang sudah
+   dibuat Orang 1 (Button, Badge, Input, QuantityStepper, Chip,
+   RatingStars, Modal) -- JANGAN membuat komponen baru dengan fungsi
+   serupa. Jika komponen yang ada tidak cukup fleksibel untuk
+   kebutuhanmu, tambahkan lewat props opsional atau beri tahu saya
+   bagian mana yang perlu ditambahkan Orang 1.
+7. Di akhir tiap bagian selesai, beri ringkasan singkat: file apa
+   saja yang dibuat/diubah, dan catatan koordinasi apa (jika ada)
+   yang perlu disampaikan ke Orang 1 (misal soal state cart yang
+   di-share, atau keputusan modal vs halaman untuk Login).
+
+====================================================================
+CATATAN PENUTUP
+====================================================================
+Dokumen ini adalah acuan TAMPILAN saja, database belum disambung.
+Struktur data dummy dibuat semirip mungkin dengan struktur tabel
+database asli (products, product_variants, product_images,
+categories -- lihat dokumen arsitektur Laravel) supaya saat
+database sungguhan disambungkan nanti, field-field di frontend
+sudah cocok dan tidak perlu banyak refactor.
+====================================================================
