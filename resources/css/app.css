@@ -1,11 +1,108 @@
+/*
+====================================================================
+VORTIX GAMING STORE (VGS) — DESIGN SYSTEM & TOKENS
+====================================================================
+FONTS SELECTED:
+- Display / Headings: 'Rajdhani', sans-serif (Weights: 600, 700)
+- Body / Text:        'Inter', sans-serif (Weights: 400, 500, 600)
+- Monospace / SKU:    'JetBrains Mono', monospace (Weights: 400, 500)
+
+COLOR PALETTE:
+- vgs-black-void:     #0A0A0C (Background utama)
+- vgs-black-surface:  #14161B (Card / Surface background)
+- vgs-black-elevated: #1C1F26 (Navbar, dropdown, modal, hover elevated)
+- vgs-blue-electric:  #2B6FF6 (Primary CTA, active link, price, sale badge)
+- vgs-blue-deep:      #1740A8 (Hover state dari blue-electric)
+- vgs-blue-glow:      #4C8CFF (Hover border glow tipis)
+- vgs-silver-bright:  #E8E9ED (Judul besar, heading, logo text)
+- vgs-silver-mid:     #A7ABB8 (Body text, paragraf)
+- vgs-silver-muted:   #6B6F7B (Caption, metadata, placeholder)
+- vgs-gray-border:    #2A2D35 (Border card, divider)
+- vgs-success:        #3DD68C (Stok tersedia, checkout sukses)
+- vgs-warning:        #F5A623 (Stok menipis, peringatan)
+- vgs-danger:         #F0473E (Stok habis, error)
+====================================================================
+*/
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
-@source '../../resources/js/**/*.vue';
-@source '../../resources/js/**/*.js';
+@source '../../resources/views/**/*.blade.php';
+@source '../../resources/js/**/*.{vue,js,ts,jsx,tsx}';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --color-vgs-black-void: #0A0A0C;
+  --color-vgs-black-surface: #14161B;
+  --color-vgs-black-elevated: #1C1F26;
+  --color-vgs-blue-electric: #2B6FF6;
+  --color-vgs-blue-deep: #1740A8;
+  --color-vgs-blue-glow: #4C8CFF;
+  --color-vgs-silver-bright: #E8E9ED;
+  --color-vgs-silver-mid: #A7ABB8;
+  --color-vgs-silver-muted: #6B6F7B;
+  --color-vgs-gray-border: #2A2D35;
+  --color-vgs-success: #3DD68C;
+  --color-vgs-warning: #F5A623;
+  --color-vgs-danger: #F0473E;
+
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  --vgs-black-void: #0A0A0C;
+  --vgs-black-surface: #14161B;
+  --vgs-black-elevated: #1C1F26;
+  --vgs-blue-electric: #2B6FF6;
+  --vgs-blue-deep: #1740A8;
+  --vgs-blue-glow: #4C8CFF;
+  --vgs-silver-bright: #E8E9ED;
+  --vgs-silver-mid: #A7ABB8;
+  --vgs-silver-muted: #6B6F7B;
+  --vgs-gray-border: #2A2D35;
+  --vgs-success: #3DD68C;
+  --vgs-warning: #F5A623;
+  --vgs-danger: #F0473E;
+}
+
+body {
+  background-color: var(--vgs-black-void);
+  color: var(--vgs-silver-bright);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0C;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2D35;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4C8CFF;
+}
+
+/* Accessibility: focus ring */
+:focus-visible {
+  outline: 2px solid #2B6FF6;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

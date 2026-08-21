@@ -1,0 +1,476 @@
+====================================================================
+VORTIX GAMING STORE (VGS) — BRIEF & PROMPT UNTUK ORANG 1
+Tugas: HOME, ABOUT, NAVBAR, FOOTER + KOMPONEN DASAR (ui/, layouts/)
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+File ini berisi SEMUANYA yang kamu butuhkan dalam satu tempat:
+brief desain lengkap + instruksi kerja untuk AI (Antigravity,
+OpenCode, atau Copilot, tools apapun yang kamu pakai).
+
+Cara pakai: buka AI coding tool kamu, tempel SELURUH isi file ini
+sebagai prompt awal. Simpan juga file ini di project sebagai
+BRIEF_ORANG1.md supaya AI bisa baca ulang kapan saja selama sesi
+kerja berlangsung.
+
+PENTING -- BACA INI DULU:
+Ada rekan kamu (Orang 2) yang mengerjakan bagian LAIN dari web yang
+sama (halaman Product, Cart, Login) secara terpisah, memakai file
+BRIEF_ORANG2.md yang isinya identitas brand SAMA PERSIS dengan file
+ini, hanya beda di bagian tugas. Supaya hasil kerja kalian berdua
+nyambung dan tidak beda gaya saat digabung nanti, KAMU WAJIB
+mengikuti token desain (warna, font, gaya komponen) di bagian 1-3
+file ini PERSIS seperti yang tertulis -- JANGAN mengubah atau
+menambah warna baru, font baru, atau gaya baru yang tidak
+disebutkan di sini, walau AI kamu punya ide desain lain yang
+menurutnya lebih bagus.
+
+KAMU MENGERJAKAN LEBIH DULU dibanding Orang 2, karena tugas kamu
+termasuk membangun KOMPONEN DASAR (tombol, badge, kartu produk,
+dst di folder components/ui/) yang nanti DIPAKAI ULANG oleh Orang 2
+di halaman Product/Cart/Login. Jadi kualitas dan konsistensi
+komponen dasar yang kamu buat sangat menentukan hasil akhir
+seluruh web.
+
+====================================================================
+BAGIAN 1: IDENTITAS BRAND (SAMA PERSIS DENGAN FILE ORANG 2)
+====================================================================
+
+Nama toko   : Vortix Gaming Store (disingkat VGS)
+Tagline     : "Gear Up. Play Hard. Win."
+Jenis bisnis: Toko online (e-commerce) perlengkapan gaming
+Logo        : Bentuk perisai/badge heksagonal, headset gaming
+              melingkari huruf "V" bergaya sayap/falcon di tengah,
+              tulisan "VGS" besar dengan huruf V dan S berwarna
+              silver/chrome metalik dan huruf G berwarna biru,
+              latar belakang hitam pekat
+
+KEPRIBADIAN BRAND:
+- Kompetitif tapi tidak murahan/norak -- lebih ke arah "esports
+  professional gear" daripada "warna-warni RGB kekanakan"
+- Presisi dan teknikal -- seperti membuka casing PC gaming
+  berkualitas, bukan seperti mainan
+- Gelap dan fokus -- suasana gaming room dengan lighting minim tapi
+  terarah, bukan gelap gulita tanpa hierarki
+
+HAL YANG WAJIB DIHINDARI (supaya tidak terlihat "template AI generic"):
+- JANGAN pakai gradient ungu-ke-pink generic yang sering muncul di
+  landing page SaaS/AI tools
+- JANGAN pakai warna orange/terracotta (contoh: #D97757 dan
+  sejenisnya)
+- JANGAN pakai bintang/partikel/efek glow berlebihan tersebar acak
+  di background -- kalau pakai glow, harus punya alasan teknis
+  jelas (misal menandakan hover pada satu elemen spesifik)
+- JANGAN pakai font default seperti Inter/Roboto begitu saja tanpa
+  dipertimbangkan -- pakai font yang ditentukan di bagian 3
+- JANGAN buat card generic kotak putih dengan shadow tipis ala
+  template Bootstrap/Tailwind UI biasa
+- JANGAN taruh badge angka bulat (01/02/03) kalau tidak benar-benar
+  menunjukkan urutan proses nyata
+
+====================================================================
+BAGIAN 2: PALET WARNA (WAJIB DIPAKAI PERSIS, SAMA DENGAN ORANG 2)
+====================================================================
+
+Definisikan warna-warna ini sebagai Tailwind theme extension /
+CSS custom properties -- JANGAN hardcode hex berulang di banyak
+tempat.
+
+--vgs-black-void      : #0A0A0C   (background utama, paling gelap)
+--vgs-black-surface   : #14161B   (permukaan card, sedikit lebih
+                                   terang dari background supaya
+                                   ada depth tanpa perlu shadow)
+--vgs-black-elevated  : #1C1F26   (elemen "terangkat": navbar
+                                   sticky, modal, dropdown)
+
+--vgs-blue-electric   : #2B6FF6   (aksen utama: tombol CTA utama,
+                                   link aktif, harga produk, badge
+                                   diskon)
+--vgs-blue-deep       : #1740A8   (hover state dari blue-electric)
+--vgs-blue-glow       : #4C8CFF  (glow tipis border card saat
+                                   hover, TERBATAS, jangan jadi
+                                   fill besar)
+
+--vgs-silver-bright   : #E8E9ED   (teks judul besar, logo text)
+--vgs-silver-mid      : #A7ABB8   (teks body/paragraf di background
+                                   gelap)
+--vgs-silver-muted    : #6B6F7B   (teks tersier, placeholder,
+                                   caption, metadata)
+
+--vgs-gray-border     : #2A2D35   (garis pembatas antar section,
+                                   border card kondisi normal)
+
+Warna fungsional (dipakai SANGAT terbatas, hanya untuk makna
+fungsional bukan dekorasi):
+--vgs-success         : #3DD68C   (stok tersedia, checkout sukses)
+--vgs-warning         : #F5A623   (stok menipis)
+--vgs-danger          : #F0473E   (habis stok, hapus item)
+
+ATURAN PEMAKAIAN:
+- Rasio dominasi: 60% hitam/gelap, 30% silver/abu-abu untuk teks
+  dan elemen netral, 10% biru untuk aksen dan CTA. Biru adalah
+  AKSEN, bukan warna dominan.
+- Kontras teks WAJIB lolos WCAG AA (rasio 4.5:1 untuk teks body,
+  3:1 untuk teks besar/judul) di atas semua warna background gelap.
+
+====================================================================
+BAGIAN 3: TIPOGRAFI (SAMA PERSIS DENGAN ORANG 2)
+====================================================================
+
+Font Display (judul besar, nama produk di hero, angka harga besar):
+- Karakter tegas, sedikit "industrial/technical" -- arahan:
+  Rajdhani, Chakra Petch, atau Orbitron, dipakai DENGAN RESTRAINT
+  (hanya untuk heading besar dan angka harga, JANGAN dipakai untuk
+  seluruh halaman)
+- Alternatif lebih netral tapi tetap tegas: Space Grotesk atau
+  General Sans untuk heading
+
+Font Body (paragraf, deskripsi, label form):
+- Sans-serif mudah dibaca di background gelap: Inter, IBM Plex
+  Sans, atau Manrope
+- JANGAN pakai font display yang sama untuk body
+
+Font Mono (khusus SKU produk, kode kupon, nomor pesanan):
+- JetBrains Mono atau IBM Plex Mono
+
+Skala ukuran (boleh disesuaikan proporsinya):
+- Hero heading: 48-64px (mobile: 32-40px)
+- Section heading: 28-36px
+- Card title: 16-18px, font-weight 600
+- Body text: 15-16px, line-height 1.6
+- Caption/metadata: 12-13px
+
+TENTUKAN DAN CATAT font mana yang dipilih (dari beberapa opsi di
+atas) dan tulis di komentar paling atas file tailwind.config kamu,
+karena Orang 2 akan memakai font yang SAMA -- jangan biarkan Orang
+2 menebak-nebak font mana yang akhirnya kamu pakai.
+
+====================================================================
+BAGIAN 4: TECH STACK & STRUKTUR FOLDER (SAMA DENGAN ORANG 2)
+====================================================================
+
+Stack:
+- Laravel 13 (PHP 8.3+), fokus tahap ini HANYA sisi frontend
+  (Inertia + React), backend/route boleh sangat sederhana/dummy
+- Inertia 3 + React 19 + TypeScript
+- Tailwind CSS -- semua warna dan font WAJIB didaftarkan di
+  tailwind.config sebagai theme.extend, JANGAN dipakai sebagai
+  hex hardcode berulang di banyak file
+
+Struktur folder frontend (ikuti dokumen arsitektur Laravel yang
+sudah ada):
+
+resources/js/
+├── components/
+│   ├── storefront/     <- KAMU: Navbar, Footer, HeroSection,
+│   │                       CategoryGrid, PromoBanner
+│   ├── product/         <- dikerjakan Orang 2
+│   ├── cart/             <- dikerjakan Orang 2
+│   ├── order/             <- belum dipakai tahap ini
+│   ├── admin/              <- belum dipakai tahap ini
+│   └── ui/                  <- KAMU: Button, Badge, Input,
+│                                QuantityStepper, Chip, RatingStars,
+│                                Modal (komponen dasar dipakai
+│                                bersama oleh Orang 2)
+├── hooks/
+├── layouts/
+│   ├── StorefrontLayout.tsx   <- KAMU (Navbar + children + Footer)
+│   ├── AuthLayout.tsx          <- KAMU (dipakai halaman Login
+│   │                               milik Orang 2, tapi kamu yang
+│   │                               bangun kerangkanya)
+│   ├── AccountLayout.tsx        <- belum dipakai tahap ini
+│   └── AdminLayout.tsx           <- belum dipakai tahap ini
+├── lib/
+├── pages/
+│   └── Storefront/
+│       ├── Home.tsx        <- KAMU
+│       ├── About.tsx        <- KAMU
+│       ├── Product/           <- dikerjakan Orang 2
+│       └── Cart.tsx            <- dikerjakan Orang 2
+├── data/
+│   └── dummy-products.ts    <- KAMU buat strukturnya (dipakai
+│                                bersama, lihat bagian 5 di bawah)
+└── types/
+    └── product.ts             <- KAMU buat strukturnya (dipakai
+                                   bersama Orang 2)
+
+CATATAN PEMBAGIAN KERJA:
+Kamu (Orang 1) bertanggung jawab membuat FONDASI yang dipakai
+bersama: komponen ui/, layout, type definitions, dan data dummy.
+Orang 2 akan memakai fondasi ini untuk membangun halaman Product,
+Cart, dan Login. Karena itu, SELESAIKAN dan commit ke git bagian
+ui/, types/, dan data/ LEBIH DULU sebelum lanjut ke Home/About,
+supaya Orang 2 bisa mulai kerja tanpa menunggu kamu selesai total.
+
+====================================================================
+BAGIAN 5: DATA DUMMY & TYPE DEFINITIONS (KAMU YANG BUAT FONDASINYA)
+====================================================================
+
+14 KATEGORI PRODUK (dipakai di navigasi, filter, dan data dummy):
+1.  Gaming Mouse
+2.  Mechanical Keyboard
+3.  Gaming Headset
+4.  Gaming Microphone
+5.  Gaming Monitor
+6.  Game Controller
+7.  Gaming Mousepad
+8.  Gaming Chair
+9.  Gaming Desk
+10. Laptop Cooling Pad
+11. USB Hub
+12. DisplayPort Cable
+13. USB Type-C Cable
+14. Desk Mat
+
+Buat file types/product.ts berisi TypeScript interface untuk:
+- Product (id, name, slug, description, categoryId, images:
+  string[] -- MINIMAL 3-4 URL gambar per produk untuk keperluan
+  galeri multi-gambar yang dibuat Orang 2, price, compareAtPrice
+  nullable, variants array opsional, specifications key-value
+  object, rating, reviewCount, stock)
+- Category (id, name, slug, icon/image opsional)
+- ProductVariant (id, name/label, value)
+- CartItem (productId, variantId opsional, quantity)
+Sesuaikan nama field semirip mungkin dengan nama kolom database
+asli (lihat dokumen arsitektur Laravel: tabel products,
+product_variants, categories) supaya nanti gampang disambungkan
+ke database sungguhan.
+
+Buat file data/dummy-products.ts berisi:
+- Array 14 kategori di atas
+- Array produk dummy, minimal 2-3 produk per kategori (total
+  sekitar 28-42 produk), setiap produk dengan data lengkap sesuai
+  interface Product, termasuk 3-4 path gambar per produk (contoh
+  format: "/images/products/gaming-mouse-1/main.jpg",
+  "/images/products/gaming-mouse-1/angle-2.jpg", dst -- path
+  konsisten dan terstruktur, gambar aslinya boleh menyusul)
+- Fungsi helper: getProducts(), getProductBySlug(slug),
+  getProductsByCategory(categoryId), getFeaturedProducts() --
+  fungsi inilah yang dipakai halaman/komponen (punya kamu maupun
+  punya Orang 2), BUKAN import array dummy secara langsung. Supaya
+  nanti kalau database sudah siap, cukup ganti isi fungsi ini.
+
+PENTING: selesaikan file types/product.ts dan data/dummy-products.ts
+di awal dan commit ke git SEBELUM mengerjakan Home/About, karena
+Orang 2 butuh file ini untuk mulai kerja di halaman Product/Cart.
+
+====================================================================
+BAGIAN 6: TUGAS DETAIL KAMU -- KOMPONEN DASAR (components/ui/)
+====================================================================
+
+Buat komponen-komponen berikut, semua styling memakai nama warna
+Tailwind dari Bagian 2 (bg-vgs-black-void, text-vgs-silver-bright,
+dst), JANGAN hex hardcode:
+
+- Button: minimal 2 varian -- primary (bg vgs-blue-electric, hover
+  vgs-blue-deep) dan secondary/outline (border vgs-gray-border,
+  hover border vgs-blue-electric). Sediakan state disabled dan
+  ukuran default + small.
+- Badge: untuk label "Baru", "Diskon", "Stok Terbatas" dengan
+  warna fungsional (warning/danger/blue) dari Bagian 2.
+- Input: untuk form (Login milik Orang 2, filter harga milik Orang
+  2). Background vgs-black-surface, border vgs-gray-border, focus
+  ring vgs-blue-electric (WAJIB terlihat jelas, lihat Bagian 8).
+- QuantityStepper: tombol minus, input angka tengah, tombol plus.
+  Dipakai Orang 2 di detail produk dan cart.
+- Chip/Swatch: untuk pilihan varian (misal warna mouse). State
+  aktif diberi border vgs-blue-electric. Dipakai Orang 2 di detail
+  produk.
+- RatingStars: rating bintang dari angka desimal (misal 4.5/5).
+  Dipakai di ProductCard (kamu, untuk Home) dan halaman Product
+  (Orang 2).
+- Modal: komponen modal dasar reusable. Cek dulu di Bagian 9 di
+  bawah apakah Login akan pakai modal ini.
+
+PASTIKAN semua komponen ini punya props yang jelas dan cukup
+generic supaya bisa dipakai ulang oleh Orang 2 tanpa perlu
+dimodifikasi -- kalau Orang 2 butuh varian baru dari komponen yang
+sudah kamu buat (misal ukuran Button baru), dia harus bisa
+menambah lewat props, bukan menulis komponen Button versi baru.
+
+====================================================================
+BAGIAN 7: TUGAS DETAIL KAMU -- LAYOUT
+====================================================================
+
+StorefrontLayout.tsx:
+Layout utama dipakai SEMUA halaman customer (Home, About milik
+kamu, DAN Product/Cart milik Orang 2). Struktur: <Navbar /> di atas
+(sticky), {children} di tengah, <Footer /> di bawah. Karena layout
+ini dipakai bersama, selesaikan dan commit LEBIH AWAL.
+
+AuthLayout.tsx:
+Layout khusus untuk halaman Login (dikerjakan Orang 2, tapi
+kerangka layoutnya kamu yang siapkan) -- biasanya lebih sederhana,
+tanpa Navbar/Footer penuh, cukup logo + card form di tengah layar.
+
+====================================================================
+BAGIAN 8: TUGAS DETAIL KAMU -- NAVBAR & FOOTER
+====================================================================
+
+NAVBAR (components/storefront/Navbar.tsx):
+Urutan elemen kiri ke kanan:
+1. Logo VGS -- buat versi SIMPLIFIED/wordmark untuk navbar (logo
+   badge lengkap dengan headset terlalu detail untuk ukuran kecil),
+   cukup tulisan "VGS" atau "VORTIX" dengan aksen biru pada satu
+   huruf, TANPA elemen headset/badge penuh
+2. Menu navigasi: Home, About, Product (Product akan mengarah ke
+   halaman yang dibangun Orang 2, cukup buat link-nya)
+3. (kanan) Ikon keranjang belanja dengan badge angka jumlah item
+   (badge pakai vgs-blue-electric) -- dropdown isinya CartDropdown
+   yang dibuat Orang 2, kamu cukup sediakan ikon dan trigger-nya,
+   koordinasikan dengan Orang 2 untuk menyambungkan komponennya
+4. Tombol/link Login (mengarah ke halaman/modal Login milik Orang 2)
+
+Perilaku:
+- Sticky saat scroll, background transparan/blend dengan hero
+  berubah jadi solid vgs-black-elevated saat sudah di-scroll
+  melewati hero (beri backdrop-blur untuk transisi halus)
+- Mobile (di bawah breakpoint md/768px): menu Home/About/Product
+  masuk hamburger menu, ikon keranjang dan tombol login TETAP
+  terlihat di navbar (jangan disembunyikan ke hamburger)
+- Item menu aktif diberi garis bawah atau warna vgs-blue-electric,
+  BUKAN background block penuh
+
+FOOTER (components/storefront/Footer.tsx):
+- Logo + tagline singkat
+- Kolom: Kategori Produk (ambil dari 14 kategori), Bantuan (FAQ,
+  Cara Belanja, Kontak), Tentang (About, Kebijakan Privasi, Syarat
+  & Ketentuan)
+- Ikon media sosial (opsional)
+- Copyright bar paling bawah, background vgs-black-void (paling
+  gelap)
+
+====================================================================
+BAGIAN 9: TUGAS DETAIL KAMU -- HALAMAN HOME
+====================================================================
+
+Struktur (urutan section atas ke bawah):
+
+a. HERO SECTION
+   Bukan hero generic "headline besar + tombol CTA + gradient
+   background" seperti template SaaS. Karena ini toko fisik gear
+   gaming, hero harus menampilkan PRODUK secara visual -- gunakan
+   komposisi 2-4 gambar produk unggulan (mouse, headset, keyboard)
+   disusun overlap/layered dengan sedikit rotasi, seperti etalase
+   produk premium, BUKAN foto produk lurus rata.
+   Headline pendek dan tegas (bukan kalimat panjang marketing),
+   contoh nada: "Gear yang dipakai buat menang, bukan buat gaya" --
+   sesuaikan dengan tagline resmi "Gear Up. Play Hard. Win."
+   Satu CTA utama: "Belanja Sekarang" mengarah ke halaman Product
+   (punya Orang 2).
+   ELEMEN SIGNATURE (WAJIB ADA -- ini pembeda dari desain AI
+   generic): elemen visual berulang terinspirasi bentuk heksagonal
+   dari logo -- bisa berupa garis potong diagonal di antara
+   section, atau border heksagonal tipis pada satu elemen kunci di
+   hero. JANGAN dipakai di semua tempat, cukup 1-2 titik strategis
+   supaya jadi "tanda tangan visual" yang diingat.
+
+b. KATEGORI UNGGULAN (grid kategori, bukan grid produk)
+   Tampilkan 6-8 dari 14 kategori sebagai kartu kategori dengan
+   ikon/ilustrasi sederhana (bukan foto), grid 2 kolom (mobile) /
+   4 kolom (desktop). Klik kategori mengarah ke halaman Product
+   dengan filter kategori tersebut (punya Orang 2).
+
+c. PRODUK UNGGULAN/TERLARIS
+   Grid ProductCard (kamu buat komponen ProductCard di ui/ atau
+   product/ -- koordinasikan dengan Orang 2 siapa yang buat
+   ProductCard karena dipakai di Home DAN di halaman Product; SARAN:
+   kamu yang buat karena dipakai duluan di Home, Orang 2 tinggal
+   pakai ulang). Section heading dengan link "Lihat Semua" ke
+   halaman Product.
+
+d. BANNER PROMOSI (opsional tapi disarankan)
+   Satu banner horizontal aksen biru untuk promo/diskon, desain
+   flat tanpa gradient berlebihan.
+
+e. FOOTER
+   (lihat Bagian 8)
+
+====================================================================
+BAGIAN 10: TUGAS DETAIL KAMU -- HALAMAN ABOUT
+====================================================================
+
+- Cerita singkat brand VGS (buat copy placeholder yang masuk akal
+  untuk toko gaming gear, nada sesuai tagline "Gear Up. Play Hard.
+  Win.")
+- Section "Kenapa Belanja di VGS" dengan 3-4 poin (garansi, produk
+  original, pengiriman cepat, dukungan komunitas gamer) -- gunakan
+  ikon sederhana, BUKAN numbered badges kalau urutan tidak benar-
+  benar penting
+- Boleh tambahkan foto/ilustrasi workspace gaming sebagai pelengkap
+  visual, opsional
+
+====================================================================
+BAGIAN 11: RESPONSIVENESS (WAJIB, SAMA DENGAN ORANG 2)
+====================================================================
+
+Breakpoint yang harus diuji:
+- Mobile   : 375px - 428px
+- Tablet   : 768px - 1024px
+- Desktop  : 1280px ke atas
+
+Aturan wajib untuk SEMUA yang kamu bangun:
+- Navigasi berubah hamburger di bawah breakpoint md (768px)
+- Grid kategori dan grid produk unggulan menyesuaikan kolom sesuai
+  Bagian 9
+- Semua tombol/elemen tap-able minimal 44x44px di mobile
+- Teks tidak overflow/terpotong di layar sempit -- pakai
+  truncate/line-clamp untuk teks panjang
+
+====================================================================
+BAGIAN 12: KUALITAS & AKSESIBILITAS (WAJIB, SAMA DENGAN ORANG 2)
+====================================================================
+
+- Fokus keyboard terlihat jelas (ring vgs-blue-electric) di semua
+  elemen interaktif -- jangan hilangkan outline default tanpa
+  menggantinya
+- Semua gambar punya alt text deskriptif
+- Kontras warna WAJIB lolos WCAG AA (lihat Bagian 2)
+- Hormati prefers-reduced-motion -- kurangi/hilangkan animasi untuk
+  pengguna yang mengaktifkan setelan ini
+- Navbar dan form bisa dioperasikan penuh dengan keyboard
+
+====================================================================
+BAGIAN 13: INSTRUKSI UNTUK AI (TEMPEL SELURUH FILE INI SEBAGAI PROMPT)
+====================================================================
+
+Instruksi tambahan untuk AI yang kamu pakai:
+
+1. Baca SELURUH isi file ini dari atas ke bawah sebelum menulis
+   kode apapun.
+2. Kerjakan dengan urutan: (a) types/product.ts dan
+   data/dummy-products.ts dulu -- ini fondasi yang ditunggu rekan
+   satu tim, (b) komponen ui/ dasar, (c) StorefrontLayout dan
+   AuthLayout, (d) Navbar dan Footer, (e) HeroSection, CategoryGrid,
+   PromoBanner, ProductCard, (f) halaman Home.tsx, (g) halaman
+   About.tsx.
+3. Jangan mengerjakan semuanya sekaligus dalam satu generate besar.
+   Selesaikan satu bagian, tampilkan hasilnya, baru lanjut ke
+   bagian berikutnya -- ini supaya saya bisa cek dan commit ke git
+   bertahap.
+4. Semua warna dan font WAJIB memakai nama yang didaftarkan di
+   tailwind.config sesuai Bagian 2 dan 3 file ini -- JANGAN membuat
+   keputusan warna/font baru sendiri walaupun menurutmu ada pilihan
+   yang lebih bagus. Konsistensi dengan rekan satu tim lebih
+   penting daripada preferensi estetika AI.
+5. Jika ada instruksi di file ini yang menyebut "dikerjakan Orang
+   2" atau "punya Orang 2", cukup buat placeholder/stub sederhana
+   (link kosong, komentar TODO) untuk bagian itu -- JANGAN membangun
+   halaman Product/Cart/Login secara penuh, itu bukan tugasmu.
+6. Di akhir tiap bagian selesai, beri ringkasan singkat: file apa
+   saja yang dibuat/diubah, dan catatan apa (jika ada) yang perlu
+   diketahui Orang 2 supaya pekerjaannya nyambung (misal: "Button
+   sudah punya varian primary dan secondary, size default dan
+   small, props: variant, size, disabled, onClick, children").
+
+====================================================================
+CATATAN PENUTUP
+====================================================================
+Dokumen ini adalah acuan TAMPILAN saja, database belum disambung.
+Struktur data dummy dibuat semirip mungkin dengan struktur tabel
+database asli (products, product_variants, product_images,
+categories -- lihat dokumen arsitektur Laravel) supaya saat
+database sungguhan disambungkan nanti, field-field di frontend
+sudah cocok dan tidak perlu banyak refactor.
+====================================================================
