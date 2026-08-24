@@ -145,9 +145,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
 
                     <div className="text-center pt-2 text-xs text-vgs-silver-muted">
                         <span>Belum punya akun? </span>
-                        <a href="#register" className="text-vgs-blue-electric font-semibold hover:underline">
+                        <Link
+                            href="/register"
+                            onClick={onClose}
+                            className="text-vgs-blue-electric font-semibold hover:underline"
+                        >
                             Daftar Sekarang
-                        </a>
+                        </Link>
                     </div>
                 </form>
             )}
