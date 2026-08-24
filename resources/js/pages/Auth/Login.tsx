@@ -151,9 +151,9 @@ export default function Login() {
                     {/* Register Option */}
                     <div className="text-center pt-4 border-t border-vgs-gray-border/60 text-xs text-vgs-silver-muted">
                         <span>Belum memiliki akun VGS? </span>
-                        <a href="#register" className="text-vgs-blue-electric font-semibold hover:underline">
+                        <Link href="/register" className="text-vgs-blue-electric font-semibold hover:underline">
                             Daftar Sekarang
-                        </a>
+                        </Link>
                     </div>
                 </form>
             )}
