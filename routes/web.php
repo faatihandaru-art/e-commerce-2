@@ -12,3 +12,4 @@ Route::get('/products', fn () => Inertia::render('Storefront/Product/Index'))->n
 Route::get('/products/{slug}', fn ($slug) => Inertia::render('Storefront/Product/Show', ['slug' => $slug]))->name('products.show');
 Route::get('/cart', fn () => Inertia::render('Cart'))->name('cart');
 Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
+Route::get('/register', fn () => Inertia::render('Auth/Register'))->name('register');
