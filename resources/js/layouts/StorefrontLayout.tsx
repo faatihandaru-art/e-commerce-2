@@ -2,13 +2,13 @@ import React from 'react';
 import Navbar from '@/components/storefront/Navbar';
 import Footer from '@/components/storefront/Footer';
 import CartDropdown from '@/components/cart/CartDropdown';
-import { CartProvider, useCart } from '@/context/CartContext';
+import { useCart } from '@/context/CartContext';
 
 export interface StorefrontLayoutProps {
     children: React.ReactNode;
 }
 
-const StorefrontLayoutContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
     const { cartCount, isCartOpen, openCart, closeCart } = useCart();
 
     return (
@@ -25,14 +25,6 @@ const StorefrontLayoutContent: React.FC<{ children: React.ReactNode }> = ({ chil
             {/* Cart Slide-in Drawer */}
             <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
         </div>
-    );
-};
-
-export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
-    return (
-        <CartProvider>
-            <StorefrontLayoutContent>{children}</StorefrontLayoutContent>
-        </CartProvider>
     );
 };
 

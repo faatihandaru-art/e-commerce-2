@@ -4,6 +4,7 @@ import type { Product } from '@/types/product';
 import Badge from '@/components/ui/Badge';
 import RatingStars from '@/components/ui/RatingStars';
 import { formatRupiah } from '@/data/dummy-products';
+import { useCart } from '@/context/CartContext';
 
 export interface ProductCardProps {
     product: Product;
@@ -16,6 +17,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     onAddToCart,
     className = '',
 }) => {
+    const { addToCart } = useCart();
     const productImage =
         product.images && product.images.length > 0
             ? product.images[0]
@@ -47,6 +49,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         if (product.stock === 0) return;
         if (onAddToCart) {
             onAddToCart(product);
+        } else {
+            addToCart(product, 1);
         }
     };
 

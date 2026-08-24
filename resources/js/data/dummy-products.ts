@@ -128,15 +128,12 @@ export const products: Product[] = [
     // 1. Gaming Mouse
     {
         id: 'prod-gm-01',
-        name: 'Vortix Apex Pro Wireless Ultra-Light',
+        name: 'HyperX Pulsefire Haste 2 Pro - Mouse Gaming Nirkabel 4K',
         slug: 'vortix-apex-pro-wireless',
         description: 'Mouse gaming nirkabel tingkat turnamen dengan berat hanya 49 gram, sensor optik V-Core 30K, polling rate 8000Hz, dan optical switch generasi ke-3 dengan ketahanan 90 juta klik.',
         categoryId: 1,
         images: [
-            'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1563297007-0686b7003af7?w=800&auto=format&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1626218174358-7769486c4b79?w=800&auto=format&fit=crop&q=80',
+            '/images/products/hyperx-mouse.jpg',
         ],
         price: 1399000,
         compareAtPrice: 1799000,

@@ -206,10 +206,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+const fallbackCartContext: CartContextType = {
+    items: [],
+    cartCount: 0,
+    cartSubtotal: 0,
+    isCartOpen: false,
+    setIsCartOpen: () => {},
+    openCart: () => {},
+    closeCart: () => {},
+    addToCart: () => {},
+    updateQuantity: () => {},
+    removeFromCart: () => {},
+    clearCart: () => {},
+};
+
 export const useCart = (): CartContextType => {
     const context = useContext(CartContext);
     if (!context) {
-        throw new Error('useCart must be used within a CartProvider');
+        console.warn('useCart was called outside of a CartProvider. Using default fallback cart state.');
+        return fallbackCartContext;
     }
     return context;
 };
