@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
                                     VORTIX <span className="text-vgs-blue-electric">STORE</span>
                                 </span>
                                 <span className="text-[10px] font-mono tracking-widest text-vgs-silver-muted uppercase mt-0.5">
-                                    VGS OFFICIAL GEAR
+                                    VGS OFFICIAL GEAR 
                                 </span>
                             </div>
                         </Link>

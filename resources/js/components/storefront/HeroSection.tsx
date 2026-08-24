@@ -34,7 +34,7 @@ export const HeroSection: React.FC = () => {
                         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-lg bg-vgs-black-surface border border-vgs-gray-border text-xs font-mono">
                             <span className="w-2 h-2 rounded-sm bg-vgs-blue-electric shadow-[0_0_8px_var(--vgs-blue-electric)]" />
                             <span className="text-vgs-silver-bright font-semibold uppercase tracking-wider">
-                                VGS OFFICIAL TOURNAMENT SPEC 2026
+                                VGS OFFICIAL TOURNAMENT SPEC 2029
                             </span>
                         </div>
 
