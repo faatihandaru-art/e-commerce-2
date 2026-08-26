@@ -88,14 +88,14 @@ export default function About() {
                             </div>
 
                             <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-vgs-silver-bright tracking-tight leading-[1.1]">
-                                DIBUAT OLEH GAMER,<br />
+                                PILIH GEAR TERBAIK,<br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-vgs-silver-bright via-vgs-blue-glow to-vgs-blue-electric">
-                                    UNTUK KEMENANGAN SEJATI.
+                                    MAIN LEBIH MAKSIMAL.
                                 </span>
                             </h1>
 
                             <p className="text-base sm:text-lg text-vgs-silver-mid leading-relaxed">
-                                Vortix Gaming Store (VGS) didirikan dengan satu filosofi sederhana: dalam arena kompetitif, setiap milidetik dan setiap milimeter pergerakan menentukan hasil pertandingan.
+                                Vortix Gaming Store (VGS) adalah toko yang menyediakan berbagai kebutuhan gaming untuk membantu gamer mendapatkan perangkat yang tepat sesuai gaya bermain dan kebutuhan mereka.Kami menghadirkan berbagai pilihan gaming gear mulai dari mouse, keyboard, headset, microphone, monitor, controller, hingga berbagai peripheral gaming lainnya dari brand-brand terpercaya.
                             </p>
 
                             <p className="text-sm sm:text-base text-vgs-silver-muted leading-relaxed">
