@@ -1016,7 +1016,7 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/desk_mateeeee.webp',
         ],
-        price: 22900,
+        price: 229000,
         compareAtPrice: null,
         specifications: {
     'Material': 'PVC / Synthetic Leather',
