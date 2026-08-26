@@ -19,8 +19,6 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         : ['https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80'];
 
     const [activeIndex, setActiveIndex] = useState(0);
-    const [isZoomed, setIsZoomed] = useState(false);
-    const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
     // Touch swipe state for mobile
@@ -28,7 +26,6 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
     const thumbnailsContainerRef = useRef<HTMLDivElement>(null);
-    const mainImageRef = useRef<HTMLDivElement>(null);
 
     const nextImage = useCallback(() => {
         setActiveIndex((prev) => (prev + 1) % safeImages.length);
@@ -67,15 +64,6 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
             }
         }
     }, [activeIndex]);
-
-    // Handle mouse move for desktop zoom preview
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!mainImageRef.current) return;
-        const rect = mainImageRef.current.getBoundingClientRect();
-        const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-        const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
-        setZoomPosition({ x, y });
-    };
 
     // Touch swipe handlers for mobile
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -117,11 +105,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         <div className={`flex flex-col gap-4 select-none ${className}`} onKeyDown={handleKeyDown} tabIndex={0} aria-label={`Galeri foto produk ${productName}`}>
             {/* Main Image Stage */}
             <div
-                ref={mainImageRef}
-                className="relative w-full aspect-[4/3] sm:aspect-[1/1] md:aspect-[4/3] rounded-2xl bg-vgs-black-surface border border-vgs-gray-border overflow-hidden flex items-center justify-center cursor-zoom-in group shadow-lg"
-                onMouseEnter={() => setIsZoomed(true)}
-                onMouseLeave={() => setIsZoomed(false)}
-                onMouseMove={handleMouseMove}
+                className="relative w-full aspect-[4/3] sm:aspect-[1/1] md:aspect-[4/3] rounded-2xl bg-vgs-black-surface border border-vgs-gray-border overflow-hidden flex items-center justify-center cursor-pointer group shadow-lg"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -136,23 +120,8 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <img
                     src={safeImages[activeIndex]}
                     alt={`${productName} - Tampilan ${activeIndex + 1}`}
-                    className={`w-full h-full object-contain p-6 transition-all duration-200 ${
-                        isZoomed ? 'opacity-0 md:opacity-0' : 'opacity-100'
-                    }`}
+                    className="w-full h-full object-contain p-6"
                 />
-
-                {/* Desktop Zoom Magnifier (Follows cursor smoothly) */}
-                {isZoomed && (
-                    <div
-                        className="hidden md:block absolute inset-0 pointer-events-none"
-                        style={{
-                            backgroundImage: `url(${safeImages[activeIndex]})`,
-                            backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                            backgroundSize: '220%',
-                            backgroundRepeat: 'no-repeat',
-                        }}
-                    />
-                )}
 
                 {/* Image Counter Badge (Top Right) */}
                 <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg bg-vgs-black-void/80 backdrop-blur-sm border border-vgs-gray-border text-[11px] font-mono text-vgs-silver-bright font-semibold shadow-sm">
@@ -200,13 +169,6 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                     </>
                 )}
 
-                {/* Hover / Click Hint */}
-                <div className="hidden md:flex items-center gap-1.5 absolute bottom-3 right-3 z-10 px-2 py-1 rounded-md bg-vgs-black-void/70 border border-vgs-gray-border/80 text-[10px] font-mono text-vgs-silver-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                    </svg>
-                    <span>Klik perbesar</span>
-                </div>
             </div>
 
             {/* Mobile Carousel Dots Indicator */}
