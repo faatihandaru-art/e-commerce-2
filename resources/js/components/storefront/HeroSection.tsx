@@ -154,7 +154,7 @@ export const HeroSection: React.FC = () => {
                                         TOP CHOICE
                                     </span>
                                     <img
-                                        src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80"
+                                        src="/images/products/mouse.jpg"
                                         alt="Vortix Apex Pro Wireless Ultra-Light Mouse"
                                         className="w-full h-36 sm:h-40 object-contain"
                                     />
