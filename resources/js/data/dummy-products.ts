@@ -926,7 +926,7 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
     {
         id: 'prod-tc-01',
         name: 'UGREEN 240W USB-C to USB-C Cable',
-        slug: 'ivanky-8k-displayport-cable-1-4',
+        slug: 'UGREEN 240W USB-C to USB-C Cable',
         description: 'UGREEN 240W USB-C to USB-C Cable adalah kabel USB-C berdaya tinggi yang mendukung pengisian hingga 240W melalui standar USB Power Delivery 3.1. Kabel ini cocok untuk mengisi daya laptop, tablet, smartphone, dan perangkat USB-C lainnya, serta dirancang dengan konstruksi yang kuat untuk penggunaan sehari-hari.',
         categoryId: 13,
         images: [

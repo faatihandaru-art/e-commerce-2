@@ -95,11 +95,17 @@ export default function About() {
                             </h1>
 
                             <p className="text-base sm:text-lg text-vgs-silver-mid leading-relaxed">
-                                Vortix Gaming Store (VGS) adalah toko yang menyediakan berbagai kebutuhan gaming untuk membantu gamer mendapatkan perangkat yang tepat sesuai gaya bermain dan kebutuhan mereka.Kami menghadirkan berbagai pilihan gaming gear mulai dari mouse, keyboard, headset, microphone, monitor, controller, hingga berbagai peripheral gaming lainnya dari brand-brand terpercaya.
+                                Vortix Gaming Store (VGS) adalah toko yang menyediakan berbagai kebutuhan gaming untuk membantu gamer mendapatkan perangkat yang tepat sesuai gaya bermain dan kebutuhan mereka.
                             </p>
 
-                            <p className="text-sm sm:text-base text-vgs-silver-muted leading-relaxed">
-                                Kami menolak produk periferal murahan yang hanya menjual lampu warna-warni tanpa substansi. Di VGS, kami mengurasi dan memproduksi perangkat keras dengan standar turnamen internasional—dari sensor optik 30.000 DPI bebas latensi hingga keyboard berperedam gasket yang memberikan feedback taktil paling konsisten.
+                            <p className="text-base sm:text-base text-vgs-silver-mid leading-relaxed">
+                                Kami menghadirkan berbagai pilihan gaming gear mulai dari mouse, keyboard, headset, microphone, monitor, controller, hingga berbagai peripheral gaming lainnya dari brand-brand terpercaya.
+                            </p>
+                             <p className="text-base sm:text-base text-vgs-silver-mid leading-relaxed">
+                                Kami percaya bahwa perlengkapan gaming bukan sekadar aksesori. Mouse yang presisi, keyboard yang responsif, headset yang jernih, dan monitor dengan refresh rate tinggi dapat membuat pengalaman bermain menjadi lebih nyaman dan maksimal.
+                            </p>
+                            <p className="text-base sm:text-base text-vgs-silver-mid leading-relaxed">
+                                Di VGS, kami berfokus menyediakan produk gaming berkualitas dengan informasi spesifikasi yang jelas, sehingga kamu bisa memilih gear dengan lebih mudah dan percaya diri.
                             </p>
 
                             {/* Core Tagline Box */}
@@ -108,7 +114,7 @@ export default function About() {
                                     "Gear Up. Play Hard. Win."
                                 </p>
                                 <p className="text-xs text-vgs-silver-muted mt-1">
-                                    Bukan sekadar slogan pemasaran—ini adalah komitmen pengujian performa perangkat keras kami.
+                                    Temukan gaming gear yang sesuai dengan kebutuhanmu dan siap membawa pengalaman bermain ke level berikutnya.
                                 </p>
                             </div>
                         </div>
