@@ -147,13 +147,13 @@ export default function About() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         <div className="p-6 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border">
                             <div className="font-display font-extrabold text-3xl sm:text-4xl text-vgs-blue-electric font-mono">
-                                8000 Hz
+                               100%
                             </div>
                             <div className="font-bold text-sm text-vgs-silver-bright mt-1">
-                                Standar Hyper-Polling
+                               Fokus Gaming
                             </div>
                             <p className="text-xs text-vgs-silver-muted mt-1 leading-relaxed">
-                                Menghasilkan respons sub-millisecond 0.125ms di game FPS tactical.
+                                Kami fokus menyediakan kebutuhan gaming dalam satu tempat.
                             </p>
                         </div>
 
