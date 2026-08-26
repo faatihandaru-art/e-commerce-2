@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import ProfileDropdown from '@/components/storefront/ProfileDropdown';
 
 export interface NavbarProps {
     cartCount?: number;
@@ -7,8 +8,22 @@ export interface NavbarProps {
     onOpenLogin?: () => void;
 }
 
+interface PageProps {
+    [key: string]: unknown;
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+            phone?: string;
+            status?: string;
+        } | null;
+    };
+}
+
 export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpenLogin }) => {
-    const { url } = usePage();
+    const { url, props } = usePage<PageProps>();
+    const user = props.auth?.user;
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -45,13 +60,12 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
                     
-                    {/* Brand Logo (Simplified Navbar Wordmark) */}
+                    {/* Brand Logo */}
                     <div className="flex items-center gap-8">
                         <Link
                             href="/"
                             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric rounded-lg px-1 py-0.5"
                         >
-                            {/* Hexagonal Falcon V Icon */}
                             <div className="w-10 h-10 rounded-xl bg-vgs-black-surface border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-colors shadow-xs">
                                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <polygon points="12 2, 21 7, 21 17, 12 22, 3 17, 3 7" stroke="#2B6FF6" strokeWidth="1.5" fill="#0A0A0C" />
@@ -60,7 +74,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                                 </svg>
                             </div>
 
-                            {/* Wordmark */}
                             <div className="flex flex-col">
                                 <div className="flex items-center font-display font-extrabold text-2xl tracking-wider leading-none">
                                     <span className="text-vgs-silver-bright">V</span>
@@ -88,7 +101,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                                         }`}
                                     >
                                         <span>{item.label}</span>
-                                        {/* Active Underline indicator */}
                                         {active && (
                                             <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-vgs-blue-electric rounded-full shadow-[0_0_8px_var(--vgs-blue-electric)]" />
                                         )}
@@ -98,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                         </nav>
                     </div>
 
-                    {/* Right Side Actions (Cart, Login, Mobile Toggle) */}
+                    {/* Right Side Actions */}
                     <div className="flex items-center gap-3 sm:gap-4">
                         {/* Cart Trigger with Badge */}
                         <button
@@ -118,8 +130,10 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                             )}
                         </button>
 
-                        {/* Login Button (Leading to Login Orang 2) */}
-                        {onOpenLogin ? (
+                        {/* Auth: Login Button OR Profile Dropdown */}
+                        {user ? (
+                            <ProfileDropdown user={user} />
+                        ) : onOpenLogin ? (
                             <button
                                 type="button"
                                 onClick={onOpenLogin}
@@ -182,6 +196,52 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                             </Link>
                         );
                     })}
+
+                    {/* Mobile Auth Section */}
+                    {user && (
+                        <div className="border-t border-vgs-gray-border mt-2 pt-2">
+                            <div className="flex items-center gap-3 px-4 py-3">
+                                <div className="w-9 h-9 rounded-lg bg-vgs-blue-electric/20 border border-vgs-blue-electric/30 flex items-center justify-center text-vgs-blue-electric font-display font-bold text-xs">
+                                    {user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-vgs-silver-bright truncate">{user.name}</p>
+                                    <p className="text-xs text-vgs-silver-muted font-mono truncate">{user.email}</p>
+                                </div>
+                            </div>
+                            <Link
+                                href="/account/profile"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-vgs-silver-mid hover:text-vgs-silver-bright hover:bg-vgs-black-surface rounded-xl transition-colors"
+                            >
+                                <svg className="w-4 h-4 text-vgs-silver-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Profil Saya
+                            </Link>
+                            <Link
+                                href="/account/orders"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-vgs-silver-mid hover:text-vgs-silver-bright hover:bg-vgs-black-surface rounded-xl transition-colors"
+                            >
+                                <svg className="w-4 h-4 text-vgs-silver-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                Pesanan Saya
+                            </Link>
+                            <Link
+                                href="/account/addresses"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-vgs-silver-mid hover:text-vgs-silver-bright hover:bg-vgs-black-surface rounded-xl transition-colors"
+                            >
+                                <svg className="w-4 h-4 text-vgs-silver-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Alamat Saya
+                            </Link>
+                        </div>
+                    )}
                 </div>
             )}
         </header>

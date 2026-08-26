@@ -21,3 +21,11 @@ Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+// Account Pages (Protected)
+Route::middleware('auth')->prefix('account')->group(function () {
+    Route::get('/profile', fn () => Inertia::render('Account/Profile'))->name('account.profile');
+    Route::get('/addresses', fn () => Inertia::render('Account/Addresses'))->name('account.addresses');
+    Route::get('/status', fn () => Inertia::render('Account/Status'))->name('account.status');
+    Route::get('/orders', fn () => Inertia::render('Account/Orders'))->name('account.orders');
+});

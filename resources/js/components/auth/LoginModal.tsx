@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -14,7 +14,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     const [loginSuccess, setLoginSuccess] = useState(false);
@@ -43,21 +42,39 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         setErrors({});
         setIsLoading(true);
 
-        setTimeout(() => {
-            setIsLoading(false);
-            setLoginSuccess(true);
-            setTimeout(() => {
-                setLoginSuccess(false);
-                if (onSuccess) onSuccess();
-                onClose();
-            }, 800);
-        }, 1000);
+        router.post('/login', { email, password }, {
+            onStart: () => setIsLoading(true),
+            onFinish: () => setIsLoading(false),
+            onSuccess: () => {
+                setLoginSuccess(true);
+                setTimeout(() => {
+                    setLoginSuccess(false);
+                    if (onSuccess) onSuccess();
+                    onClose();
+                }, 800);
+            },
+            onError: (serverErrors) => {
+                if (serverErrors.email) {
+                    setErrors({ email: serverErrors.email });
+                } else if (serverErrors.password) {
+                    setErrors({ password: serverErrors.password });
+                }
+            },
+        });
+    };
+
+    const handleClose = () => {
+        setEmail('');
+        setPassword('');
+        setErrors({});
+        setLoginSuccess(false);
+        onClose();
     };
 
     return (
         <Modal
             isOpen={isOpen}
-            onClose={onClose}
+            onClose={handleClose}
             title="Masuk ke Akun VGS"
             size="md"
         >
@@ -116,21 +133,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                         required
                     />
 
-                    <div className="flex items-center justify-between text-xs pt-1">
-                        <label className="flex items-center gap-2 text-vgs-silver-mid cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={rememberMe}
-                                onChange={(e) => setRememberMe(e.target.checked)}
-                                className="rounded bg-vgs-black-surface border-vgs-gray-border text-vgs-blue-electric focus:ring-vgs-blue-electric cursor-pointer"
-                            />
-                            <span>Ingat saya di perangkat ini</span>
-                        </label>
-                        <a href="#forgot" className="text-vgs-blue-electric hover:underline font-medium">
-                            Lupa sandi?
-                        </a>
-                    </div>
-
                     <div className="pt-2">
                         <Button
                             variant="primary"
@@ -147,7 +149,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                         <span>Belum punya akun? </span>
                         <Link
                             href="/register"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="text-vgs-blue-electric font-semibold hover:underline"
                         >
                             Daftar Sekarang
