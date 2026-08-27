@@ -44,7 +44,7 @@ BRAND TERPERCAYA
                             </div>
                             <div className="p-3 rounded-xl bg-vgs-black-surface/70 border border-vgs-gray-border">
                                 <div className="text-lg sm:text-xl font-bold font-mono text-vgs-blue-electric leading-none">
-                                    50+
+                                    31
 PRODUK GAMING
                                 </div>
                             </div>
