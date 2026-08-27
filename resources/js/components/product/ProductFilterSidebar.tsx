@@ -103,7 +103,10 @@ export const ProductFilterSidebar: React.FC<ProductFilterSidebarProps> = ({
                     </span>
                 </div>
 
-                <div className="flex flex-col gap-1 max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-vgs-gray-border">
+                <div
+                    className="flex flex-col gap-1 max-h-72 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-vgs-gray-border"
+                    onWheel={(e) => e.stopPropagation()}
+                >
                     {/* All Categories Option */}
                     <button
                         type="button"

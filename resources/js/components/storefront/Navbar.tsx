@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                             <img
                                 src="/images/products/logo..vgs2.png"
                                 alt="VGS Logo"
-                                className="w-64 sm:w-13 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
+                                className="w-13 sm:w-13 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
                             />
 
                             <div className="flex flex-col">
