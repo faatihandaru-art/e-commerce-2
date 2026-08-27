@@ -546,8 +546,8 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         stock: 5,
         isFeatured: false,
         badge: 'Stok Terbatas',
-        brand: 'VGS Horizon',
-        sku: 'VGS-MN-CURV-OLED',
+        brand: 'MSI',
+        sku: 'MSI-MN-MPG271QR-QD-OLED-X50',
     },
 
     // 6. Game Controller

@@ -34,47 +34,40 @@ export const HeroSection: React.FC = () => {
                         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-lg bg-vgs-black-surface border border-vgs-gray-border text-xs font-mono">
                             <span className="w-2 h-2 rounded-sm bg-vgs-blue-electric shadow-[0_0_8px_var(--vgs-blue-electric)]" />
                             <span className="text-vgs-silver-bright font-semibold uppercase tracking-wider">
-                                VGS OFFICIAL TOURNAMENT SPEC 2029
+                                VGS OFFICIAL TOURNAMENT SPEC 2026
                             </span>
                         </div>
 
                         {/* Main Technical Hero Headline */}
                         <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-vgs-silver-bright tracking-tight leading-[1.1]">
-                            GEAR UNTUK MENANG,<br />
+                            GEAR PILIHAN UNTUK<br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-vgs-silver-bright via-vgs-blue-glow to-vgs-blue-electric">
-                                BUKAN SEKADAR GAYA.
+                                 SETUP ANDALAN.
                             </span>
                         </h1>
 
                         {/* Body Copy */}
                         <p className="text-base sm:text-lg text-vgs-silver-mid max-w-xl leading-relaxed font-normal">
-                            Perlengkapan esports kelas profesional dengan sensor optik 30K DPI, polling rate 8000Hz, dan switch magnetik respon instan 0.1ms. Presisi tanpa kompromi untuk gamer kompetitif sejati.
+                            Temukan berbagai gaming gear pilihan mulai dari mouse, keyboard, headset, microphone, monitor, controller, hingga aksesori untuk melengkapi setup gaming kamu. Kami menghadirkan produk dari berbagai brand terpercaya dengan spesifikasi yang jelas, sehingga kamu bisa memilih gear yang sesuai dengan kebutuhan dan gaya bermainmu
                         </p>
 
                         {/* Key Technical Badges */}
                         <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg py-2">
                             <div className="p-3 rounded-xl bg-vgs-black-surface/70 border border-vgs-gray-border">
                                 <div className="text-lg sm:text-xl font-bold font-mono text-vgs-blue-electric leading-none">
-                                    8000Hz
-                                </div>
-                                <div className="text-[11px] font-mono text-vgs-silver-muted mt-1 uppercase">
-                                    Hyper Polling
+                                   10+
+BRAND TERPERCAYA
                                 </div>
                             </div>
                             <div className="p-3 rounded-xl bg-vgs-black-surface/70 border border-vgs-gray-border">
                                 <div className="text-lg sm:text-xl font-bold font-mono text-vgs-blue-electric leading-none">
-                                    0.125ms
-                                </div>
-                                <div className="text-[11px] font-mono text-vgs-silver-muted mt-1 uppercase">
-                                    Instant Trigger
+                                    50+
+PRODUK GAMING
                                 </div>
                             </div>
                             <div className="p-3 rounded-xl bg-vgs-black-surface/70 border border-vgs-gray-border">
                                 <div className="text-lg sm:text-xl font-bold font-mono text-vgs-blue-electric leading-none">
-                                    100%
-                                </div>
-                                <div className="text-[11px] font-mono text-vgs-silver-muted mt-1 uppercase">
-                                    Original Garansi
+                                    100% -----Original Garansi
                                 </div>
                             </div>
                         </div>
