@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\Address;
 
 // Storefront (Orang 1)
 Route::get('/', fn () => Inertia::render('Storefront/Home'))->name('home');
