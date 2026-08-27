@@ -7,7 +7,6 @@ export interface RelatedProductsProps {
     currentProductId: number | string;
     categoryId: number | string;
     categoryName?: string;
-    onAddToCart?: (product: Product) => void;
     className?: string;
 }
 
@@ -15,7 +14,6 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
     currentProductId,
     categoryId,
     categoryName,
-    onAddToCart,
     className = '',
 }) => {
     // Fetch products in same category
@@ -57,7 +55,6 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
                     <ProductCard
                         key={product.id}
                         product={product}
-                        onAddToCart={onAddToCart}
                     />
                 ))}
             </div>

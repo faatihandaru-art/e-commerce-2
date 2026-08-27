@@ -17,15 +17,19 @@ export const Footer: React.FC = () => {
                     {/* Brand Info & Mission (Cols 1-2) */}
                     <div className="lg:col-span-2 space-y-5">
                         <Link href="/" className="flex items-center gap-3 group inline-flex">
-                            
-                                <img src="/images/products/logo..vgs2.png" alt="VORTIX STORE" className="w-13 h-13 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
-/>                          
+                            <div className="w-10 h-10 rounded-xl bg-vgs-black-void border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-colors shadow-xs">
+                                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <polygon points="12 2, 21 7, 21 17, 12 22, 3 17, 3 7" stroke="#2B6FF6" strokeWidth="1.5" fill="#0A0A0C" />
+                                    <path d="M7 8L12 17L17 8" stroke="#E8E9ED" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M10 8L12 12L14 8" stroke="#2B6FF6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
                             <div className="flex flex-col">
                                 <span className="font-display font-black text-2xl tracking-wider text-vgs-silver-bright leading-none">
-                                    VORTIX <span className="text-vgs-blue-electric">GAMING</span> STORE
+                                    VORTIX <span className="text-vgs-blue-electric">STORE</span>
                                 </span>
                                 <span className="text-[10px] font-mono tracking-widest text-vgs-silver-muted uppercase mt-0.5">
-                                    
+                                    VGS OFFICIAL GEAR 
                                 </span>
                             </div>
                         </Link>
@@ -118,16 +122,7 @@ export const Footer: React.FC = () => {
                                     Garansi Resmi VGS
                                 </Link>
                             </li>
-                            <li>
-                                <Link href="/about" className="text-vgs-silver-mid hover:text-vgs-blue-electric transition-colors">
-                                    Panduan Ukuran & Grip
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/about" className="text-vgs-silver-mid hover:text-vgs-blue-electric transition-colors">
-                                    Status Pengiriman
-                                </Link>
-                            </li>
+        
                             <li>
                                 <Link href="/about" className="text-vgs-silver-mid hover:text-vgs-blue-electric transition-colors">
                                     FAQ & Pertanyaan Umum

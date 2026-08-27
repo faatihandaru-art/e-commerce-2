@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
-import type { Product } from '@/types/product';
+import type { Product, ProductVariant } from '@/types/product';
 import Badge from '@/components/ui/Badge';
 import RatingStars from '@/components/ui/RatingStars';
 import { formatRupiah } from '@/data/dummy-products';
@@ -8,7 +8,7 @@ import ProductVariantModal from '@/components/product/ProductVariantModal';
 
 export interface ProductCardProps {
     product: Product;
-    onAddToCart?: (product: Product) => void;
+    onAddToCart?: (product: Product, variant?: ProductVariant | null, quantity?: number) => void;
     className?: string;
 }
 
@@ -195,9 +195,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialMode={modalMode}
-                onSuccess={() => {
+                onSuccess={(variant, quantity) => {
                     if (onAddToCart) {
-                        onAddToCart(product);
+                        onAddToCart(product, variant, quantity);
                     }
                 }}
             />

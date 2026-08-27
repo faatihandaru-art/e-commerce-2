@@ -32,7 +32,7 @@ export const PromoBanner: React.FC = () => {
                             </h3>
 
                             <p className="text-sm sm:text-base text-vgs-silver-mid max-w-2xl leading-relaxed">
-                                Dapatkan kombo mouse Apex Pro Wireless + keyboard Cypher 75% Gasket dengan potongan harga langsung. Gunakan kode kupon di checkout:
+                                Dapatkan kombo mouse Razer V3 pro + keyboard Attack Shark X820 Ulta dengan potongan harga langsung. Gunakan kode kupon di checkout:
                             </p>
 
                             <div className="flex flex-wrap items-center gap-3 pt-2">

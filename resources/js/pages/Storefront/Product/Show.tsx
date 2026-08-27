@@ -445,7 +445,6 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
                     currentProductId={product.id}
                     categoryId={product.categoryId}
                     categoryName={product.category?.name}
-                    onAddToCart={(p) => addToCart(p, 1)}
                 />
             </div>
         </StorefrontLayout>

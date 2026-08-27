@@ -11,7 +11,6 @@ import { useCart } from '@/context/CartContext';
 
 export default function ProductIndex() {
     const { url } = usePage();
-    const { addToCart } = useCart();
 
     // Parse initial query params from URL if present
     const queryParams = useMemo(() => {
@@ -77,10 +76,6 @@ export default function ProductIndex() {
             search: '',
         });
         setInStockOnly(false);
-    };
-
-    const handleAddToCart = (product: Product) => {
-        addToCart(product, 1);
     };
 
     return (
@@ -254,7 +249,6 @@ export default function ProductIndex() {
                                     <ProductCard
                                         key={product.id}
                                         product={product}
-                                        onAddToCart={handleAddToCart}
                                     />
                                 ))}
                             </div>

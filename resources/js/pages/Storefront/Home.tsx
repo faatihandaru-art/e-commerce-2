@@ -127,13 +127,13 @@ export default function Home() {
                         <div className="text-center max-w-2xl mx-auto mb-12">
                             <div className="inline-flex items-center gap-2 text-xs font-mono text-vgs-blue-electric font-semibold uppercase tracking-wider mb-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-vgs-blue-electric" />
-                                <span>Standar Laboratorium VGS</span>
+                                <span>Standart Laboratorium VGS</span>
                             </div>
                             <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-vgs-silver-bright tracking-tight">
                                 Kenapa Atlet Esports Memilih VGS?
                             </h2>
                             <p className="text-sm text-vgs-silver-mid mt-2">
-                                Kami menguji setiap sensor, switch, dan frame untuk memastikan kesiapan kompetitif tanpa cela.
+                              Karena kami memilih setiap sensor, switch, dan perfoma terbaik untuk memastikan kesiapan kompetitif tanpa celah.
                             </p>
                         </div>
 

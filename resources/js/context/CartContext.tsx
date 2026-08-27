@@ -41,21 +41,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'vgs_cart_items_v1';
 
-// Initial default items for previewing if storage is empty
-const INITIAL_DEFAULT_ITEMS: CartItem[] = [
-    {
-        id: 'cart-init-1',
-        productId: 'prod-gm-01',
-        variantId: 'var-gm-1',
-        quantity: 1,
-    },
-    {
-        id: 'cart-init-2',
-        productId: 'prod-mp-01',
-        variantId: undefined,
-        quantity: 1,
-    },
-];
+// Initial default items: empty by default
+const INITIAL_DEFAULT_ITEMS: CartItem[] = [];
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [items, setItems] = useState<CartItem[]>(() => {
