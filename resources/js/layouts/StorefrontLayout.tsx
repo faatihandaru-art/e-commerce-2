@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '@/components/storefront/Navbar';
 import Footer from '@/components/storefront/Footer';
 import CartDropdown from '@/components/cart/CartDropdown';
+import Toast from '@/components/ui/Toast';
 import { useCart } from '@/context/CartContext';
 
 export interface StorefrontLayoutProps {
@@ -9,7 +10,7 @@ export interface StorefrontLayoutProps {
 }
 
 export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
-    const { cartCount, isCartOpen, openCart, closeCart } = useCart();
+    const { cartCount, isCartOpen, openCart, closeCart, toast, hideToast } = useCart();
 
     return (
         <div className="min-h-screen bg-vgs-black-void text-vgs-silver-bright flex flex-col font-sans selection:bg-vgs-blue-electric selection:text-white antialiased">
@@ -24,6 +25,9 @@ export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) 
 
             {/* Cart Slide-in Drawer */}
             <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
+
+            {/* Global Toast Notification */}
+            <Toast toast={toast} onClose={hideToast} />
         </div>
     );
 };

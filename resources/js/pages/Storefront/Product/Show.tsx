@@ -40,9 +40,7 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
     // Active Tab state: 'description' | 'specifications' | 'reviews'
     const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
 
-    // Added to cart feedback toast
-    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
-
+    // Calculations
     const priceModifier = selectedVariant?.priceModifier || 0;
     const finalPrice = product.price + priceModifier;
     const compareAtPrice = product.compareAtPrice
@@ -58,8 +56,6 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
 
     const handleAddToCart = () => {
         addToCart(product, quantity, selectedVariant);
-        setShowSuccessNotification(true);
-        setTimeout(() => setShowSuccessNotification(false), 3000);
     };
 
     const handleBuyNow = () => {
@@ -107,23 +103,6 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
     return (
         <StorefrontLayout>
             <Head title={`${product.name} — Vortix Gaming Store`} />
-
-            {/* Added to Cart Floating Toast Notification */}
-            {showSuccessNotification && (
-                <div className="fixed bottom-6 right-6 z-50 bg-vgs-black-elevated border border-vgs-blue-electric text-vgs-silver-bright px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 duration-200">
-                    <div className="w-8 h-8 rounded-xl bg-vgs-success/20 text-vgs-success flex items-center justify-center shrink-0">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white">Berhasil Ditambahkan!</span>
-                        <span className="text-[11px] text-vgs-silver-mid font-mono truncate max-w-xs">
-                            {quantity}x {product.name}
-                        </span>
-                    </div>
-                </div>
-            )}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
                 {/* Breadcrumbs Navigation */}
