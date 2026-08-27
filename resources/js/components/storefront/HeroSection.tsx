@@ -82,7 +82,7 @@ PRODUK GAMING
                         <img
                             src="/images/products/logo..vgs2.png"
                             alt="VGS Logo"
-                            className="w-64 sm:w-80 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
+                            className=" drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
                         />
                     </div>
 
