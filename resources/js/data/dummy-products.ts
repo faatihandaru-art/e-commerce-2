@@ -138,9 +138,8 @@ export const products: Product[] = [
         price:2300000,
         compareAtPrice: 2800000,
         variants: [
-            { id: 'var-gm-1', name: 'Color', value: 'Matte Obsidian Black', priceModifier: 0, stock: 24 },
-            { id: 'var-gm-2', name: 'Color', value: 'Titanium Silver', priceModifier: 50000, stock: 12 },
-            { id: 'var-gm-3', name: 'Color', value: 'Arctic White', priceModifier: 0, stock: 8 },
+            { id: 'var-gm-1', name: 'Color', value: 'abu-abu slate (slate grey)', priceModifier: 0, stock: 24 },
+           
         ],
         specifications: {
             'Sensor': 'hyperX 26k 26.000 DPI',
@@ -256,7 +255,7 @@ export const products: Product[] = [
     },
     {
         id: 'prod-kb-02',
-        name: 'Ajazz AK820 MAX',
+        name: 'Ajazz AK820 MAX HE',
         slug: 'ajazz-ak820-max-magnetic',
         description: 'Keyboard magnetic 75% dengan 82 tombol, magnetic switch, rapid trigger, adjustable actuation, polling rate hingga 8000Hz, dan koneksi 3-mode.',
         categoryId: 2,
@@ -268,6 +267,7 @@ export const products: Product[] = [
         variants: [
             { id: 'var-kb-4', name: 'Color', value: 'FogSea PurpleSeaSalt', priceModifier: 0, stock: 10 },
             { id: 'var-kb-4', name: 'Color', value: 'V1-PRO-STARRY-FLYING', priceModifier: 0, stock: 10 },
+            { id: 'var-kb-4', name: 'Color', value: 'Blackbarry Pink', priceModifier: 0, stock: 10 },
         ],
         specifications: {
             'Switch': 'Magnetic Hall Effect Switch',

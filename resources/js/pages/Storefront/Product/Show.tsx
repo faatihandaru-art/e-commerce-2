@@ -330,29 +330,33 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
                                 <p className="text-lg text-vgs-silver-bright font-medium leading-relaxed">
                                     {product.description}
                                 </p>
-                                <div className="p-6 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border flex flex-col gap-3">
-                                    <h3 className="font-display font-bold text-base text-vgs-silver-bright uppercase tracking-wider">
-                                        Sorotan Fitur Utama Turnamen:
-                                    </h3>
-                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                        <li className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
-                                            <span>Ultra low-latency engineered untuk respons sekejap</span>
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
-                                            <span>Bahan material berdaya tahan tingkat turnamen esports</span>
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
-                                            <span>Desain ergonomis diuji oleh atlet game profesional</span>
-                                        </li>
-                                        <li className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
-                                            <span>Didukung software konfigurasi macro & profil VGS Synapse</span>
-                                        </li>
-                                    </ul>
-                                </div>
+                              <div className="p-6 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border flex flex-col gap-3">
+    <h3 className="font-display font-bold text-base text-vgs-silver-bright uppercase tracking-wider">
+        Sorotan Fitur Utama:
+    </h3>
+
+    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
+            <span>Respons cepat dengan teknologi low-latency</span>
+        </li>
+
+        <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
+            <span>Material berkualitas untuk penggunaan jangka panjang</span>
+        </li>
+
+        <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
+            <span>Desain ergonomis untuk kenyamanan saat bermain</span>
+        </li>
+
+        <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-vgs-blue-electric shrink-0" />
+            <span>Pengaturan dan konfigurasi yang fleksibel sesuai kebutuhan</span>
+        </li>
+    </ul>
+</div>
                             </div>
                         )}
 

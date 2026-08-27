@@ -123,18 +123,18 @@ export default function About() {
                         <div className="lg:col-span-5 relative">
                             <div className="relative rounded-3xl overflow-hidden border border-vgs-gray-border bg-vgs-black-surface shadow-2xl group">
                                 <img
-                                    src="https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=800&auto=format&fit=crop&q=80"
+                                    src='/images/products/logo_vortix_VGS.jpeg'
                                     alt="VGS Esports Testing Lab & Battlestation"
-                                    className="w-full h-80 sm:h-96 object-cover transition-transform duration-700 group-hover:scale-105"
+                                    className="w-full h-80 sm:h-96 object-contain transition-transform duration-700 group-hover:scale-105"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-vgs-black-void via-vgs-black-void/30 to-transparent" />
 
                                 <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-vgs-black-elevated/90 border border-vgs-gray-border backdrop-blur-md">
                                     <div className="text-xs font-mono text-vgs-blue-electric font-bold uppercase">
-                                        VGS HARDWARE TESTING LAB
+                                       VGS PERFORMANCE LAB
                                     </div>
                                     <div className="text-xs text-vgs-silver-mid mt-0.5">
-                                        Pengujian polling rate, switch debounce, dan akurasi sensor 24/7.
+                                        Precision tested. Built for competitive play.
                                     </div>
                                 </div>
                             </div>
