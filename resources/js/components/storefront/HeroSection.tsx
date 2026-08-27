@@ -38,7 +38,7 @@ export const HeroSection: React.FC = () => {
                         <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg py-2">
                             <div className="p-3 rounded-xl bg-vgs-black-surface/70 border border-vgs-gray-border">
                                 <div className="text-lg sm:text-xl font-bold font-mono text-vgs-blue-electric leading-none">
-                                   10+
+                                   27
 BRAND TERPERCAYA
                                 </div>
                             </div>
