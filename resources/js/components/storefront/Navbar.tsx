@@ -66,13 +66,11 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount = 0, onOpenCart, onOpe
                             href="/"
                             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric rounded-lg px-1 py-0.5"
                         >
-                            <div className="w-10 h-10 rounded-xl bg-vgs-black-surface border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-colors shadow-xs">
-                                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <polygon points="12 2, 21 7, 21 17, 12 22, 3 17, 3 7" stroke="#2B6FF6" strokeWidth="1.5" fill="#0A0A0C" />
-                                    <path d="M7 8L12 17L17 8" stroke="#E8E9ED" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M10 8L12 12L14 8" stroke="#2B6FF6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </div>
+                            <img
+                                src="/images/products/logo..vgs2.png"
+                                alt="VGS Logo"
+                                className="w-64 sm:w-13 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
+                            />
 
                             <div className="flex flex-col">
                                 <div className="flex items-center font-display font-extrabold text-2xl tracking-wider leading-none">
