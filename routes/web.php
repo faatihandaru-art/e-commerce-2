@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 // Storefront (Orang 1)
@@ -13,6 +14,7 @@ Route::get('/products/{slug}', fn ($slug) => Inertia::render('Storefront/Product
 Route::get('/cart', fn () => Inertia::render('Cart'))->name('cart');
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Customer\AddressController;
 
 Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
@@ -25,7 +27,14 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 // Account Pages (Protected)
 Route::middleware('auth')->prefix('account')->group(function () {
     Route::get('/profile', fn () => Inertia::render('Account/Profile'))->name('account.profile');
-    Route::get('/addresses', fn () => Inertia::render('Account/Addresses'))->name('account.addresses');
+
+    Route::get('/addresses', function () {
+        $addresses = Auth::user()->addresses()->latest()->get();
+        return Inertia::render('Account/Addresses', ['addresses' => $addresses]);
+    })->name('account.addresses');
+    Route::post('/addresses', [AddressController::class, 'store'])->name('account.addresses.store');
+    Route::delete('/addresses/{id}', [AddressController::class, 'destroy'])->name('account.addresses.destroy');
+
     Route::get('/status', fn () => Inertia::render('Account/Status'))->name('account.status');
     Route::get('/orders', fn () => Inertia::render('Account/Orders'))->name('account.orders');
 });
