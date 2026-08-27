@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-display font-black text-2xl tracking-wider text-vgs-silver-bright leading-none">
-                                    VORTIX <span className="text-vgs-blue-electric">GAMING</span> VORTIX
+                                    VORTIX <span className="text-vgs-blue-electric">GAMING</span> STORE
                                 </span>
                                 <span className="text-[10px] font-mono tracking-widest text-vgs-silver-muted uppercase mt-0.5">
                                     
