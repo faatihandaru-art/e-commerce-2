@@ -78,7 +78,7 @@ PRODUK GAMING
                     </div>
 
                     {/* Right Visual Showcase (Cols 8-12): VGS Logo */}
-                    <div className="lg:col-span-5 relative mt-6 lg:mt-0 flex justify-center">
+                    <div className="lg:col-span-4 relative mt-6 lg:mt-0 flex justify-center">
                         <img
                             src="/images/products/logo..vgs2.png"
                             alt="VGS Logo"
