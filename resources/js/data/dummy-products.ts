@@ -167,9 +167,11 @@ export const products: Product[] = [
             '/images/products/logitechGpro.jpg',
         ],
         price: 2110000,
-        compareAtPrice: 2550000,
+        compareAtPrice: null,
         variants: [
-            { id: 'var-gm-4', name: 'Color', value: 'Stealth Black', priceModifier: 0, stock: 30 },
+            { id: 'var-gm-1', name: 'Color', value: 'Logitech G PRO X Superlight 2 ', priceModifier: 0, stock: 30 },
+            { id: 'var-gm-2', name: 'Color', value: 'Logitech G PRO X Superlight 2 DEX', priceModifier: 340000, stock: 30 },
+            { id: 'var-gm-3', name: 'Color', value: 'Logitech G PRO X Superlight 2c (Compact)', priceModifier: 470000, stock: 30 },
         ],
         specifications: {
             'Sensor': 'HERO 2 44.000 DPI',
@@ -195,8 +197,13 @@ export const products: Product[] = [
         images: [
             '/images/products/razerv3pro.jpeg',
         ],
-        price: 3800000,
-        compareAtPrice: 4030000,
+        price:2990000,
+        compareAtPrice: null,
+        variants: [
+            { id: 'var-gm-1', name: 'Color', value: 'Black (Hitam)', priceModifier: 0, stock: 30 },
+            { id: 'var-gm-2', name: 'Color', value: 'White / Mercury (Putih)', priceModifier: 209000, stock: 12 },
+            { id: 'var-gm-3', name: 'Color', value: 'Logitech G PRO X Superlight 2c (Compact)', priceModifier: 450000, stock: 6},
+        ],
         specifications: {
             'Sensor': 'optik Focus Pro 35K Gen-2 35.000 DPI',
             'IPS / Akselerasi': '750 IPS / 70G',
@@ -428,8 +435,13 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/fifineAM8.jpg'
         ],
-        price: 1200000,
+        price: 950000,
         compareAtPrice: null,
+        variants: [
+            { id: 'var-hs-1', name: 'Color', value: 'Fifine AM8 Standar', priceModifier: 0, stock: 25 },
+            { id: 'var-hs-2', name: 'Color', value: 'Fifine AM8 Pro Stand Meja RGB', priceModifier: 390000, stock: 25 } ,
+            { id: 'var-hs-3', name: 'Color', value: 'Fifine AM8 Pro Paket Boom Arm', priceModifier: 340000, stock: 25 },
+        ],
         specifications: {
     'Tipe Mikrofon': 'Dynamic',
     'Pola Pickup': 'Cardioid',
@@ -619,15 +631,22 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
     // 7. Gaming Mousepad
     {
         id: 'prod-mp-01',
-        name: 'TALONGAMES SEN Soft Rubber Base Gaming Mousepad Artisan Zero Clone (Hybrid-Control)',
-        slug: 'vortix-glidex-pro-cordura-xl',
+        name: 'TALONGAMES SEN Soft Rubber Base Gaming Mousepad',
+        slug: 'TALONGAMES SEN',
         description: 'TALONGAMES SEN adalah mousepad gaming dengan permukaan Hybrid-Control yang dirancang untuk memberikan keseimbangan antara kecepatan gerakan mouse dan kontrol yang presisi. Dilengkapi soft rubber base untuk membantu menjaga mousepad tetap stabil di meja saat digunakan untuk gaming.',
         categoryId: 7,
         images: [
             '/images/products/mousepad.webp',
         ],
-        price: 159000,
+        price: 125000,
         compareAtPrice: 189000,
+         variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Raku/Raku SE Soft Rubber Base', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'sho Soft Rubber Base', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'sen Soft Rubber Base', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-4', name: 'Color', value: 'hong Soft Rubber Base', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-5', name: 'Color', value: 'shibu Soft Rubber Base', priceModifier: 60000, stock: 25 },
+        ],
         specifications: {
             'Dimensi': '490mm x 420mm x 4mm',
             'Permukaan': 'Fabric Smooth Surface',
@@ -650,8 +669,13 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/mousepad2.jpg',
         ],
-        price: 999000,
-        compareAtPrice: 1299000,
+        price: 945000 ,
+        compareAtPrice: 1150000,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Zero XL SOFT', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'Zero XL XSOFT', priceModifier: 160000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'Zero XL MID', priceModifier: 0, stock: 25 },
+        ],
         specifications: {
             'Dimensi': '490mm x 420mm x 4mm',
             'Permukaan': 'Balanced Textured Cloth Surface',
@@ -677,8 +701,16 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/chair1.avif',
         ],
-        price: 38000000,
-        compareAtPrice: null,
+        price: 10944000,
+        compareAtPrice: 43272000,
+         variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Herman Miller Verus', priceModifier: 10944000, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'Herman Miller Sayl', priceModifier: 4844000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'Herman Miller Mirra 2', priceModifier: 16392000, stock: 25 },
+            { id: 'var-tc-4', name: 'Color', value: 'Herman Miller Cosm High Back', priceModifier: 20460000, stock: 25 },
+            { id: 'var-tc-5', name: 'Color', value: 'Herman Miller Aeron', priceModifier: 25990000, stock: 25 },
+            { id: 'var-tc-6', name: 'Color', value: 'Herman Miller Embody', priceModifier: 32210000, stock: 25 },
+        ],
         specifications: {
             'Kapasitas Beban': 'Hingga 159 kg',
             'Material':'8Z Pellicle Suspension',
@@ -701,8 +733,13 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/chair2.webp',
         ],
-        price: 9000000,
-        compareAtPrice: null,
+        price: 7380000,
+        compareAtPrice: 9750000,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Secretlab TITAN Evo SoftWeave™ Plus (Regular)', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'Secretlab TITAN Evo NEO™ Hybrid Leatherette (Regular)', priceModifier: 870000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'Secretlab TITAN Evo Ukuran XL', priceModifier: 1990000, stock: 25 },
+        ],
         specifications: {
             'Material': 'Neo Hybrid Leatherette / SoftWeave Fabric',
             'Recline': 'Hingga 165°',
@@ -721,7 +758,7 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
     {
         id: 'prod-dk-01',
         name: 'Secretlab Magnus Pro',
-        slug: 'vortix-battlestation-standing-desk',
+        slug: 'secretlab Magnus Pro',
         description: 'Secretlab MAGNUS Pro adalah meja gaming sit-to-stand premium dengan konstruksi full-metal yang dilengkapi electric height adjustment, sistem cable management terintegrasi, serta integrated power supply column untuk membantu merapikan kabel dan perangkat di setup. Meja ini juga mendukung ekosistem aksesori magnetik Secretlab untuk personalisasi workspace.',
         categoryId: 9,
         images: [
@@ -730,8 +767,8 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         price: 21500000,
         compareAtPrice: 24000000,
         specifications: {
-            'Dimensi Daun Meja': '150cm x 70cm',
-            'Rentang Tinggi': '65cm - 125cm',
+            'Dimensi Daun Meja': '1500mm (L) x 700mm (W)',
+            'Rentang Tinggi': '650mm — 1250mm',
             'Kapasitas Beban': '120 kg',
             'Fitur Khusus': 'Integrated Power Supply Column & Cable Management Tray',
         },
@@ -746,19 +783,19 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
     {
         id: 'prod-dk-02',
         name: 'Thermaltake ToughDesk 500L RGB Battlestation',
-        slug: 'vortix-fortress-z-frame-desk',
+        slug: 'Thermaltake ToughDesk 500L RGB Battlestation',
         description: 'Thermaltake ToughDesk 500L RGB Battlestation adalah meja gaming berbentuk L dengan sistem electric height adjustment yang memungkinkan pengguna mengatur posisi meja dari duduk hingga berdiri. Meja ini dilengkapi full-surface RGB mouse pad pada meja utama, mouse pad non-RGB pada meja samping, sistem cable management, serta dukungan software iTAKE untuk mengatur pencahayaan RGB.',
         categoryId: 9,
         images: [
             '/images/products/gamingdesk2.jpg',
         ],
-        price: 24400000,
+        price: 3900000,
         compareAtPrice: null,
         specifications: {
             'Dimensi Daun Meja': '160cm x 80cm (Meja Utama) + 80cm x 60cm (Meja Samping)',
             'Rentang Tinggi': '70cm - 110cm',
             'Kapasitas Beban': '150 kg',
-            'Fitur Khusus': '3 Motor, Anti-Collision Sensor & Full-Surface RGB Mouse Pad',
+            'Fitur Khusus': '3 Motor, Anti-Collision Sensor, Main-Desk RGB Mouse Pad & Side-Desk Non-RGB Mouse Pad',
         },
         rating: 4.72,
         reviewCount: 41,
@@ -772,8 +809,8 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
     {
         id: 'prod-cp-01',
         name: 'Llano V12 ultra laptop Cooling Pad',
-        slug: 'vortix-blizzard-laptop-cooler',
-        description: 'llano V12 Ultra adalah cooling pad laptop gaming dengan 5,5-inch turbo fan hingga 2800 RPM, dilengkapi intelligent software control, RGB, dan 3 port USB 3.0. Software-nya menyediakan pengaturan otomatis berdasarkan beban laptop serta pilihan mode Low, Medium, dan High. V12 Ultra mendukung laptop 15,6 inci ke atas dan memiliki 3 tingkat pengaturan ketinggian.',
+        slug: 'Llona v12 ultra laptop cooling pad',
+        description: 'llano V12 Ultra adalah cooling pad laptop gaming dengan 5,5-inch turbo fan 2800 hingga 3500 RPM, dilengkapi intelligent software control, RGB, dan 3 port USB 3.0. Software-nya menyediakan pengaturan otomatis berdasarkan beban laptop serta pilihan mode Low, Medium, dan High. V12 Ultra mendukung laptop 15,6 inci ke atas dan memiliki 3 tingkat pengaturan ketinggian.',
         categoryId: 10,
         images: [
             '/images/products/coolingpad1.jpg',
@@ -801,14 +838,19 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
     {
         id: 'prod-cp-02',
         name: 'IETS GT500',
-        slug: 'vortix-frostflow-quiet-cooler',
+        slug: 'IETS GT500',
         description: 'IETS GT500 adalah laptop cooling pad berperforma tinggi yang dirancang untuk membantu menjaga suhu laptop gaming tetap optimal. Menggunakan turbo fan berkecepatan tinggi hingga 5000 RPM, sistem sealed foam duct untuk mengarahkan aliran udara langsung ke ventilasi laptop, serta kontrol kecepatan kipas yang dapat disesuaikan. Cocok untuk laptop gaming berukuran hingga 17,3 inci.',
         categoryId: 10,
         images: [
             '/images/products/coolingpad2.jpg'
         ],
-        price: 1800000,
-        compareAtPrice: 2000000,
+        price: 1850000,
+        compareAtPrice: 2700000,
+         variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'IETS GT500 B0 (Basic)', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'IETS GT500 V1 (Kipas Kencang + USB Hub)', priceModifier: 250000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'IETS GT500 V2 (Premium / Fitur Penuh)', priceModifier: 800000, stock: 25 },
+        ],
         specifications: {
             'Kecepatan Kipas': 'Hingga 4200-5000 RPM',
             'Kompatibilitas': 'Laptop 13 - 17.3 inci',
