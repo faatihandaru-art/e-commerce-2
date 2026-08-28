@@ -13,8 +13,10 @@ createInertiaApp({
         ) as Promise<ResolvedComponent>,
     setup({ el, App, props }) {
         if (!el) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const initialUser = (props as any)?.initialPage?.props?.auth?.user ?? null;
         createRoot(el).render(
-            <CartProvider>
+            <CartProvider initialUser={initialUser}>
                 <App {...props} />
             </CartProvider>
         );

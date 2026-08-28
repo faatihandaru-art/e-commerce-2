@@ -59,8 +59,10 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
     };
 
     const handleBuyNow = () => {
-        addToCart(product, quantity, selectedVariant);
-        router.visit('/cart');
+        const added = addToCart(product, quantity, selectedVariant);
+        if (added) {
+            router.visit('/cart');
+        }
     };
 
     // Dummy realistic gamer reviews

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { router } from '@inertiajs/react';
 import type { CartItem, Product, ProductVariant } from '@/types/product';
 import type { ToastData } from '@/components/ui/Toast';
 import { getProductById } from '@/data/dummy-products';
@@ -16,12 +17,16 @@ interface CartContextType {
     setIsCartOpen: (open: boolean) => void;
     openCart: () => void;
     closeCart: () => void;
+    isAuthenticated: boolean;
+    isLoginModalOpen: boolean;
+    openLoginModal: () => void;
+    closeLoginModal: () => void;
     addToCart: (
         product: Product,
         quantity?: number,
         variant?: ProductVariant | null,
         options?: AddToCartOptions
-    ) => void;
+    ) => boolean;
     updateQuantity: (
         productId: number | string,
         variantId: number | string | null | undefined,
@@ -44,7 +49,30 @@ const CART_STORAGE_KEY = 'vgs_cart_items_v1';
 // Initial default items: empty by default
 const INITIAL_DEFAULT_ITEMS: CartItem[] = [];
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export interface CartProviderProps {
+    children: React.ReactNode;
+    initialUser?: unknown;
+}
+
+export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUser }) => {
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => Boolean(initialUser));
+
+    // Pantau perubahan status login (misal setelah login / logout) lewat
+    // event navigasi Inertia, agar keranjang selalu konsisten dengan sesi.
+    useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const handler = (event: any) => {
+            const user = event?.detail?.page?.props?.auth?.user ?? null;
+            setIsAuthenticated(Boolean(user));
+        };
+        const offSuccess = router.on('success', handler);
+        const offError = router.on('error', handler);
+        return () => {
+            offSuccess();
+            offError();
+        };
+    }, []);
+
     const [items, setItems] = useState<CartItem[]>(() => {
         if (typeof window === 'undefined') return [];
         try {
@@ -60,7 +88,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [toast, setToast] = useState<ToastData | null>(null);
+
+    const openLoginModal = () => setIsLoginModalOpen(true);
+    const closeLoginModal = () => setIsLoginModalOpen(false);
+
+    // Keranjang hanya berlaku untuk pengguna yang sudah login.
+    // Ketika pengguna logout (auth kosong) atau tamu membuka halaman,
+    // keranjang dikosongkan agar tidak nyangkut di tampilan web.
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setItems([]);
+            try {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify([]));
+            } catch {
+                // ignore storage errors
+            }
+        }
+    }, [isAuthenticated]);
 
     const showToast = (toastData: Omit<ToastData, 'id'>) => {
         setToast({
@@ -113,7 +159,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: ProductVariant | null = null,
         options: AddToCartOptions = { openDrawer: false, showToast: true }
     ) => {
-        if (quantity <= 0) return;
+        if (quantity <= 0) return false;
+
+        // Tamu / pengguna yang belum login tidak boleh menambahkan produk.
+        // Munculkan popup login dan jangan menambahkan apa pun ke keranjang.
+        if (!isAuthenticated) {
+            openLoginModal();
+            return false;
+        }
+
         const variantId = variant?.id || undefined;
 
         setItems((prev) => {
@@ -168,6 +222,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (options.openDrawer) {
             setIsCartOpen(true);
         }
+
+        return true;
     };
 
     const updateQuantity = (
@@ -234,6 +290,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setIsCartOpen,
                 openCart,
                 closeCart,
+                isAuthenticated,
+                isLoginModalOpen,
+                openLoginModal,
+                closeLoginModal,
                 addToCart,
                 updateQuantity,
                 removeFromCart,
@@ -256,7 +316,11 @@ const fallbackCartContext: CartContextType = {
     setIsCartOpen: () => {},
     openCart: () => {},
     closeCart: () => {},
-    addToCart: () => {},
+    isAuthenticated: false,
+    isLoginModalOpen: false,
+    openLoginModal: () => {},
+    closeLoginModal: () => {},
+    addToCart: () => false,
     updateQuantity: () => {},
     removeFromCart: () => {},
     clearCart: () => {},
