@@ -128,12 +128,14 @@ export const ProductVariantModal: React.FC<ProductVariantModalProps> = ({
 
     const handleBuyNowAction = () => {
         if (isOutOfStock) return;
-        addToCart(product, quantity, selectedVariant);
-        if (onSuccess) {
+        const added = addToCart(product, quantity, selectedVariant);
+        if (onSuccess && added) {
             onSuccess(selectedVariant, quantity, 'buy');
         }
         onClose();
-        router.visit('/cart');
+        if (added) {
+            router.visit('/cart');
+        }
     };
 
     return createPortal(

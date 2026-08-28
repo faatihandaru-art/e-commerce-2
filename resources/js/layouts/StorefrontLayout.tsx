@@ -3,6 +3,7 @@ import Navbar from '@/components/storefront/Navbar';
 import Footer from '@/components/storefront/Footer';
 import CartDropdown from '@/components/cart/CartDropdown';
 import Toast from '@/components/ui/Toast';
+import LoginModal from '@/components/auth/LoginModal';
 import { useCart } from '@/context/CartContext';
 
 export interface StorefrontLayoutProps {
@@ -10,7 +11,17 @@ export interface StorefrontLayoutProps {
 }
 
 export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) => {
-    const { cartCount, isCartOpen, openCart, closeCart, toast, hideToast } = useCart();
+    const {
+        cartCount,
+        isCartOpen,
+        openCart,
+        closeCart,
+        toast,
+        hideToast,
+        isLoginModalOpen,
+        closeLoginModal,
+        openLoginModal,
+    } = useCart();
     const [showGoTop, setShowGoTop] = useState(false);
 
     useEffect(() => {
@@ -24,7 +35,11 @@ export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) 
     return (
         <div className="min-h-screen bg-vgs-black-void text-vgs-silver-bright flex flex-col font-sans selection:bg-vgs-blue-electric selection:text-white antialiased">
             {/* Sticky Top Navigation */}
-            <Navbar cartCount={cartCount} onOpenCart={openCart} />
+            <Navbar
+                cartCount={cartCount}
+                onOpenCart={openCart}
+                onOpenLogin={openLoginModal}
+            />
 
             {/* Main Content */}
             <main className="flex-1 w-full">{children}</main>
@@ -51,6 +66,12 @@ export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) 
 
             {/* Global Toast Notification */}
             <Toast toast={toast} onClose={hideToast} />
+
+            {/* Global Login Popup (untuk tamu yang ingin menambahkan ke keranjang) */}
+            <LoginModal
+                isOpen={isLoginModalOpen}
+                onClose={closeLoginModal}
+            />
         </div>
     );
 };
