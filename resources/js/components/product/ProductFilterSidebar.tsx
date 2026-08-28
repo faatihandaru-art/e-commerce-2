@@ -210,7 +210,8 @@ export const ProductFilterSidebar: React.FC<ProductFilterSidebarProps> = ({
         <>
             {/* Desktop Fixed Sidebar */}
             <aside
-                className={`hidden lg:block w-72 shrink-0 bg-vgs-black-surface/50 border border-vgs-gray-border rounded-2xl p-5 backdrop-blur-sm self-start sticky top-28 ${className}`}
+                className={`hidden lg:block w-72 shrink-0 bg-vgs-black-surface/50 border border-vgs-gray-border rounded-2xl p-5 backdrop-blur-sm self-start sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-vgs-gray-border ${className}`}
+                onWheel={(e) => e.stopPropagation()}
                 aria-label="Panel filter produk"
             >
                 {sidebarContent}

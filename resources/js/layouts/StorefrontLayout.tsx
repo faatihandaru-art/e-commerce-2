@@ -37,7 +37,7 @@ export const StorefrontLayout: React.FC<StorefrontLayoutProps> = ({ children }) 
                 <button
                     type="button"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-xl bg-vgs-blue-electric text-white shadow-lg shadow-vgs-blue-electric/30 flex items-center justify-center hover:bg-vgs-blue-deep transition-all cursor-pointer"
+                    className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-xl bg-vgs-blue-electric text-white shadow-lg /30 flex items-center justify-center hover:bg-vgs-blue-deep transition-all cursor-pointer"
                     aria-label="Kembali ke atas"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
