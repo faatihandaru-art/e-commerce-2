@@ -778,10 +778,15 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/coolingpad1.jpg',
         ],
-        price: 1279000,
-        compareAtPrice: null,
+        price: 1870000,
+        compareAtPrice: 2250000,
+         variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Llano V12 Ultra', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'Llano V12 Standar', priceModifier: -550000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'Llano V10', priceModifier: -950000, stock: 25 },
+        ],
         specifications: {
-            'Kecepatan Kipas': 'Hingga 2800 RPM',
+            'Kecepatan Kipas': 'Hingga 2800 - 3500 RPM',
             'Ukuran Kipas': '5.5-inch Turbo Fan',
             'Kompatibilitas': 'Laptop 15.6 - 21 inci',
             'Konektivitas': '3 × USB 3.0',
@@ -828,8 +833,13 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/usbhub1.jpg'
         ],
-        price: 169000,
+        price: 135000,
         compareAtPrice: 199000,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'UGREEN USB Hub 3.0 4-Port (Standar)', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'UGREEN USB 3.0 Hub dengan Port Daya Eksternal', priceModifier: 15000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'UGREEN USB Hub Type-C to USB 3.0 4-Port', priceModifier: 94000, stock: 25 },
+        ],
         specifications: {
             'Jumlah Port': '4 x USB 3.0',
             'Kecepatan Transfer': 'Hingga 5Gbps',
@@ -853,8 +863,13 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/usbhub2.webp',
         ],
-        price: 149000,
-        compareAtPrice: 165000,
+        price: 139000,
+        compareAtPrice: 149000,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Anker Ultra Slim (A7516) USB-A (Standar)', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'Anker Portable Aluminum (A8305) USB-C', priceModifier: 165000, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'Anker Portable Aluminum (A7507) USB-A', priceModifier: 130000, stock: 25 },
+        ],
         specifications: {
             'Jumlah Port': '4 x USB-A 3.0',
             'Kecepatan Transfer': 'Hingga 5Gbps',
@@ -880,8 +895,14 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/display1.webp',
         ],
-        price: 370000,
+        price: 1200000,
         compareAtPrice: null,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'Silkland DisplayPort 2.1 VESA Certified', priceModifier: 88600, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'Silkland DisplayPort 2.1 DP80 (8K/16K)', priceModifier: 489600, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'Silkland DisplayPort 2.1 Versi Panjang (5 Meter / 16.5Ft)', priceModifier: 780000, stock: 25 },
+            { id: 'var-tc-4', name: 'Color', value: 'Silkland DisplayPort 2.1 Seri Premium', priceModifier: 1125000, stock: 25 },
+        ],
         specifications: {
             'Bandwidth': '80Gbps',
             'Standar': 'DisplayPort 2.1 (UHBR20)',
@@ -905,8 +926,14 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         images: [
             '/images/products/display2.jpg',
         ],
-        price: 240000,
+        price: 185000,
         compareAtPrice: null,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: '3 Feet (0,9 Meter)', priceModifier: 0, stock: 32 },
+            { id: 'var-tc-2', name: 'Color', value: '6.6 Feet (2 Meter)', priceModifier: 30000, stock: 27 },
+            { id: 'var-tc-3', name: 'Color', value: '10 Feet (3 Meter)', priceModifier: 92000, stock: 30 },
+            { id: 'var-tc-4', name: 'Color', value: '15 Feet (4,5 Meter)', priceModifier: 153000, stock: 39},
+        ],
         specifications: {
            'Bandwidth': '32.4Gbps',
             'Standar': 'DisplayPort 1.4 (HBR3)',
@@ -935,8 +962,8 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         price: 122000,
         compareAtPrice: null,
         variants: [
-            { id: 'var-tc-1', name: 'Color', value: 'Vortix Electric Blue & Black', priceModifier: 0, stock: 35 },
-            { id: 'var-tc-2', name: 'Color', value: 'All Stealth Black', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-1', name: 'Color', value: '1 meter', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: '2 meter', priceModifier: 10500, stock: 25 },
         ],
         specifications: {
             'Power Delivery': 'Hingga 240W (48V/5A), PD 3.1',
@@ -990,6 +1017,12 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         ],
         price: 369000,
         compareAtPrice: 459000,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'black', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'blue navy', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'beige', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-4', name: 'Color', value: 'pink', priceModifier: 0, stock: 25 },
+        ],
         specifications: {
     'Material': 'Premium Synthetic Leather',
     'Tipe': 'Desk Mat / Extended Mouse Pad',
@@ -1018,6 +1051,12 @@ description: 'Headset gaming nirkabel lossless 2.4GHz dengan driver Titanium 50m
         ],
         price: 229000,
         compareAtPrice: null,
+        variants: [
+            { id: 'var-tc-1', name: 'Color', value: 'green', priceModifier: 0, stock: 35 },
+            { id: 'var-tc-2', name: 'Color', value: 'blue', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-3', name: 'Color', value: 'white', priceModifier: 0, stock: 25 },
+            { id: 'var-tc-4', name: 'Color', value: 'black', priceModifier: 0, stock: 25 },
+        ],
         specifications: {
     'Material': 'PVC / Synthetic Leather',
     'Tipe': 'Gaming Deskmat',
