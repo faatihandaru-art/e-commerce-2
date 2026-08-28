@@ -13,6 +13,7 @@ Route::get('/about', fn () => Inertia::render('Storefront/About'))->name('about'
 Route::get('/products', fn () => Inertia::render('Storefront/Product/Index'))->name('products.index');
 Route::get('/products/{slug}', fn ($slug) => Inertia::render('Storefront/Product/Show', ['slug' => $slug]))->name('products.show');
 Route::get('/cart', fn () => Inertia::render('Cart'))->name('cart');
+Route::get('/checkout', fn () => Inertia::render('Checkout'))->name('checkout');
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\AddressController;

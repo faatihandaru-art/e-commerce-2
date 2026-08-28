@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from '@inertiajs/react';
-import { useCart } from '@/context/CartContext';
+import { Link, router } from '@inertiajs/react';
+import { useCart, getCartItemKey } from '@/context/CartContext';
 import CartItem from './CartItem';
 import CartSummary from './CartSummary';
 import Button from '@/components/ui/Button';
@@ -11,7 +11,16 @@ export interface CartDropdownProps {
 }
 
 export const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose }) => {
-    const { items, cartCount, cartSubtotal, updateQuantity, removeFromCart } = useCart();
+    const {
+        items,
+        cartCount,
+        selectedItems,
+        isAllSelected,
+        setSelectAll,
+        toggleSelect,
+        updateQuantity,
+        removeFromCart,
+    } = useCart();
     const panelRef = useRef<HTMLDivElement>(null);
 
     // Close on escape key
@@ -98,9 +107,14 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose }) =
                         ) : (
                             items.map((item) => (
                                 <CartItem
-                                    key={`${item.productId}-${item.variantId || 'default'}`}
+                                    key={getCartItemKey(item)}
                                     item={item}
                                     compact
+                                    selectable
+                                    selected={selectedItems.some(
+                                        (s) => getCartItemKey(s) === getCartItemKey(item)
+                                    )}
+                                    onToggleSelect={() => toggleSelect(item)}
                                     onUpdateQuantity={(qty) =>
                                         updateQuantity(item.productId, item.variantId, qty)
                                     }
@@ -115,11 +129,48 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose }) =
                     {/* Footer Summary */}
                     {items.length > 0 && (
                         <div className="border-t border-vgs-gray-border p-4 sm:p-6 bg-vgs-black-surface">
+                            <div className="flex items-center justify-between pb-3">
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <button
+                                        type="button"
+                                        role="checkbox"
+                                        aria-checked={isAllSelected}
+                                        onClick={() => setSelectAll(!isAllSelected)}
+                                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer ${
+                                            isAllSelected
+                                                ? 'bg-vgs-blue-electric border-vgs-blue-electric text-white'
+                                                : 'border-vgs-gray-border text-transparent hover:border-vgs-silver-mid'
+                                        }`}
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <span className="text-xs font-mono text-vgs-silver-mid">
+                                        Pilih Semua
+                                    </span>
+                                </label>
+
+                                <span className="text-xs font-mono text-vgs-silver-mid">
+                                    {selectedItems.length} / {items.length} dipilih
+                                </span>
+                            </div>
+
                             <CartSummary
-                                subtotal={cartSubtotal}
+                                subtotal={selectedItems.reduce(
+                                    (acc, i) =>
+                                        acc +
+                                        (i.product ? i.product.price + (i.variant?.priceModifier || 0) : 0) *
+                                            i.quantity,
+                                    0
+                                )}
                                 showPromoInput={false}
                                 showViewCartButton={true}
                                 onViewCart={onClose}
+                                onCheckout={() => {
+                                    onClose();
+                                    router.visit('/checkout');
+                                }}
                             />
                         </div>
                     )}

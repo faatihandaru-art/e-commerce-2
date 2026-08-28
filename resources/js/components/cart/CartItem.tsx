@@ -9,6 +9,9 @@ export interface CartItemProps {
     onUpdateQuantity: (quantity: number) => void;
     onRemove: () => void;
     compact?: boolean;
+    selectable?: boolean;
+    selected?: boolean;
+    onToggleSelect?: () => void;
     className?: string;
 }
 
@@ -17,6 +20,9 @@ export const CartItem: React.FC<CartItemProps> = ({
     onUpdateQuantity,
     onRemove,
     compact = false,
+    selectable = false,
+    selected = false,
+    onToggleSelect,
     className = '',
 }) => {
     const product = item.product;
@@ -41,6 +47,28 @@ export const CartItem: React.FC<CartItemProps> = ({
                 compact ? 'p-3' : 'p-4 sm:p-5'
             } ${className}`}
         >
+            {/* Selection Checkbox */}
+            {selectable && (
+                <div className="flex items-center shrink-0 pt-1">
+                    <button
+                        type="button"
+                        onClick={onToggleSelect}
+                        role="checkbox"
+                        aria-checked={selected}
+                        aria-label={`Pilih ${product.name}`}
+                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer ${
+                            selected
+                                ? 'bg-vgs-blue-electric border-vgs-blue-electric text-white'
+                                : 'border-vgs-gray-border text-transparent hover:border-vgs-silver-mid'
+                        }`}
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                </div>
+            )}
+
             {/* Product Thumbnail */}
             <Link
                 href={`/products/${product.slug || product.id}`}

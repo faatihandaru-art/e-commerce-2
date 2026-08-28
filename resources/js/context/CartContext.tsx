@@ -8,10 +8,20 @@ export interface AddToCartOptions {
     showToast?: boolean;
 }
 
+export const getCartItemKey = (item: Pick<CartItem, 'productId' | 'variantId'>) =>
+    `${item.productId}-${item.variantId || 'default'}`;
+
 interface CartContextType {
     items: CartItem[];
     cartCount: number;
     cartSubtotal: number;
+    selectedKeys: string[];
+    selectedItems: CartItem[];
+    selectedCount: number;
+    selectedSubtotal: number;
+    isAllSelected: boolean;
+    toggleSelect: (item: CartItem) => void;
+    setSelectAll: (selected: boolean) => void;
     isCartOpen: boolean;
     setIsCartOpen: (open: boolean) => void;
     openCart: () => void;
@@ -37,6 +47,11 @@ interface CartContextType {
     hideToast: () => void;
 }
 
+const itemUnitPrice = (item: CartItem) => {
+    if (!item.product) return 0;
+    return item.product.price + (item.variant?.priceModifier || 0);
+};
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'vgs_cart_items_v1';
@@ -61,6 +76,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [toast, setToast] = useState<ToastData | null>(null);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return [];
+        try {
+            const saved = localStorage.getItem('vgs_cart_selected_v1');
+            if (saved) return JSON.parse(saved) as string[];
+        } catch {
+            // ignore
+        }
+        return [];
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem('vgs_cart_selected_v1', JSON.stringify(selectedKeys));
+        } catch {
+            // ignore
+        }
+    }, [selectedKeys]);
 
     const showToast = (toastData: Omit<ToastData, 'id'>) => {
         setToast({
@@ -219,7 +252,32 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const clearCart = () => {
         setItems([]);
+        setSelectedKeys([]);
     };
+
+    const toggleSelect = (item: CartItem) => {
+        const key = getCartItemKey(item);
+        setSelectedKeys((prev) =>
+            prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+        );
+    };
+
+    const setSelectAll = (selected: boolean) => {
+        setSelectedKeys(selected ? hydratedItems.map((i) => getCartItemKey(i)) : []);
+    };
+
+    const selectedItems = hydratedItems.filter((i) =>
+        selectedKeys.includes(getCartItemKey(i))
+    );
+
+    const selectedCount = selectedItems.reduce((acc, item) => acc + item.quantity, 0);
+
+    const selectedSubtotal = selectedItems.reduce(
+        (acc, item) => acc + itemUnitPrice(item) * item.quantity,
+        0
+    );
+
+    const isAllSelected = hydratedItems.length > 0 && selectedKeys.length === hydratedItems.length;
 
     const openCart = () => setIsCartOpen(true);
     const closeCart = () => setIsCartOpen(false);
@@ -230,6 +288,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 items: hydratedItems,
                 cartCount,
                 cartSubtotal,
+                selectedKeys,
+                selectedItems,
+                selectedCount,
+                selectedSubtotal,
+                isAllSelected,
+                toggleSelect,
+                setSelectAll,
                 isCartOpen,
                 setIsCartOpen,
                 openCart,
@@ -252,6 +317,13 @@ const fallbackCartContext: CartContextType = {
     items: [],
     cartCount: 0,
     cartSubtotal: 0,
+    selectedKeys: [],
+    selectedItems: [],
+    selectedCount: 0,
+    selectedSubtotal: 0,
+    isAllSelected: false,
+    toggleSelect: () => {},
+    setSelectAll: () => {},
     isCartOpen: false,
     setIsCartOpen: () => {},
     openCart: () => {},

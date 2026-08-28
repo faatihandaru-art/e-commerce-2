@@ -1,13 +1,31 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import CartItem from '@/components/cart/CartItem';
 import CartSummary from '@/components/cart/CartSummary';
 import Button from '@/components/ui/Button';
-import { useCart } from '@/context/CartContext';
+import { useCart, getCartItemKey } from '@/context/CartContext';
 
 export default function Cart() {
-    const { items, cartCount, cartSubtotal, updateQuantity, removeFromCart, clearCart } = useCart();
+    const {
+        items,
+        cartCount,
+        selectedItems,
+        selectedSubtotal,
+        isAllSelected,
+        setSelectAll,
+        toggleSelect,
+        updateQuantity,
+        removeFromCart,
+        clearCart,
+    } = useCart();
+
+    const handleCheckout = () => {
+        if (selectedItems.length === 0) return;
+        router.visit('/checkout');
+    };
+
+    const hasSelection = selectedItems.length > 0;
 
     return (
         <StorefrontLayout>
@@ -36,6 +54,28 @@ export default function Cart() {
 
                     {items.length > 0 && (
                         <div className="flex items-center gap-4">
+                            {/* Select All Checkbox */}
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <button
+                                    type="button"
+                                    role="checkbox"
+                                    aria-checked={isAllSelected}
+                                    onClick={() => setSelectAll(!isAllSelected)}
+                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer ${
+                                        isAllSelected
+                                            ? 'bg-vgs-blue-electric border-vgs-blue-electric text-white'
+                                            : 'border-vgs-gray-border text-transparent hover:border-vgs-silver-mid'
+                                    }`}
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                                <span className="text-xs font-mono text-vgs-silver-mid">
+                                    {isAllSelected ? 'Semua Terpilih' : 'Pilih Semua'}
+                                </span>
+                            </label>
+
                             <span className="text-xs font-mono text-vgs-silver-mid">
                                 Total: <span className="text-vgs-blue-electric font-bold">{cartCount}</span> item
                             </span>
@@ -57,8 +97,13 @@ export default function Cart() {
                         <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4">
                             {items.map((item) => (
                                 <CartItem
-                                    key={`${item.productId}-${item.variantId || 'default'}`}
+                                    key={getCartItemKey(item)}
                                     item={item}
+                                    selectable
+                                    selected={selectedItems.some(
+                                        (s) => getCartItemKey(s) === getCartItemKey(item)
+                                    )}
+                                    onToggleSelect={() => toggleSelect(item)}
                                     onUpdateQuantity={(qty) =>
                                         updateQuantity(item.productId, item.variantId, qty)
                                     }
@@ -84,11 +129,38 @@ export default function Cart() {
 
                         {/* Right Column: Sticky Cart Summary */}
                         <div className="lg:col-span-5 xl:col-span-4 sticky top-28">
+                            <div className="flex flex-col gap-3 mb-3">
+                                <div className="rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border p-4">
+                                    <p className="text-xs font-mono text-vgs-silver-muted mb-1">
+                                        PRODUK TERPILIH
+                                    </p>
+                                    <p className="font-display font-bold text-vgs-silver-bright text-lg">
+                                        {hasSelection ? (
+                                            <>
+                                                {selectedItems.length} dari {items.length} produk dipilih
+                                                <span className="block text-sm font-mono text-vgs-blue-electric mt-0.5">
+                                                    ({selectedItems.reduce((a, i) => a + i.quantity, 0)} item)
+                                                </span>
+                                            </>
+                                        ) : (
+                                            'Belum ada produk dipilih'
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
                             <CartSummary
-                                subtotal={cartSubtotal}
+                                subtotal={selectedSubtotal}
                                 showPromoInput={true}
                                 showViewCartButton={false}
+                                onCheckout={handleCheckout}
                             />
+
+                            {!hasSelection && items.length > 0 && (
+                                <p className="text-xs text-vgs-silver-muted text-center mt-3">
+                                    Centang produk yang ingin di-checkout terlebih dahulu.
+                                </p>
+                            )}
                         </div>
                     </div>
                 ) : (
