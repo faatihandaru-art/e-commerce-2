@@ -13,15 +13,7 @@ class HandleInertiaRequests
     {
         Inertia::share([
             'auth' => [
-                'user' => fn () => $request->user()
-                    ? [
-                        'id' => $request->user()->id,
-                        'name' => $request->user()->name,
-                        'email' => $request->user()->email,
-                        'phone' => $request->user()->phone ?? null,
-                        'status' => $request->user()->status ?? 'active',
-                    ]
-                    : null,
+                'user' => fn () => $request->user()?->load('roles'),
             ],
             'flash' => fn () => [
                 'success' => $request->session()->get('success'),

@@ -26,6 +26,13 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
+        // Seed Roles, Permissions, and Initial Admin User
+        $this->call([
+            RoleSeeder::class,
+            PermissionSeeder::class,
+            AdminUserSeeder::class,
+        ]);
+
         // Seed product options
         $this->call(ProductOptionSeeder::class);
 

@@ -49,3 +49,8 @@ Route::middleware('auth')->prefix('account')->group(function () {
     Route::get('/status', fn () => Inertia::render('Account/Status'))->name('account.status');
     Route::get('/orders', [OrdersController::class, 'index'])->name('account.orders');
 });
+
+// Admin Routes (Protected by auth + staff middleware)
+Route::middleware(['auth', 'staff'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', fn () => Inertia::render('Admin/Dashboard'))->name('dashboard');
+});

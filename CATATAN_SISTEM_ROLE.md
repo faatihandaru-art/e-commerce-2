@@ -1,205 +1,171 @@
-# CATATAN SISTEM ROLE & LAYOUT ADMIN VGS
+# CATATAN SISTEM ROLE & AKSES (BACKEND & FRONTEND) VGS
 
-Dokumen ini adalah sumber kebenaran teknis bersama untuk sistem role dan layout admin **Vortix Gaming Store (VGS)**.
-
----
-
-## Frontend: Layout Admin
-
-Bagian ini mendokumentasikan kerangka layout admin (wadah navigasi dan header) yang siap dipakai oleh halaman Dashboard (`Admin/Dashboard.tsx`) maupun modul admin lainnya di masa mendatang.
+Dokumen ini adalah sumber kebenaran teknis bersama untuk sistem **Role & Akses Staf vs Customer** serta **Integrasi Frontend Admin** toko online **Vortix Gaming Store (VGS)**.
 
 ---
 
-### 1. Daftar File yang Dibuat
+## 🚀 BACKEND IMPLEMENTATION: SISTEM ROLE & OTORISASI
 
-| Path File | Fungsi & Peran |
-|---|---|
-| [`resources/js/layouts/AdminLayout.tsx`](file:///C:/Users/asus/Herd/e-commerce-2/resources/js/layouts/AdminLayout.tsx) | **Wadah Layout Utama Admin.** Menggabungkan `<Sidebar />` di sisi kiri dan area konten di kanan dengan `<Header />` di bagian atas serta `{children}` di bawahnya. Mengatur perilaku responsif (drawer mobile + backdrop overlay). |
-| [`resources/js/components/admin/Sidebar.tsx`](file:///C:/Users/asus/Herd/e-commerce-2/resources/js/components/admin/Sidebar.tsx) | **Sidebar Navigasi Admin.** Berisi logo VGS Admin, badge identitas admin panel, daftar menu navigasi yang dikelompokkan sesuai modul (Utama, Katalog & Inventaris, Transaksi, Pemasaran, Sistem), penanda halaman aktif, info ringkas staf yang sedang login, shortcut ke storefront, dan tombol Logout. |
-| [`resources/js/components/admin/Header.tsx`](file:///C:/Users/asus/Herd/e-commerce-2/resources/js/components/admin/Header.tsx) | **Header Atas Admin.** Menampilkan tombol hamburger mobile/tablet, judul halaman (`title`), subtitle opsional, tombol langsung ke storefront (`Lihat Toko`), ikon notifikasi, dan avatar profil staf. |
-| [`resources/js/types/admin.ts`](file:///C:/Users/asus/Herd/e-commerce-2/resources/js/types/admin.ts) | **Definisi Type TypeScript.** Menyediakan interface `Role`, `AdminUser`, `AdminPageProps`, `AdminNavItem`, dan `AdminNavGroup`. |
+### 1. Daftar File yang Dibuat & Diubah
 
----
-
-### 2. Spesifikasi Props Komponen
-
-#### A. `AdminLayout` (`resources/js/layouts/AdminLayout.tsx`)
-Komponen wrapper untuk seluruh halaman admin.
-
-| Prop | Tipe | Default | Penjelasan |
-|---|---|---|---|
-| `children` | `React.ReactNode` | *(Wajib)* | Konten spesifik halaman admin (misal: isi dashboard, tabel produk, dsb). |
-| `title` | `string` | `'Dashboard'` | Judul halaman yang akan diteruskan otomatis ke `<Header />` dan ditampilkan di bagian atas. |
-| `subtitle` | `string` | `undefined` | Subtitle atau deskripsi kecil di bawah judul halaman pada header. |
-
----
-
-#### B. `Header` (`resources/js/components/admin/Header.tsx`)
-Komponen header atas di area konten. *(Sudah terintegrasi otomatis di dalam `AdminLayout`, namun dapat dipakai terpisah jika dibutuhkan)*.
-
-| Prop | Tipe | Default | Penjelasan |
-|---|---|---|---|
-| `title` | `string` | `'Dashboard'` | Judul halaman yang aktif. |
-| `subtitle` | `string` | `undefined` | Teks keterangan atau breadcrumb kecil di bawah judul. |
-| `onToggleSidebar` | `() => void` | `undefined` | Callback untuk membuka/menutup drawer sidebar pada layar mobile & tablet. |
-| `isSidebarOpen` | `boolean` | `false` | Status apakah drawer sidebar sedang terbuka di mobile. |
+| File Path | Status | Penjelasan Fungsi & Tanggung Jawab |
+|---|---|---|
+| [`database/migrations/2026_08_31_030712_create_roles_table.php`](file:///C:/Users/user/Herd/e-commerce-2/database/migrations/2026_08_31_030712_create_roles_table.php) | Ditambahkan | Migration tabel `roles` (`id`, `name`, `slug` unique, `timestamps`). |
+| [`database/migrations/2026_08_31_030712_create_permissions_table.php`](file:///C:/Users/user/Herd/e-commerce-2/database/migrations/2026_08_31_030712_create_permissions_table.php) | Ditambahkan | Migration tabel `permissions` (`id`, `name`, `slug` unique, `timestamps`). |
+| [`database/migrations/2026_08_31_030712_create_role_user_table.php`](file:///C:/Users/user/Herd/e-commerce-2/database/migrations/2026_08_31_030712_create_role_user_table.php) | Ditambahkan | Migration tabel pivot `role_user` (relasi Many-to-Many User & Role). |
+| [`database/migrations/2026_08_31_030712_create_permission_role_table.php`](file:///C:/Users/user/Herd/e-commerce-2/database/migrations/2026_08_31_030712_create_permission_role_table.php) | Ditambahkan | Migration tabel pivot `permission_role` (relasi Many-to-Many Permission & Role). |
+| [`database/migrations/2026_08_31_030715_add_foreign_keys_to_role_user_table.php`](file:///C:/Users/user/Herd/e-commerce-2/database/migrations/2026_08_31_030715_add_foreign_keys_to_role_user_table.php) | Ditambahkan | Definisi foreign key & cascade delete untuk `role_user`. |
+| [`database/migrations/2026_08_31_030715_add_foreign_keys_to_permission_role_table.php`](file:///C:/Users/user/Herd/e-commerce-2/database/migrations/2026_08_31_030715_add_foreign_keys_to_permission_role_table.php) | Ditambahkan | Definisi foreign key & cascade delete untuk `permission_role`. |
+| [`app/Models/Role.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Models/Role.php) | Diperbarui | Model Eloquent Role dengan relasi `users()` dan `permissions()`. |
+| [`app/Models/Permission.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Models/Permission.php) | Dibuat | Model Eloquent Permission dengan relasi `roles()`. |
+| [`app/Models/User.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Models/User.php) | Diperbarui | Model Eloquent User dengan relasi `roles()` serta helper `hasRole()`, `isStaff()`, dan `isCustomer()`. |
+| [`database/seeders/RoleSeeder.php`](file:///C:/Users/user/Herd/e-commerce-2/database/seeders/RoleSeeder.php) | Dibuat | Seeder untuk menginisialisasi 8 role standar toko VGS. |
+| [`database/seeders/PermissionSeeder.php`](file:///C:/Users/user/Herd/e-commerce-2/database/seeders/PermissionSeeder.php) | Dibuat | Seeder untuk menginisialisasi 7 permission hak akses sistem. |
+| [`database/seeders/AdminUserSeeder.php`](file:///C:/Users/user/Herd/e-commerce-2/database/seeders/AdminUserSeeder.php) | Dibuat | Seeder pembuatan akun `super_admin` pertama dengan password acak aman yang ditampilkan di terminal CLI. |
+| [`database/seeders/DatabaseSeeder.php`](file:///C:/Users/user/Herd/e-commerce-2/database/seeders/DatabaseSeeder.php) | Diperbarui | Menjadwalkan `RoleSeeder`, `PermissionSeeder`, dan `AdminUserSeeder`. |
+| [`app/Domain/Customer/Actions/RegisterCustomerAction.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Domain/Customer/Actions/RegisterCustomerAction.php) | Diperbarui | Hardcode penguncian assign role `customer` saat pendaftaran akun publik di sisi server. |
+| [`app/Http/Middleware/EnsureUserIsStaff.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Http/Middleware/EnsureUserIsStaff.php) | Dibuat | Middleware server-level untuk memeriksa `isStaff()` dan melempar status `HTTP 403 Forbidden` bagi non-staf. |
+| [`bootstrap/app.php`](file:///C:/Users/user/Herd/e-commerce-2/bootstrap/app.php) | Diperbarui | Registrasi alias middleware `'staff' => EnsureUserIsStaff::class`. |
+| [`routes/admin.php`](file:///C:/Users/user/Herd/e-commerce-2/routes/admin.php) | Dibuat | Kelompok route `/admin` terproteksi middleware `['auth', 'staff']`. |
+| [`routes/web.php`](file:///C:/Users/user/Herd/e-commerce-2/routes/web.php) | Diperbarui | Memuat (require) file `routes/admin.php`. |
+| [`app/Http/Controllers/Auth/AuthenticatedSessionController.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Http/Controllers/Auth/AuthenticatedSessionController.php) | Diperbarui | Logika redirect setelah login: Staf ke `/admin`, Customer ke `/`. |
+| [`app/Http/Middleware/HandleInertiaRequests.php`](file:///C:/Users/user/Herd/e-commerce-2/app/Http/Middleware/HandleInertiaRequests.php) | Diperbarui | Berbagi data pengguna beserta relasi `roles` ke seluruh halaman React Inertia via `props.auth.user`. |
 
 ---
 
-#### C. `Sidebar` (`resources/js/components/admin/Sidebar.tsx`)
-Komponen navigasi vertikal. *(Sudah terintegrasi otomatis di dalam `AdminLayout`)*.
+### 2. Daftar Role dan Permission yang Di-seed
 
-| Prop | Tipe | Default | Penjelasan |
-|---|---|---|---|
-| `isOpen` | `boolean` | `false` | Status visibilitas sidebar pada layar mobile. |
-| `onClose` | `() => void` | `undefined` | Callback untuk menutup drawer sidebar (dipanggil saat klik tombol close, backdrop, atau link menu). |
+#### A. Role (`roles` table)
+1. `super_admin` - Super Admin (Akses Penuh Sistem)
+2. `admin` - Admin Utama
+3. `catalog_manager` - Manajer Katalog Produk
+4. `inventory_manager` - Manajer Stok & Inventaris
+5. `order_manager` - Manajer Pesanan Pelanggan
+6. `finance_operator` - Operator Keuangan & Pembayaran
+7. `customer_service` - Layanan Pelanggan / CS
+8. `customer` - Pelanggan Publik (Default Register)
+
+#### B. Permission (`permissions` table)
+1. `manage_products` - Kelola Katalog & Produk
+2. `manage_inventory` - Kelola Stok & Inventaris
+3. `manage_orders` - Kelola Pesanan
+4. `manage_payments` - Kelola Transaksi & Pembayaran
+5. `manage_customers` - Kelola Data Pelanggan
+6. `view_reports` - Akses Laporan & Analitik
+7. `manage_settings` - Kelola Pengaturan Toko & Sistem
 
 ---
 
-### 3. Contoh Cara Memakai `AdminLayout` dari Halaman Admin
+### 3. Panduan Pembuatan Akun Staf Baru (Tinker)
 
-Rekan yang membuat halaman `resources/js/pages/Admin/Dashboard.tsx` atau halaman admin lainnya cukup membungkus kontennya dengan `<AdminLayout title="...">` seperti contoh berikut:
+Sebelum panel UI Manajemen Staf dibangun di fase berikutnya, pembuatan akun staf baru dapat dilakukan dengan mudah melalui Artisan Tinker:
 
-```tsx
-import React from 'react';
-import { Head, usePage } from '@inertiajs/react';
-import AdminLayout from '@/layouts/AdminLayout';
-import type { AdminPageProps } from '@/types/admin';
-import Badge from '@/components/ui/Badge';
+```bash
+php artisan tinker
+```
 
-export default function Dashboard() {
-    const { props } = usePage<AdminPageProps>();
-    const user = props.auth?.user;
+Kemudian jalankan perintah PHP berikut di Tinker:
 
-    // Ambil nama role pertama (atau fallback)
-    const roleName = user?.roles?.[0]?.name || 'Staf Admin';
+```php
+// 1. Buat User Staf
+$user = App\Models\User::create([
+    'name' => 'Budi Staf Inventaris',
+    'email' => 'budi.inventory@vgs.test',
+    'phone' => '081299887766',
+    'password' => 'PasswordStafAman123!', // Otomatis di-hash oleh model cast
+    'status' => 'active',
+]);
 
-    return (
-        <AdminLayout title="Dashboard" subtitle="Ringkasan aktivitas dan metrik performa toko">
-            <Head title="Admin Dashboard - Vortix Gaming Store" />
+// 2. Ambil Role Staf (misal: inventory_manager)
+$role = App\Models\Role::where('slug', 'inventory_manager')->first();
 
-            {/* Sambutan Pengguna */}
-            <div className="mb-8 p-6 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-display font-bold text-vgs-silver-bright">
-                            Selamat Datang, {user?.name || 'Administrator'}!
-                        </h2>
-                        <p className="text-sm text-vgs-silver-mid mt-1">
-                            Anda masuk sebagai <Badge variant="primary" size="sm">{roleName}</Badge>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Grid Kartu Metrik / Konten Halaman */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {/* ... kartu ringkasan dashboard ... */}
-            </div>
-        </AdminLayout>
-    );
-}
+// 3. Hubungkan Role ke User
+$user->roles()->attach($role->id);
 ```
 
 ---
 
-### 4. Konsistensi Desain & Responsivitas
+### 4. BENTUK STRUKTUR DATA `props.auth.user` (INFORMASI UNTUK FRONTEND)
 
-- **Palet Warna Brand VGS:**
-  - Background Utama: `vgs-black-void` (`#0A0A0C`)
-  - Permukaan Sidebar: `vgs-black-surface` (`#14161B`)
-  - Aksen Aktif & Glow: `vgs-blue-electric` (`#2B6FF6`)
-  - Border & Pembatas: `vgs-gray-border` (`#2A2D35`)
-  - Teks Heading: `vgs-silver-bright` (`#E8E9ED`)
-  - Teks Body: `vgs-silver-mid` (`#A7ABB8`)
-  - Teks Keterangan: `vgs-silver-muted` (`#6B6F7B`)
-- **Responsivitas Layar:**
-  - **Mobile (< 768px):** Sidebar tersembunyi secara default. Dapat dibuka melalui tombol hamburger di Header. Saat terbuka, muncul backdrop overlay gelap dan scroll body dinonaktifkan. Menekan tombol close (X), link menu, tombol `ESC`, atau area luar sidebar akan menutup drawer.
-  - **Desktop (>= 768px / md+):** Sidebar tampil penuh dan sticky di sisi kiri selebar `260px`, dengan area konten di kanan yang dapat di-scroll secara independen.
-- **Aksesibilitas:**
-  - Semua tombol interaktif memiliki `aria-label` yang jelas.
-  - Semua link dan tombol memiliki outline fokus keyboard yang konsisten (`focus-visible:ring-2 focus-visible:ring-vgs-blue-electric`).
-  - Target sentuh (tap target) di mobile minimal `44x44px`.
+> [!IMPORTANT]
+> Kedua rekan tim frontend (OpenCode & Copilot) dapat membaca status login dan array `roles` pengguna secara langsung via `usePage().props.auth.user`.
 
----
+Berikut adalah struktur JSON konkret dari `props.auth.user` yang dikirim dari backend:
 
-## Frontend: Halaman Dashboard
+```json
+{
+  "id": 1,
+  "name": "Super Admin",
+  "email": "admin@vgs.test",
+  "phone": "08123456789",
+  "status": "active",
+  "created_at": "2026-08-31T05:27:23.000000Z",
+  "updated_at": "2026-08-31T05:27:23.000000Z",
+  "roles": [
+    {
+      "id": 1,
+      "name": "Super Admin",
+      "slug": "super_admin",
+      "created_at": "2026-08-31T05:27:21.000000Z",
+      "updated_at": "2026-08-31T05:27:21.000000Z",
+      "pivot": {
+        "user_id": 1,
+        "role_id": 1
+      }
+    }
+  ]
+}
+```
 
-Bagian ini mendokumentasikan halaman pertama area admin, `resources/js/pages/Admin/Dashboard.tsx`, yang memakai `AdminLayout`, `Sidebar`, dan `Header` dari bagian "Frontend: Layout Admin" di atas.
-
-### 1. Status Integrasi Data `auth.user`
-
-- Halaman membaca user yang login lewat `usePage<AdminPageProps>().props.auth.user` lalu menampilkan nama sambutan dan role dari `roles[0]`.
-- **Hasil verifikasi**: saat smoke-test dengan route sementara, payload Inertia `/admin/dashboard` mengirim `component: "Admin/Dashboard"` dan `auth.user` berisi `id`, `name`, `email`, `phone`, `status`. `npm run typecheck` dan `npm run build` (production) lulus. Route sementara sudah dihapus setelahnya.
-- **Ketidakcocokan yang perlu dikoordinasikan dengan rekan backend:**
-  1. Backend `app/Http/Middleware/HandleInertiaRequests.php` **belum mengirim field `roles`** pada `auth.user`. Karena kode frontend memperlakukan `roles` sebagai opsional, halaman tidak crash dan menampilkan fallback badge **"Staf"**. Diharapkan backend menambahkan `roles` berbentuk `[{ id, name, slug }]`.
-  2. Route `admin.dashboard` **belum terdaftar** di `routes/web.php` (belum ada route `/admin/dashboard`). Setelah route resmi datang, tidak ada perubahan lagi yang dibutuhkan di halaman ini.
-- Catatan kecil: dokumentasi layout menyebut `AdminLayout` menerima prop `subtitle`, tetapi implementasi `AdminLayout.tsx` saat ini hanya menerima `title` (Header menampilkan judul saja). Dashboard memakai `title` saja agar aman.
-
-### 2. Kartu Placeholder di Dashboard
-
-Data di kartu berikut masih **DUMMY/statis** (angka contoh) dan sudah ditandai TODO di kode. Menunggu fitur backend masing-masing dibangun di tahap berikutnya:
-
-| Kartu | Nilai (saat ini) | Menunggu fitur backend |
-|---|---|---|
-| Total Produk | 248 | modul kelola produk / statistik produk |
-| Pesanan Hari Ini | 32 | modul manajemen pesanan |
-| Pendapatan Bulan Ini | Rp128.650.000 | laporan penjualan / pembayaran |
-| Stok Menipis | 18 | modul inventaris / stok |
-
-Selain kartu, ada panel **"Aktivitas Terbaru"** berisi 5 baris contoh (juga dummy + TODO) yang nantinya diganti riwayat pesanan/aktivitas asli.
-
-### 3. Deskripsi Tampilan Akhir
-
-Dengan tema gelap brand VGS (background `vgs-black-void`, kartu `vgs-black-surface`, border `vgs-gray-border`, aksen biru elektrik):
-
-- **Header atas** (dari `AdminLayout`/`Header`): judul "Dashboard", tombol hamburger di layar mobile/tablet, ikon notifikasi, dan avatar + nama/email staf di kanan.
-- **Sidebar kiri** selebar 260px di desktop (drawer + backdrop di mobile) berisi navigasi admin.
-- **Panel sambutan**: teks "Selamat Datang, [nama]!" dengan badge role (variasi `primary`, dot indikator muncul jika role tersedia) dan email di sisi kanan.
-- **Grid 4 kartu metrik**: 1 kolom di mobile → 2 di tablet → 4 di desktop; tiap kartu berisi ikon berwarna, label kecil, angka besar, dan keterangan kecil.
-- **Panel "Aktivitas Terbaru"**: daftar baris dengan titik status berwarna (hijau = sukses, oranye = peringatan, biru = info).
+*Jika pengguna belum login (guest), `props.auth.user` bernilai `null`.*
 
 ---
 
-## Frontend: Halaman Dashboard
+### 5. Alur Kerja Sistem (End-to-End Flow)
 
-Bagian ini mendokumentasikan implementasi halaman `resources/js/pages/Admin/Dashboard.tsx` dan hasil verifikasi integrasi data auth pengguna serta pemakaian `AdminLayout`.
-
----
-
-### 1. Konfirmasi Integrasi Data `auth.user`
-- **Pembacaan Data:** Data pengguna yang sedang login diakses melalui `usePage<AdminPageProps>().props.auth?.user`.
-- **Ekstraksi Role:** Role pengguna dibaca dari `user?.roles?.[0]?.name` atau `user?.roles?.[0]?.slug`.
-- **Keamanan & Fallback:** Kode dibuat defensif sehingga jika relasi `roles` belum dimuat atau berupa array kosong (`[]`), sistem secara aman menampilkan fallback `"Staf"` tanpa menyebabkan halaman crash.
-- **Status Kompatibilitas:** Integrasi dengan `AdminLayout`, `Header`, `Sidebar`, dan shared types (`AdminPageProps`) terverifikasi sukses tanpa error TypeScript maupun bundler Vite.
-
----
-
-### 2. Daftar Kartu Placeholder Metrik Dashboard
-Seluruh kartu metrik pada dashboard saat ini menggunakan **data statis/dummy** untuk visualisasi antarmuka dan telah diberi komentar `TODO` untuk disambungkan ke endpoint query riil backend di tahap berikutnya:
-
-1. **Total Produk:** Menampilkan jumlah total item katalog (`128 Item`) dan status penambahan produk. *(Menunggu modul Catalog)*.
-2. **Pesanan Hari Ini:** Menampilkan total order masuk hari ini (`24 Pesanan`) dan tren harian. *(Menunggu modul Orders)*.
-3. **Pendapatan Bulan Ini:** Menampilkan omset kotor bulan berjalan (`Rp 48.500.000`) dan pertumbuhan bulanan. *(Menunggu modul Reporting & Finance)*.
-4. **Stok Menipis:** Menampilkan peringatan jumlah SKU dengan stok kritis (`6 SKU`). *(Menunggu modul Inventory)*.
-5. **Aktivitas Toko & Aksi Cepat:** Menampilkan daftar log audit/peristiwa dummy serta pintasan cepat ke modul arsitektur 4.2 dan tautan kembali ke storefront publik.
+1. **Pendaftaran Akun Publik (Customer Register):**
+   - Pengunjung mengisi form registrasi di `/register`.
+   - `RegisteredUserController` memanggil `RegisterCustomerAction`.
+   - `RegisterCustomerAction` membuat akun dan **secara otomatis meng-assign role `customer`** dari database. Form publik tidak menerima parameter role apapun.
+2. **Autentikasi & Redirect Login:**
+   - User memasukkan kredensial di `/login`.
+   - `AuthenticatedSessionController::store()` memverifikasi password dan melakukan `session()->regenerate()`.
+   - Controller mengecek status role via `$user->isStaff()`:
+     - Jika pengguna adalah **Staf** (punya role selain `customer`), sistem me-redirect ke dashboard admin (`/admin`).
+     - Jika pengguna adalah **Customer**, sistem me-redirect ke storefront publik (`/`).
+3. **Proteksi Server-Level Halaman Admin:**
+   - Setiap URL di bawah `/admin/*` diproteksi oleh middleware `['auth', 'staff']`.
+   - Apabila seorang Customer mencoba mengetik `/admin` secara manual di browser, middleware `EnsureUserIsStaff` mendeteksi bahwa `isStaff()` bernilai `false` dan langsung melempar respon **HTTP 403 Forbidden**.
+4. **Akses Bebas Staf ke Storefront:**
+   - Pembatasan berlaku **satu arah**: Customer tidak bisa masuk ke Admin, namun Staf yang sedang login tetap bebas membuka halaman storefront publik (`/`).
 
 ---
 
-### 3. Deskripsi Tata Letak Tampilan Akhir (UI / Layout)
-Halaman dashboard mengusung bahasa visual bertema gaming/esports khas VGS:
-- **Header Atas (Sticky):** Menampilkan tombol toggle mobile, judul `"Dashboard"`, tombol lonceng notifikasi, serta avatar inisial dan nama staf.
-- **Sidebar Kiri (Sticky Desktop / Drawer Mobile):** Menampilkan identitas logo VGS Admin Panel, daftar navigasi modul yang terkelompok, status aktif pada menu Dashboard, serta info profil staf dan tombol *Keluar* (Logout).
-- **Area Konten Utama:**
-  - **Banner Sambutan Personal:** Kotak gelap elevated dengan aksen radial glow biru elektrik, ucapan *"Selamat Datang, [Nama Staf]"*, pill/badge role akses (misal `SUPER_ADMIN` atau `Staf`), status koneksi sistem online, dan email staf.
-  - **Grid 4 Kartu Metrik Ringkasan:** Ditata responsif (1 kolom di mobile, 2 kolom di tablet, 4 kolom di desktop) dengan ikon spesifik berkode warna (biru elektrik, hijau sukses, oranye peringatan).
-  - **Area Dua Kolom Bawah:**
-    - *Kolom Kiri (2/3 lebar di desktop):* Modul & Aksi Cepat untuk akses ke modul Katalog, Pesanan, Pelanggan, dan Laporan, serta shortcut ke Storefront publik.
-  - *Kolom Kanan (1/3 lebar di desktop):* Widget linimasa Aktivitas Toko (dummy feed) dengan timestamp dan badge status.
+### 6. Catatan Keamanan untuk Laporan PKL
 
-### 4. Status Verifikasi Aktual (31 Agustus 2026)
+- **Server-Side Authorization (Defense in Depth):** Keamanan sistem tidak mengandalkan penyembunyian elemen UI di frontend. Penentuan role registrasi dan penguncian akses admin dilakukan 100% di server.
+- **Zero Trust Public Registration:** Tidak ada endpoint publik yang dapat menerima atau memanipulasi parameter role. Role `customer` di-hardcode pada logika backend action.
+- **Dynamic Server-Level Control Flow:** Middleware server mengecek relasi role pengguna dari database pada setiap request HTTP menuju area sensitif `/admin/*`.
 
-- Halaman `Admin/Dashboard.tsx` berhasil dikompilasi bersama `AdminLayout`, `Header`, dan `Sidebar`; pemeriksaan TypeScript serta build produksi Vite selesai tanpa error.
-- Route `admin.dashboard` tersedia dan merender halaman Dashboard. Karena pemeriksaan ini tidak memakai sesi login staf di browser, bentuk props saat halaman berjalan belum dapat diamati langsung dengan `console.log`.
-- Ada ketidakcocokan yang perlu dikoordinasikan dengan backend: `HandleInertiaRequests` saat ini mengirim `id`, `name`, `email`, `phone`, dan `status`, tetapi **belum mengirim `roles`**. Dashboard tetap aman dan sementara menampilkan badge **"Staf"** melalui fallback. Nama pengguna tetap dapat ditampilkan dari `auth.user.name`.
-- Kartu yang benar-benar tampil saat ini adalah **Total Produk**, **Pesanan Hari Ini**, **Pendapatan Bulan Ini**, dan **Stok Menipis**, serta panel **Aktivitas Terbaru**. Seluruh nilainya masih dummy dan komentar `TODO` sudah tersedia untuk penggantian dengan data backend pada tahap berikutnya.
+---
+
+## 🎨 FRONTEND IMPLEMENTATION: LAYOUT ADMIN & DASHBOARD
+
+### 1. Daftar File Layout & Dashboard
+
+| Path File | Fungsi & Peran |
+|---|---|
+| [`resources/js/layouts/AdminLayout.tsx`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/layouts/AdminLayout.tsx) | Wadah Layout Utama Admin (Sidebar + Header + Content). |
+| [`resources/js/components/admin/Sidebar.tsx`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/components/admin/Sidebar.tsx) | Sidebar Navigasi Admin bertema dark gaming VGS. |
+| [`resources/js/components/admin/Header.tsx`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/components/admin/Header.tsx) | Header Atas Admin dengan pencarian, notifikasi, dan profil staf. |
+| [`resources/js/types/admin.ts`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/types/admin.ts) | Interface TypeScript untuk `Role`, `AdminUser`, `AdminPageProps`. |
+| [`resources/js/pages/Admin/Dashboard.tsx`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/pages/Admin/Dashboard.tsx) | Halaman utama Admin Dashboard. |
+
+---
+
+### 2. Spesifikasi Integrasi Frontend
+
+Halaman `Admin/Dashboard.tsx` membaca data pengguna yang login secara dinamis dari `props.auth.user`:
+- Nama staf ditampilkan pada banner sambutan.
+- Role pertama (`user.roles[0].name`) ditampilkan dalam bentuk Badge.
+- Sistem menggunakan fallback defensif jika data role belum termuat.

@@ -3,12 +3,13 @@
 namespace App\Domain\Customer\Actions;
 
 use App\Models\User;
+use App\Models\Role;
 
 final class RegisterCustomerAction
 {
     public function execute(array $data): User
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
@@ -16,5 +17,13 @@ final class RegisterCustomerAction
             'password' => $data['password'],
             'status' => $data['status'] ?? 'active',
         ]);
+
+        // Automatically assign customer role to newly registered users
+        $customerRole = Role::where('slug', 'customer')->first();
+        if ($customerRole) {
+            $user->roles()->attach($customerRole->id);
+        }
+
+        return $user;
     }
 }
