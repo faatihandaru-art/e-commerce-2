@@ -38,7 +38,7 @@ export const Footer: React.FC = () => {
                         <Link href="/" className="flex items-center gap-3 group inline-flex">
                             <div className="w-10 h-10 rounded-xl r flex items-center justify-center group-hover:border-vgs-blue-electric transition-colors shadow-xs">
                                <img
-                                    src="/images/products/logo..vgs2.png"
+                                    src="/images/logo/logo..vgs2.png"
                                     alt="VORTIX STORE"
                                     className="w-14 h-14 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
                                 />

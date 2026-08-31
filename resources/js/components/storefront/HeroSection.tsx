@@ -80,7 +80,7 @@ PRODUK GAMING
                     {/* Right Visual Showcase (Cols 8-12): VGS Logo */}
                     <div className="lg:col-span-4 relative mt-6 lg:mt-0 flex justify-center">
                         <img
-                            src="/images/products/logo..vgs2.png"
+                            src="/images/logo/logo..vgs2.png"
                             alt="VGS Logo"
                             className=" drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
                         />

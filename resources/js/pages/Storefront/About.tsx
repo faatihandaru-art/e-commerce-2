@@ -123,7 +123,7 @@ export default function About() {
                         <div className="lg:col-span-5 relative">
                             <div className="relative rounded-3xl overflow-hidden border border-vgs-gray-border bg-vgs-black-surface shadow-2xl group">
                                 <img
-                                    src='/images/products/logo..vgs2.png'
+                                    src='/images/logo/logo..vgs2.png'
                                     alt="VGS Esports Testing Lab & Battlestation"
                                     className="w-full h-80 sm:h-96 object-contain transition-transform duration-700 group-hover:scale-105"
                                 />
