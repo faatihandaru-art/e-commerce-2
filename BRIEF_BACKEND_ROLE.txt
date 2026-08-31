@@ -1,0 +1,298 @@
+====================================================================
+PROMPT UNTUK ANTIGRAVITY -- BACKEND
+BAGIAN KAMU: Migration, Model, Seeder, Middleware, Controller, Route
+Vortix Gaming Store (VGS) -- Sistem Role & Akses Staf vs Customer
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke Antigravity sebagai prompt awal.
+Simpan juga file ini di project sebagai BRIEF_BACKEND_ROLE.md.
+
+Ada 2 rekan tim yang mengerjakan FRONTEND secara terpisah, memakai
+file BRIEF_FRONTEND_LAYOUT.md (dikerjakan di OpenCode) dan
+BRIEF_FRONTEND_DASHBOARD.md (dikerjakan di Copilot). Pekerjaan kamu
+adalah FONDASI yang mereka berdua BUTUHKAN sebelum bisa mulai --
+terutama poin "SHARE DATA AUTH KE FRONTEND" di bagian tugas kamu,
+karena kedua rekan frontend akan membaca data dari situ.
+
+SELESAIKAN dan commit ke git bagian migration+model+seeder DULU
+sebelum bagian lain, supaya rekan frontend bisa mulai kerja lebih
+awal tanpa menunggu kamu selesai total (mereka butuh tahu struktur
+data role yang dikirim lewat props Inertia, bukan butuh backend
+100% jadi).
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), dibangun dengan Laravel 13 +
+Inertia 3 + React 19 + TypeScript + Tailwind CSS. Struktur folder
+mengikuti pola modular monolith: app/Domain/<Domain>/Actions/ untuk
+logic bisnis, app/Http/Controllers/ untuk menerima request,
+app/Http/Requests/ untuk validasi.
+
+Autentikasi customer (Login/Register) SUDAH BERJALAN dan tersambung
+ke database. Tabel users sudah ada dengan kolom: id, name, email,
+phone, password, status, last_login_at, timestamps. Model
+app/Models/User.php sudah ada dengan $fillable dan password sudah
+otomatis di-hash lewat casts().
+
+====================================================================
+MASALAH YANG HARUS DISELESAIKAN
+====================================================================
+
+Saat ini SEMUA user yang register lewat halaman publik otomatis
+jadi customer biasa. Dibutuhkan SISTEM STAF yang terpisah, dengan
+aturan keamanan berikut yang WAJIB DIPATUHI TANPA KOMPROMI:
+
+1. Halaman register PUBLIK (yang sudah ada) HANYA BOLEH membuat
+   akun dengan role customer. TIDAK ADA CARA bagi pengunjung website
+   untuk mendaftar sebagai staf/admin lewat form apapun yang bisa
+   diakses publik.
+
+2. Akun staf HANYA BOLEH dibuat oleh:
+   a. Seeder (untuk akun admin pertama kali setup project), ATAU
+   b. Admin yang sudah login, lewat panel khusus manajemen staf
+      (panel ini BELUM dibangun di tahap ini, cukup pastikan
+      arsitekturnya tidak menghalangi pembuatan panel itu nanti)
+   TIDAK ADA route publik yang bisa membuat akun staf.
+
+3. Halaman LOGIN tetap SATU untuk semua orang. Setelah login
+   berhasil, sistem mengecek role user tersebut dari database, lalu
+   redirect ke tampilan yang sesuai:
+   - role customer -> redirect ke halaman storefront (/)
+   - role staf/admin (role apapun selain customer) -> redirect ke
+     dashboard admin (/admin)
+
+4. Setiap route di bawah /admin/* HARUS diproteksi middleware yang
+   mengecek role di level SERVER, bukan hanya disembunyikan di UI
+   frontend. Seorang customer yang mencoba mengetik URL /admin
+   secara manual di address bar HARUS ditolak dengan error 403.
+
+5. Kebalikannya, akun staf yang login TETAP BISA mengakses halaman
+   storefront biasa jika mereka mau -- pembatasan hanya berlaku SATU
+   ARAH: customer tidak boleh akses admin, tapi staf boleh akses
+   storefront.
+
+====================================================================
+STRUKTUR DATABASE YANG WAJIB DIIKUTI
+====================================================================
+
+Sesuai dokumen arsitektur bagian 6.1 dan daftar role di bagian 4.3.
+Buat migration baru untuk tabel-tabel berikut (cek dulu folder
+database/migrations/ untuk memastikan belum ada migration dengan
+nama serupa sebelum membuat baru):
+
+TABEL roles
+id              bigint, primary key
+name            string, unique (contoh: 'super_admin', 'admin',
+                'catalog_manager', 'inventory_manager',
+                'order_manager', 'finance_operator',
+                'customer_service', 'customer')
+slug            string, unique
+timestamps
+
+TABEL permissions
+id              bigint, primary key
+name            string, unique (contoh: 'manage_products',
+                'manage_inventory', 'manage_orders',
+                'manage_payments', 'manage_customers',
+                'view_reports', 'manage_settings')
+slug            string, unique
+timestamps
+
+TABEL role_user (pivot, tanpa model tersendiri)
+role_id         bigint, foreign key ke roles, cascade on delete
+user_id         bigint, foreign key ke users, cascade on delete
+timestamps
+
+TABEL permission_role (pivot, tanpa model tersendiri)
+permission_id   bigint, foreign key ke permissions, cascade on delete
+role_id         bigint, foreign key ke roles, cascade on delete
+timestamps
+
+CATATAN: satu user BISA punya lebih dari satu role secara teknis
+(makanya dipakai tabel pivot role_user, bukan kolom role_id langsung
+di tabel users), tapi UNTUK KEBUTUHAN SEKARANG anggap setiap user
+hanya punya SATU role aktif. Desain tabelnya tetap many-to-many
+untuk fleksibel di masa depan, tapi logic aplikasi sekarang cukup
+asumsikan satu user satu role.
+
+Role 'customer' WAJIB ada sebagai salah satu baris di tabel roles
+(dibuat lewat Seeder) karena dipakai sebagai default untuk register
+publik.
+
+====================================================================
+TUGAS KAMU (BACKEND)
+====================================================================
+
+1. MIGRATION
+   Buat migration untuk keempat tabel di atas sesuai struktur yang
+   ditentukan. Jalankan php artisan migrate setelah selesai.
+
+2. MODEL
+   Buat app/Models/Role.php:
+   - $fillable: name, slug
+   - Relasi belongsToMany(User::class) lewat tabel role_user
+   - Relasi belongsToMany(Permission::class) lewat tabel
+     permission_role
+
+   Buat app/Models/Permission.php:
+   - $fillable: name, slug
+   - Relasi belongsToMany(Role::class) lewat tabel permission_role
+
+   Update app/Models/User.php, tambahkan:
+   - Relasi belongsToMany(Role::class) lewat tabel role_user
+   - Method helper hasRole(string $roleSlug): bool
+   - Method helper isStaff(): bool -- true jika user punya role
+     SELAIN 'customer'
+   - Method helper isCustomer(): bool -- kebalikan isStaff(), true
+     jika role user 'customer' atau belum punya role sama sekali
+
+3. SEEDER
+   Buat database/seeders/RoleSeeder.php -- insert semua role dari
+   daftar di atas.
+
+   Buat database/seeders/PermissionSeeder.php -- insert semua
+   permission dari daftar di atas.
+
+   Buat database/seeders/AdminUserSeeder.php:
+   - Buat SATU akun admin pertama secara hardcode di kode, dengan
+     email masuk akal untuk development (misal admin@vgs.test) dan
+     password RANDOM yang di-generate lalu DITAMPILKAN di terminal
+     lewat $this->command->info() saat seeder dijalankan -- JANGAN
+     hardcode password lemah seperti 'password123' tanpa
+     menampilkannya ke terminal
+   - Assign role 'super_admin' ke akun ini lewat relasi
+
+   Daftarkan ketiga seeder ini di
+   database/seeders/DatabaseSeeder.php. Jalankan php artisan
+   db:seed setelah selesai, catat password admin yang muncul di
+   terminal.
+
+4. KUNCI REGISTER PUBLIK KE ROLE CUSTOMER
+   Modifikasi app/Domain/Customer/Actions/RegisterCustomerAction.php
+   yang SUDAH ADA. Setelah user dibuat, otomatis assign role
+   'customer' lewat relasi (ambil Role dengan slug 'customer' dari
+   database, attach ke user baru). JANGAN menerima parameter role
+   dari luar/request manapun -- role customer di-assign secara
+   hardcode di dalam Action ini.
+
+5. MIDDLEWARE PROTEKSI ADMIN
+   Buat app/Http/Middleware/EnsureUserIsStaff.php:
+   - Cek Auth::user()->isStaff()
+   - Jika false, abort(403)
+   - Jika true, lanjutkan return $next($request)
+
+   Daftarkan di bootstrap/app.php dengan alias 'staff' (Laravel 13
+   memakai struktur middleware baru, bukan Kernel.php).
+
+6. ROUTE ADMIN TERPROTEKSI
+   Di routes/web.php (atau file routes/admin.php terpisah sesuai
+   struktur routing dokumen arsitektur bagian 9.1, lalu require
+   dari web.php):
+
+   Route::middleware(['auth', 'staff'])->prefix('admin')->name('admin.')->group(function () {
+       Route::get('/', fn () => Inertia::render('Admin/Dashboard'))->name('dashboard');
+   });
+
+   CATATAN UNTUK REKAN FRONTEND: route ini akan dipakai oleh rekan
+   yang membangun Admin/Dashboard.tsx (lihat BRIEF_FRONTEND_DASHBOARD.md).
+   Kamu sediakan route-nya lebih dulu supaya mereka punya endpoint
+   untuk dites begitu halaman React-nya jadi.
+
+7. REDIRECT SETELAH LOGIN BERDASARKAN ROLE
+   Modifikasi app/Http/Controllers/Auth/AuthenticatedSessionController.php
+   yang SUDAH ADA, method store(). Setelah $request->authenticate()
+   dan session regenerate berhasil, tambahkan:
+
+   $user = Auth::user();
+
+   if ($user->isStaff()) {
+       return redirect()->route('admin.dashboard');
+   }
+
+   return redirect()->route('home');
+
+   JANGAN mengubah bagian validasi/autentikasi yang sudah ada, HANYA
+   tambahkan logic redirect kondisional ini.
+
+8. SHARE DATA AUTH KE FRONTEND (PALING PENTING UNTUK REKAN TIM)
+   Cek app/Http/Middleware/HandleInertiaRequests.php. Pastikan
+   method share() mengirim data user yang sedang login LENGKAP
+   DENGAN ROLE-NYA ke SEMUA halaman React lewat props.auth.user:
+
+   'auth' => [
+       'user' => $request->user()?->load('roles'),
+   ],
+
+   Ini KRUSIAL -- kedua rekan frontend akan membaca
+   usePage().props.auth.user.roles untuk menampilkan UI yang sesuai
+   dan mengecek apakah user sedang login sebagai staf. Pastikan
+   struktur data yang terkirim jelas dan konsisten, dan CATAT bentuk
+   struktur JSON-nya di ringkasan akhir supaya bisa saya teruskan ke
+   rekan frontend.
+
+====================================================================
+YANG TIDAK BOLEH DILAKUKAN (PELANGGARAN KEAMANAN)
+====================================================================
+
+- JANGAN membuat form register yang punya dropdown/pilihan role
+  yang bisa dipilih user, dalam bentuk apapun, bahkan tersembunyi
+  sekalipun -- role customer HARUS di-assign di sisi SERVER secara
+  hardcode.
+- JANGAN mengandalkan penyembunyian link/menu di frontend sebagai
+  satu-satunya proteksi halaman admin. Middleware 'staff' adalah
+  pertahanan WAJIB di level server.
+- JANGAN membuat route publik apapun yang bisa mengubah role
+  seorang user tanpa melalui middleware 'staff'.
+- JANGAN menghapus atau mengubah struktur tabel users, model User
+  yang sudah ada, atau logic RegisterCustomerAction selain
+  penambahan assign role customer seperti diminta di atas.
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Buat file CATATAN_SISTEM_ROLE.md di root project, berisi:
+
+1. Daftar file yang dibuat/diubah (migration, model, seeder,
+   middleware, controller, route), dengan penjelasan fungsi tiap
+   file.
+2. Daftar role dan permission yang di-seed.
+3. Cara membuat akun staf baru untuk referensi (lewat Tinker,
+   dengan contoh perintahnya, sampai panel admin manajemen staf
+   dibangun di tahap berikutnya).
+4. BENTUK STRUKTUR DATA props.auth.user YANG DIKIRIM KE FRONTEND --
+   ini bagian PALING PENTING dari dokumentasi, karena akan dibaca
+   langsung oleh 2 rekan tim yang mengerjakan frontend. Tuliskan
+   contoh JSON konkret, misalnya:
+   { "id": 1, "name": "...", "email": "...", "roles": [{ "id": 1,
+   "name": "super_admin", "slug": "super_admin" }] }
+5. Alur kerja sistem secara ringkas (poin bernomor): apa yang
+   terjadi saat customer register, saat staf login, saat customer
+   coba akses /admin manual.
+6. Catatan keamanan singkat untuk laporan PKL.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) migration + jalankan migrate, (b) model
+  Role/Permission + update User, (c) seeder + jalankan db:seed +
+  catat password admin, (d) modifikasi RegisterCustomerAction, (e)
+  middleware EnsureUserIsStaff, (f) route admin, (g) modifikasi
+  AuthenticatedSessionController, (h) update HandleInertiaRequests,
+  (i) file dokumentasi terakhir.
+- Tampilkan ringkasan tiap langkah selesai sebelum lanjut, supaya
+  saya bisa cek dan commit git bertahap -- dan supaya saya bisa
+  segera bagikan progres ke rekan frontend begitu langkah (h)
+  selesai.
+- Setelah semua selesai, jelaskan langkah pengetesan manual: cara
+  login sebagai admin yang di-seed, cara verifikasi redirect ke
+  /admin berhasil, dan cara verifikasi customer biasa DITOLAK (403)
+  saat akses /admin manual.
+====================================================================

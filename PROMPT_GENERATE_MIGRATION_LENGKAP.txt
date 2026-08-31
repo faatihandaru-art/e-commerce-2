@@ -1,0 +1,232 @@
+====================================================================
+PROMPT: GENERATE SEMUA MIGRATION DARI DATABASE YANG SUDAH ADA
+Vortix Gaming Store (VGS) -- Rekonsiliasi migration vs database fisik
+====================================================================
+
+KONTEKS PROJECT
+--------------------------------------------------------------------
+Project Laravel 13 + Inertia 3 + React 19 ini punya database MySQL
+bernama db_e_commerce yang SUDAH BERISI 65 tabel (dibuat sebelumnya
+lewat cara lain, bukan lewat migration Laravel yang berurutan).
+Folder database/migrations/ SAAT INI hanya berisi beberapa file:
+- 0001_01_01_000000_create_users_table.php (mencakup users,
+  password_reset_tokens, sessions)
+- 0001_01_01_000001_create_cache_table.php
+- 0001_01_01_000002_create_jobs_table.php
+- migration untuk customer_addresses (sudah dibuat sebelumnya)
+
+SISANYA -- sekitar 60 tabel seperti products, orders, payments,
+inventories, categories, roles, permissions, dan lain-lain -- ADA
+SECARA FISIK di database tapi TIDAK PUNYA file migration sama
+sekali. Ini masalah serius karena migration adalah satu-satunya
+sumber kebenaran struktur database di Laravel -- tanpa migration,
+rekan tim tidak bisa setup database yang sama persis lewat git
+clone + migrate, dan deployment ke server baru akan gagal.
+
+TUJUAN
+--------------------------------------------------------------------
+Buat file migration untuk SEMUA 60 tabel yang belum punya migration,
+dengan struktur yang PERSIS SAMA seperti yang sudah ada secara fisik
+di database sekarang -- JANGAN mengubah, menambah, atau mengurangi
+kolom apapun dari yang sudah ada. Tujuannya murni "mendaftarkan"
+struktur yang sudah ada ke sistem migration Laravel, bukan mendesain
+ulang database.
+
+DATA TIDAK BOLEH HILANG. Sebagian besar tabel saat ini masih kosong
+(0 rows), tapi proses ini HARUS aman dijalankan tanpa RISIKO
+kehilangan data apapun yang mungkin sudah ada.
+
+====================================================================
+CARA YANG WAJIB DIPAKAI: PACKAGE migrate:generate
+====================================================================
+
+JANGAN menulis 60 file migration secara manual dengan menebak
+struktur dari nama tabel atau asumsi. WAJIB memakai package resmi
+yang membaca struktur database sebenarnya dan menghasilkan migration
+otomatis:
+
+Package: kitloong/laravel-migrations-generator
+Repository: https://github.com/kitloong/laravel-migrations-generator
+
+LANGKAH INSTALASI DAN PEMAKAIAN:
+
+1. Install package (hanya untuk development, tidak perlu di
+   production):
+   composer require --dev kitloong/laravel-migrations-generator
+
+2. SEBELUM generate apapun, backup database dulu untuk jaga-jaga
+   (walau tabel kebanyakan kosong, tetap lakukan sebagai praktik
+   aman):
+   mysqldump -u [username] -p db_e_commerce > backup_sebelum_generate.sql
+   (sesuaikan username dengan kredensial database di .env, jelaskan
+   ke saya command lengkapnya sesuai konfigurasi .env yang ada di
+   project)
+
+3. Jalankan generator:
+   php artisan migrate:generate
+
+   Package ini akan menampilkan daftar SEMUA tabel yang terdeteksi
+   di database, dan akan MELEWATI tabel yang migration-nya sudah
+   ada (users, cache, jobs, customer_addresses) secara otomatis
+   karena mendeteksi tabel migrations yang sudah tercatat -- JANGAN
+   khawatir ini akan menimpa migration yang sudah ada, tapi TETAP
+   VERIFIKASI hasil akhirnya sesuai langkah verifikasi di bawah.
+
+4. Package akan membuat file-file migration baru di
+   database/migrations/ dengan penamaan otomatis, satu file per
+   tabel (atau dikelompokkan, tergantung versi package -- ikuti apa
+   yang dihasilkan tool ini).
+
+====================================================================
+LANGKAH VERIFIKASI SETELAH GENERATE (WAJIB, JANGAN DILEWATI)
+====================================================================
+
+Setelah migrate:generate selesai, LAKUKAN semua langkah berikut
+sebelum menganggap tugas selesai:
+
+1. HITUNG JUMLAH FILE MIGRATION BARU
+   Bandingkan jumlah file migration yang dihasilkan dengan jumlah
+   tabel yang seharusnya (65 tabel total dikurangi yang sudah punya
+   migration sebelumnya). Laporkan angkanya ke saya -- jika ada
+   selisih (misal cuma ter-generate 55 dari 60 yang diharapkan),
+   JANGAN diam-diam melanjutkan, laporkan tabel mana saja yang
+   sepertinya terlewat.
+
+2. BACA ISI BEBERAPA FILE MIGRATION HASIL GENERATE SECARA ACAK
+   Buka minimal 5 file migration hasil generate (pilih yang
+   strukturnya kompleks, misal orders, products, product_variants,
+   payments, inventories), pastikan:
+   - Nama kolom sesuai dengan yang terlihat di database (tidak ada
+     typo atau kolom hilang)
+   - Tipe data masuk akal (foreign key jadi foreignId/unsignedBigInteger
+     dengan constrained(), bukan cuma integer biasa yang lepas dari
+     relasi)
+   - Kolom nullable tetap tercatat sebagai nullable(), kolom dengan
+     default value tercatat default()-nya
+   - Timestamps (created_at, updated_at) ada jika memang ada di
+     tabel aslinya
+
+3. JALANKAN php artisan migrate:status
+   Semua 65 tabel (atau jumlah yang sesuai setelah dikurangi tabel
+   sistem seperti password_reset_tokens dan sessions yang menyatu
+   dalam satu file users) HARUS muncul dengan status Ran. Screenshot
+   atau salin hasil perintah ini untuk saya lihat.
+
+4. TES PALING PENTING -- SIMULASI SETUP DARI NOL DI DATABASE TERPISAH
+   Ini langkah PALING KRUSIAL untuk membuktikan migration yang
+   dihasilkan benar-benar lengkap dan urut dengan benar (foreign
+   key tidak akan error karena tabel induknya belum ada, dst):
+   
+   a. Buat database MySQL baru yang kosong total, beri nama misalnya
+      db_e_commerce_test_migration
+   b. Ubah sementara DB_DATABASE di file .env (atau duplikat .env
+      jadi .env.testing) supaya menunjuk ke database baru yang
+      kosong ini
+   c. Jalankan: php artisan migrate --database=[koneksi ke database
+      test] (atau cara lain yang sesuai untuk connect ke database
+      test tanpa mengganggu database utama -- jelaskan pendekatan
+      mana yang dipakai)
+   d. HARUS BERHASIL TANPA ERROR dari database kosong sampai semua
+      65 tabel tercipta. Jika ada error (biasanya soal urutan
+      foreign key -- migration tabel anak dijalankan sebelum
+      migration tabel induk), PERBAIKI dengan mengubah nomor
+      timestamp di NAMA FILE migration supaya urutannya benar
+      (Laravel menjalankan migration berdasarkan urutan nama file,
+      yang diawali timestamp)
+   e. Setelah berhasil, HAPUS database test ini, dan kembalikan
+      .env ke pengaturan semula (jangan biarkan konfigurasi
+      tertinggal menunjuk ke database test)
+
+5. Laporkan hasil KEEMPAT langkah verifikasi di atas secara jelas
+   ke saya, termasuk masalah apapun yang ditemukan dan bagaimana
+   cara memperbaikinya.
+
+====================================================================
+MASALAH YANG SERING TERJADI DAN CARA MENANGANINYA
+====================================================================
+
+- URUTAN FOREIGN KEY SALAH: jika migrate:generate menghasilkan file
+  dengan urutan yang membuat tabel anak (misal order_items yang
+  butuh orders) dijalankan SEBELUM tabel induknya (orders), migrate
+  akan gagal dengan error foreign key constraint. Perbaiki dengan
+  mengganti angka timestamp di awal nama file supaya tabel induk
+  selalu lebih dulu. Tabel tanpa dependency (seperti categories,
+  brands, warehouses) harus di awal; tabel yang sangat bergantung
+  pada banyak tabel lain (seperti order_items, payment_transactions)
+  harus di akhir.
+
+- TABEL PIVOT (seperti role_user, category_product, coupon_products)
+  kadang tidak terdeteksi package sebagai tabel biasa -- pastikan
+  SEMUA tabel yang tadinya terlihat di HeidiSQL benar-benar
+  ter-generate, termasuk tabel pivot ini.
+
+- KOLOM DENGAN TIPE ENUM: jika ada kolom yang di database aslinya
+  bertipe ENUM (misal kolom status dengan pilihan tetap), package
+  biasanya menghasilkan $table->enum('status', [...]) dengan daftar
+  pilihan yang terdeteksi otomatis -- VERIFIKASI daftar pilihan ini
+  sesuai dengan yang sebenarnya ada di database, jangan asal percaya
+  tanpa dicek.
+
+====================================================================
+YANG TIDAK BOLEH DILAKUKAN
+====================================================================
+
+- JANGAN menjalankan migrate:fresh atau migrate:rollback pada
+  DATABASE UTAMA (db_e_commerce) kapanpun selama proses ini --
+  risiko kehilangan struktur/data yang sudah ada. Semua pengujian
+  "dari nol" HARUS dilakukan di database TERPISAH yang sengaja
+  dibuat kosong untuk testing, sesuai langkah verifikasi di atas.
+- JANGAN mengedit struktur kolom yang ter-generate untuk "memperbaiki"
+  atau "merapikan" desain database tanpa izin eksplisit dari saya --
+  tugas ini murni mendaftarkan struktur yang SUDAH ADA, bukan
+  mendesain ulang. Jika kamu melihat sesuatu yang menurutmu janggal
+  di struktur yang sudah ada (misal tipe data yang kurang tepat),
+  LAPORKAN saja sebagai catatan terpisah, jangan langsung diubah.
+- JANGAN menghapus tabel migrations yang sudah ada (ini mencatat
+  migration mana yang sudah "dianggap jalan" oleh Laravel) tanpa
+  memahami dulu isinya -- cek isinya lewat HeidiSQL sebelum
+  melakukan apapun yang menyentuh tabel ini.
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Buat file CATATAN_MIGRATION_LENGKAP.md di root project, berisi:
+
+1. Jumlah total tabel sebelum dan sesudah proses ini (berapa yang
+   sudah punya migration di awal, berapa yang ditambahkan).
+2. Daftar lengkap 60+ file migration baru yang dihasilkan, per
+   nama tabel.
+3. Catatan urutan migration yang PERLU diperhatikan (tabel mana
+   yang harus jalan duluan karena jadi induk foreign key bagi
+   tabel lain) -- ini penting untuk referensi rekan tim di masa
+   depan kalau ada yang perlu menambah migration baru lagi dan
+   perlu tahu di mana menaruhnya dalam urutan.
+4. Hasil dari keempat langkah verifikasi (terutama hasil simulasi
+   migrate dari database kosong) -- confirm bahwa migration ini
+   BENAR-BENAR bisa dipakai rekan tim untuk setup project dari nol.
+5. Catatan jika ada tabel yang strukturnya terlihat janggal/perlu
+   didiskusikan lebih lanjut (tapi TIDAK diubah tanpa izin, sesuai
+   aturan di atas).
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) install package, (b) backup database utama,
+  (c) jalankan migrate:generate, (d) langkah verifikasi 1-2 (hitung
+  file, baca isi beberapa), (e) langkah verifikasi 3 (migrate:status),
+  (f) langkah verifikasi 4 (simulasi database kosong -- INI PALING
+  PENTING, jangan buru-buru atau dilewati), (g) file dokumentasi.
+- Di setiap langkah selesai, tampilkan ringkasan singkat sebelum
+  lanjut, supaya saya bisa cek dan commit git bertahap -- JANGAN
+  commit git sebelum langkah verifikasi 4 (simulasi database kosong)
+  benar-benar berhasil, karena itu bukti migration ini valid.
+- Jika di tengah proses menemukan sesuatu yang tidak yakin cara
+  menanganinya (misal error yang tidak ada di daftar "masalah yang
+  sering terjadi" di atas), STOP dan jelaskan masalahnya ke saya
+  dengan detail, jangan mencoba banyak solusi coba-coba yang
+  berisiko terhadap database utama.
+====================================================================
