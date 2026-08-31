@@ -1,8 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { categories } from '@/data/dummy-products';
+import type { Category } from '@/types/product';
+import { getCategories, ApiError } from '@/lib/api';
 
 export const CategoryGrid: React.FC = () => {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        getCategories()
+            .then((list) => {
+                if (cancelled) return;
+                setCategories(list);
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                console.error('[CategoryGrid] Gagal memuat kategori:', err instanceof ApiError ? err.message : err);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setIsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const featuredCategories = categories.slice(0, 8);
 
     const getCategoryIcon = (iconName?: string) => {
@@ -95,7 +119,7 @@ export const CategoryGrid: React.FC = () => {
                         href="/products"
                         className="inline-flex items-center gap-2 text-xs font-mono font-bold text-vgs-blue-electric hover:text-vgs-blue-glow transition-colors self-start sm:self-auto group py-2"
                     >
-                        <span>Lihat Semua (14 Kategori)</span>
+                        <span>Lihat Semua ({categories.length} Kategori)</span>
                         <svg
                             className="w-4 h-4 transition-transform group-hover:translate-x-1"
                             fill="none"
@@ -109,7 +133,14 @@ export const CategoryGrid: React.FC = () => {
 
                 {/* Categories Grid: 2 columns on mobile, 4 on desktop */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                    {featuredCategories.map((cat) => (
+                    {isLoading
+                        ? Array.from({ length: 8 }).map((_, i) => (
+                              <div
+                                  key={i}
+                                  className="min-h-[140px] rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border animate-pulse"
+                              />
+                          ))
+                        : featuredCategories.map((cat) => (
                         <Link
                             key={cat.slug}
                             href={`/products?category=${cat.slug}`}
@@ -143,7 +174,7 @@ export const CategoryGrid: React.FC = () => {
                                 </svg>
                             </div>
                         </Link>
-                    ))}
+                        ))}
                 </div>
             </div>
         </section>

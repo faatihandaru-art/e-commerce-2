@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/react';
 import type { Product, ProductVariant } from '@/types/product';
 import Badge from '@/components/ui/Badge';
 import RatingStars from '@/components/ui/RatingStars';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 import ProductVariantModal from '@/components/product/ProductVariantModal';
 
 export interface ProductCardProps {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { Category, ProductFilter } from '@/types/product';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 
 export interface ProductFilterSidebarProps {
     categories: Category[];

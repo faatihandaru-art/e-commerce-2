@@ -2,7 +2,7 @@ import React, { useState, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
 import type { Product, ProductVariant } from '@/types/product';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 import { useCart } from '@/context/CartContext';
 import Chip from '@/components/ui/Chip';
 import Badge from '@/components/ui/Badge';

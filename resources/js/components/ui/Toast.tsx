@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 
 export interface ToastData {
     id: string;

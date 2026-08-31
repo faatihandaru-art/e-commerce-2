@@ -1,13 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilterSidebar from '@/components/product/ProductFilterSidebar';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { categories, getProducts } from '@/data/dummy-products';
-import type { Product, ProductFilter } from '@/types/product';
-import { useCart } from '@/context/CartContext';
+import { getCategories, getCatalog, ApiError } from '@/lib/api';
+import type { Category, Product, ProductFilter } from '@/types/product';
 
 export default function ProductIndex() {
     const { url } = usePage();
@@ -20,12 +19,16 @@ export default function ProductIndex() {
     }, [url]);
 
     const initialCategorySlug = queryParams.get('category');
-    const initialCategoryId = initialCategorySlug
-        ? categories.find((c) => c.slug === initialCategorySlug)?.id || null
-        : queryParams.get('categoryId') || null;
+    const initialCategoryId = queryParams.get('categoryId') || null;
 
     const initialSearch = queryParams.get('search') || queryParams.get('q') || '';
     const initialSort = (queryParams.get('sort') as ProductFilter['sortBy']) || 'featured';
+
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [totalAllCount, setTotalAllCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const initialSlugRef = useRef(initialCategorySlug);
 
     const [filter, setFilter] = useState<ProductFilter>({
         categoryId: initialCategoryId,
@@ -38,20 +41,66 @@ export default function ProductIndex() {
     const [inStockOnly, setInStockOnly] = useState(false);
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
-    // Filter products
-    const filteredProducts = useMemo(() => {
-        let list = getProducts(filter);
-        if (inStockOnly) {
-            list = list.filter((p) => p.stock > 0);
-        }
-        return list;
+    // Muat daftar kategori dari server (satu kali + cache).
+    useEffect(() => {
+        let cancelled = false;
+        getCategories()
+            .then((list) => {
+                if (cancelled) return;
+                setCategories(list);
+                if (initialSlugRef.current) {
+                    const cat = list.find((c) => c.slug === initialSlugRef.current);
+                    if (cat) setFilter((prev) => ({ ...prev, categoryId: cat.id }));
+                }
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                console.error('[Index] Gagal memuat kategori:', err instanceof ApiError ? err.message : err);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // Muat produk sesuai filter aktif (dengan debounce untuk pencarian).
+    useEffect(() => {
+        let cancelled = false;
+        setIsLoading(true);
+
+        const timer = window.setTimeout(() => {
+            getCatalog(filter, { perPage: 100 })
+                .then((payload) => {
+                    if (cancelled) return;
+                    setProducts(payload.data);
+                    setTotalAllCount(payload.meta.total);
+                })
+                .catch((err: unknown) => {
+                    if (cancelled) return;
+                    console.error('[Index] Gagal memuat produk:', err instanceof ApiError ? err.message : err);
+                    setProducts([]);
+                })
+                .finally(() => {
+                    if (cancelled) return;
+                    setIsLoading(false);
+                });
+        }, 250);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
     }, [filter, inStockOnly]);
 
-    const totalAllCount = getProducts().length;
+    const displayedProducts = useMemo(() => {
+        if (!inStockOnly) return products;
+        return products.filter((p) => p.stock > 0);
+    }, [products, inStockOnly]);
 
     const activeCategory = filter.categoryId
         ? categories.find((c) => String(c.id) === String(filter.categoryId))
-        : null;
+        : initialSlugRef.current
+          ? categories.find((c) => c.slug === initialSlugRef.current)
+          : null;
 
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFilter((prev) => ({
@@ -100,7 +149,7 @@ export default function ProductIndex() {
                         </h1>
                         <p className="text-sm text-vgs-silver-mid max-w-2xl mt-1">
                             {activeCategory
-                                ? activeCategory.description
+                                ? activeCategory.description || 'Peralatan gaming kompetitif kelas turnamen.'
                                 : 'Peralatan gaming kompetitif kelas turnamen dengan sensor presisi, low-latency wireless, dan durabilitas tinggi.'}
                         </p>
                     </div>
@@ -156,7 +205,7 @@ export default function ProductIndex() {
                             {/* Product Counter & Stock Checkbox */}
                             <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                                 <span className="text-xs font-mono text-vgs-silver-mid font-semibold">
-                                    Menampilkan <span className="text-vgs-blue-electric font-bold">{filteredProducts.length}</span> dari {totalAllCount} produk
+                                    Menampilkan <span className="text-vgs-blue-electric font-bold">{displayedProducts.length}</span> dari {totalAllCount} produk
                                 </span>
 
                                 <label className="flex items-center gap-2 text-xs text-vgs-silver-mid cursor-pointer select-none">
@@ -243,9 +292,15 @@ export default function ProductIndex() {
                         )}
 
                         {/* Product Grid (2 cols mobile, 3 cols tablet, 3-4 cols desktop) */}
-                        {filteredProducts.length > 0 ? (
+                        {isLoading ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                                {filteredProducts.map((product) => (
+                                {Array.from({ length: 8 }).map((_, i) => (
+                                    <div key={i} className="aspect-[3/4] rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border animate-pulse" />
+                                ))}
+                            </div>
+                        ) : displayedProducts.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                                {displayedProducts.map((product) => (
                                     <ProductCard
                                         key={product.id}
                                         product={product}

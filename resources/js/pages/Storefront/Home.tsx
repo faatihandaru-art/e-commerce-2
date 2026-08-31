@@ -1,14 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import HeroSection from '@/components/storefront/HeroSection';
 import CategoryGrid from '@/components/storefront/CategoryGrid';
 import PromoBanner from '@/components/storefront/PromoBanner';
 import ProductCard from '@/components/product/ProductCard';
-import { getFeaturedProducts } from '@/data/dummy-products';
+import { getFeaturedProducts } from '@/lib/api';
+import { ApiError } from '@/lib/api';
+import type { Product } from '@/types/product';
 
 export default function Home() {
-    const featuredProducts = getFeaturedProducts().slice(0, 8);
+    const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        getFeaturedProducts(8)
+            .then((products) => {
+                if (cancelled) return;
+                setFeaturedProducts(products);
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                console.error('[Home] Gagal memuat produk unggulan:', err instanceof ApiError ? err.message : err);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setIsLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const features = [
         {
@@ -111,9 +134,18 @@ export default function Home() {
 
                         {/* Featured Products Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {featuredProducts.map((product) => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
+                            {isLoading ? (
+                                Array.from({ length: 8 }).map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="aspect-[3/4] rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border animate-pulse"
+                                    />
+                                ))
+                            ) : featuredProducts.length > 0 ? (
+                                featuredProducts.map((product) => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))
+                            ) : null}
                         </div>
                     </div>
                 </section>

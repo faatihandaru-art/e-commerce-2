@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { categories } from '@/data/dummy-products';
+import type { Category } from '@/types/product';
+import { getCategories, ApiError } from '@/lib/api';
 
 export const Footer: React.FC = () => {
     const currentYear = new Date().getFullYear();
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        getCategories()
+            .then((list) => {
+                if (cancelled) return;
+                setCategories(list);
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                console.error('[Footer] Gagal memuat kategori:', err instanceof ApiError ? err.message : err);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const popularCategories = categories.slice(0, 6);
 
     return (

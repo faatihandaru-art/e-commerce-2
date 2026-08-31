@@ -1,8 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import type { CartItem, Product, ProductVariant } from '@/types/product';
 import type { ToastData } from '@/components/ui/Toast';
-import { getProductById } from '@/data/dummy-products';
+import {
+    fetchCart,
+    addCartItem,
+    updateCartItem,
+    removeCartItem,
+    clearCartApi,
+    type CartPayload,
+} from '@/lib/api';
 
 export interface AddToCartOptions {
     openDrawer?: boolean;
@@ -59,15 +66,19 @@ const itemUnitPrice = (item: CartItem) => {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'vgs_cart_items_v1';
-
-// Initial default items: empty by default
-const INITIAL_DEFAULT_ITEMS: CartItem[] = [];
-
 export interface CartProviderProps {
     children: React.ReactNode;
     initialUser?: unknown;
 }
+
+const toCartItem = (server: CartPayload['items'][number]): CartItem => ({
+    id: server.id,
+    productId: server.productId,
+    variantId: server.variantId,
+    quantity: server.quantity,
+    product: server.product || undefined,
+    variant: server.variant || undefined,
+});
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUser }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => Boolean(initialUser));
@@ -88,19 +99,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
         };
     }, []);
 
-    const [items, setItems] = useState<CartItem[]>(() => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const saved = localStorage.getItem(CART_STORAGE_KEY);
-            if (saved) {
-                const parsed = JSON.parse(saved) as CartItem[];
-                return parsed;
-            }
-        } catch {
-            // fallback if JSON parse fails
-        }
-        return INITIAL_DEFAULT_ITEMS;
-    });
+    const [items, setItems] = useState<CartItem[]>([]);
+    const isAuthenticatedRef = useRef(isAuthenticated);
+    isAuthenticatedRef.current = isAuthenticated;
 
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -127,18 +128,37 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
     const openLoginModal = () => setIsLoginModalOpen(true);
     const closeLoginModal = () => setIsLoginModalOpen(false);
 
-    // Keranjang hanya berlaku untuk pengguna yang sudah login.
-    // Ketika pengguna logout (auth kosong) atau tamu membuka halaman,
-    // keranjang dikosongkan agar tidak nyangkut di tampilan web.
-    useEffect(() => {
-        if (!isAuthenticated) {
-            setItems([]);
-            try {
-                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify([]));
-            } catch {
-                // ignore storage errors
-            }
+    const syncFromServer = useCallback(async (payload?: CartPayload) => {
+        let data = payload;
+        if (!data) {
+            data = await fetchCart();
         }
+        setItems(data.items.map(toCartItem));
+    }, []);
+
+    const applyServerPayload = useCallback(
+        (payload: CartPayload) => {
+            setItems(payload.items.map(toCartItem));
+        },
+        []
+    );
+
+    // Muat keranjang dari server saat pengguna login; kosongkan saat logout.
+    useEffect(() => {
+        let cancelled = false;
+        if (isAuthenticated) {
+            syncFromServer()
+                .catch(() => {
+                    if (cancelled) return;
+                    setItems([]);
+                });
+        } else {
+            setItems([]);
+        }
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
     const showToast = (toastData: Omit<ToastData, 'id'>) => {
@@ -152,105 +172,61 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
         setToast(null);
     };
 
-    // Save to localStorage when items change
-    useEffect(() => {
-        try {
-            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-        } catch {
-            // ignore localStorage quota errors
-        }
-    }, [items]);
+    const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-    // Hydrate product and variant details
-    const hydratedItems: CartItem[] = items.map((item) => {
-        const product = item.product || getProductById(item.productId);
-        const variant =
-            item.variant ||
-            (product && item.variantId
-                ? product.variants?.find((v) => String(v.id) === String(item.variantId))
-                : undefined);
-        return {
-            ...item,
-            product,
-            variant,
-        };
-    });
-
-    const cartCount = hydratedItems.reduce((acc, item) => acc + item.quantity, 0);
-
-    const cartSubtotal = hydratedItems.reduce((acc, item) => {
-        if (!item.product) return acc;
-        const basePrice = item.product.price;
-        const modifier = item.variant?.priceModifier || 0;
-        const finalUnitPrice = basePrice + modifier;
-        return acc + finalUnitPrice * item.quantity;
-    }, 0);
+    const cartSubtotal = items.reduce((acc, item) => acc + itemUnitPrice(item) * item.quantity, 0);
 
     const addToCart = (
         product: Product,
         quantity: number = 1,
         variant: ProductVariant | null = null,
         options: AddToCartOptions = { openDrawer: false, showToast: true }
-    ) => {
+    ): boolean => {
         if (quantity <= 0) return false;
 
         // Tamu / pengguna yang belum login tidak boleh menambahkan produk.
-        // Munculkan popup login dan jangan menambahkan apa pun ke keranjang.
-        if (!isAuthenticated) {
+        if (!isAuthenticatedRef.current) {
             openLoginModal();
             return false;
         }
 
-        const variantId = variant?.id || undefined;
+        const variantId = variant?.id || product.variants?.[0]?.id;
 
-        setItems((prev) => {
-            const existingIndex = prev.findIndex(
-                (item) =>
-                    String(item.productId) === String(product.id) &&
-                    String(item.variantId || '') === String(variantId || '')
-            );
-
-            if (existingIndex > -1) {
-                const updated = [...prev];
-                const maxStock = variant?.stock ?? product.stock ?? 99;
-                const newQty = Math.min(updated[existingIndex].quantity + quantity, maxStock);
-                updated[existingIndex] = {
-                    ...updated[existingIndex],
-                    quantity: newQty,
-                    product,
-                    variant: variant || undefined,
-                };
-                return updated;
-            }
-
-            return [
-                ...prev,
-                {
-                    id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-                    productId: product.id,
-                    variantId: variantId,
-                    quantity: Math.min(quantity, variant?.stock ?? product.stock ?? 99),
-                    product,
-                    variant: variant || undefined,
-                },
-            ];
-        });
-
-        // Trigger toast feedback if enabled (default true)
-        if (options.showToast !== false) {
-            const unitPrice = product.price + (variant?.priceModifier || 0);
+        // Produk tanpa varian tidak dapat ditambahkan (DB cart memerlukan variant).
+        if (variantId === undefined) {
             showToast({
-                type: 'success',
-                title: 'Produk berhasil ditambahkan ke keranjang!',
-                productName: product.name,
-                productImage: product.images && product.images.length > 0 ? product.images[0] : undefined,
-                variantName: variant ? variant.value : undefined,
-                quantity: quantity,
-                price: unitPrice * quantity,
-                actionUrl: '/cart',
-                actionText: 'Lihat Keranjang',
+                type: 'error',
+                title: 'Produk ini belum tersedia untuk dibeli.',
             });
+            return false;
         }
+
+        const maxStock = variant?.stock ?? product.stock ?? 99;
+
+        addCartItem(variantId, quantity)
+            .then((payload) => {
+                applyServerPayload(payload);
+                if (options.showToast !== false) {
+                    const unitPrice = product.price + (variant?.priceModifier || 0);
+                    showToast({
+                        type: 'success',
+                        title: 'Produk berhasil ditambahkan ke keranjang!',
+                        productName: product.name,
+                        productImage: product.images && product.images.length > 0 ? product.images[0] : undefined,
+                        variantName: variant ? variant.value : undefined,
+                        quantity: quantity,
+                        price: unitPrice * quantity,
+                        actionUrl: '/cart',
+                        actionText: 'Lihat Keranjang',
+                    });
+                }
+            })
+            .catch((err: Error) => {
+                showToast({
+                    type: 'error',
+                    title: err.message || 'Gagal menambahkan produk ke keranjang.',
+                });
+            });
 
         if (options.openDrawer) {
             setIsCartOpen(true);
@@ -263,52 +239,57 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
         productId: number | string,
         variantId: number | string | null | undefined,
         quantity: number
-    ) => {
-        setItems((prev) => {
-            if (quantity <= 0) {
-                return prev.filter(
-                    (item) =>
-                        !(
-                            String(item.productId) === String(productId) &&
-                            String(item.variantId || '') === String(variantId || '')
-                        )
-                );
-            }
+    ): void => {
+        const target = items.find(
+            (item) =>
+                String(item.productId) === String(productId) &&
+                String(item.variantId || '') === String(variantId || '')
+        );
 
-            return prev.map((item) => {
-                if (
-                    String(item.productId) === String(productId) &&
-                    String(item.variantId || '') === String(variantId || '')
-                ) {
-                    const maxStock = item.variant?.stock ?? item.product?.stock ?? 99;
-                    return {
-                        ...item,
-                        quantity: Math.min(quantity, maxStock),
-                    };
-                }
-                return item;
-            });
-        });
+        if (!target || target.id === undefined) return;
+
+        const maxStock = target.variant?.stock ?? target.product?.stock ?? 99;
+
+        if (quantity <= 0) {
+            setItems((prev) => prev.filter((item) => item.id !== target.id));
+            removeCartItem(target.id).then(applyServerPayload).catch(() => syncFromServer());
+            return;
+        }
+
+        setItems((prev) =>
+            prev.map((item) =>
+                item.id === target.id ? { ...item, quantity: Math.min(quantity, maxStock) } : item
+            )
+        );
+        updateCartItem(target.id, Math.min(quantity, maxStock))
+            .then(applyServerPayload)
+            .catch(() => syncFromServer());
     };
 
     const removeFromCart = (
         productId: number | string,
         variantId: number | string | null | undefined
-    ) => {
-        setItems((prev) =>
-            prev.filter(
-                (item) =>
-                    !(
-                        String(item.productId) === String(productId) &&
-                        String(item.variantId || '') === String(variantId || '')
-                    )
-            )
+    ): void => {
+        const target = items.find(
+            (item) =>
+                String(item.productId) === String(productId) &&
+                String(item.variantId || '') === String(variantId || '')
         );
+
+        if (!target || target.id === undefined) return;
+
+        if (selectedKeys.includes(getCartItemKey(target))) {
+            setSelectedKeys((prev) => prev.filter((key) => key !== getCartItemKey(target)));
+        }
+
+        setItems((prev) => prev.filter((item) => item.id !== target.id));
+        removeCartItem(target.id).then(applyServerPayload).catch(() => syncFromServer());
     };
 
-    const clearCart = () => {
+    const clearCart = (): void => {
         setItems([]);
         setSelectedKeys([]);
+        clearCartApi().then(applyServerPayload).catch(() => syncFromServer());
     };
 
     const toggleSelect = (item: CartItem) => {
@@ -319,12 +300,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
     };
 
     const setSelectAll = (selected: boolean) => {
-        setSelectedKeys(selected ? hydratedItems.map((i) => getCartItemKey(i)) : []);
+        setSelectedKeys(selected ? items.map((i) => getCartItemKey(i)) : []);
     };
 
-    const selectedItems = hydratedItems.filter((i) =>
-        selectedKeys.includes(getCartItemKey(i))
-    );
+    const selectedItems = items.filter((i) => selectedKeys.includes(getCartItemKey(i)));
 
     const selectedCount = selectedItems.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -333,7 +312,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
         0
     );
 
-    const isAllSelected = hydratedItems.length > 0 && selectedKeys.length === hydratedItems.length;
+    const isAllSelected = items.length > 0 && selectedKeys.length === items.length;
 
     const openCart = () => setIsCartOpen(true);
     const closeCart = () => setIsCartOpen(false);
@@ -341,7 +320,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, initialUse
     return (
         <CartContext.Provider
             value={{
-                items: hydratedItems,
+                items,
                 cartCount,
                 cartSubtotal,
                 selectedKeys,

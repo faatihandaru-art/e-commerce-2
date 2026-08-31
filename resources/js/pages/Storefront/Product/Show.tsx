@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import ProductGallery from '@/components/product/ProductGallery';
@@ -9,36 +9,118 @@ import RatingStars from '@/components/ui/RatingStars';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import QuantityStepper from '@/components/ui/QuantityStepper';
-import { getProductBySlug, getProductById, getProducts, formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
+import { getProduct, ApiError, type ProductReviewPayload } from '@/lib/api';
 import type { Product, ProductVariant } from '@/types/product';
 import { useCart } from '@/context/CartContext';
 
 interface ProductShowProps {
     slug?: string;
-    product?: Product;
 }
 
-export default function ProductShow({ slug, product: propProduct }: ProductShowProps) {
+export default function ProductShow({ slug: propSlug }: ProductShowProps) {
     const { url } = usePage();
     const { addToCart } = useCart();
 
-    // Resolve product from prop, slug, or URL
-    const resolvedSlug = slug || (url ? url.split('/products/')[1]?.split('?')[0] : '');
-    const product =
-        propProduct ||
-        (resolvedSlug ? getProductBySlug(resolvedSlug) || getProductById(resolvedSlug) : null) ||
-        getProducts()[0]; // graceful fallback
+    // Resolve slug dari prop atau URL
+    const resolvedSlug =
+        propSlug || (url ? url.split('/products/')[1]?.split('?')[0] : '') || '';
+
+    const [product, setProduct] = useState<Product | null>(null);
+    const [reviews, setReviews] = useState<ProductReviewPayload[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     // Selected variant
-    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
-        product.variants && product.variants.length > 0 ? product.variants[0] : null
-    );
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
     // Quantity state
     const [quantity, setQuantity] = useState<number>(1);
 
     // Active Tab state: 'description' | 'specifications' | 'reviews'
     const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
+
+    // Muat detail produk dari API
+    useEffect(() => {
+        let cancelled = false;
+        setIsLoading(true);
+        setLoadError(null);
+        setSelectedVariant(null);
+        setQuantity(1);
+
+        if (!resolvedSlug) {
+            if (!cancelled) {
+                setLoadError('Produk tidak ditemukan.');
+                setIsLoading(false);
+            }
+            return;
+        }
+
+        getProduct(resolvedSlug)
+            .then((payload) => {
+                if (cancelled) return;
+                setProduct(payload.data);
+                setReviews(payload.reviews ?? []);
+                setSelectedVariant(
+                    payload.data.variants && payload.data.variants.length > 0
+                        ? payload.data.variants[0]
+                        : null
+                );
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                setLoadError(err instanceof ApiError ? err.message : 'Produk tidak ditemukan.');
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setIsLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [resolvedSlug]);
+
+    if (isLoading) {
+        return (
+            <StorefrontLayout>
+                <Head title="Memuat Produk — Vortix Gaming Store" />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div className="aspect-square rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border animate-pulse" />
+                    <div className="flex flex-col gap-4">
+                        <div className="h-4 w-32 bg-vgs-black-elevated rounded animate-pulse" />
+                        <div className="h-8 w-3/4 bg-vgs-black-elevated rounded animate-pulse" />
+                        <div className="h-8 w-48 bg-vgs-black-elevated rounded animate-pulse" />
+                        <div className="h-24 w-full bg-vgs-black-elevated rounded animate-pulse" />
+                    </div>
+                </div>
+            </StorefrontLayout>
+        );
+    }
+
+    if (loadError || !product) {
+        return (
+            <StorefrontLayout>
+                <Head title="Produk Tidak Ditemukan — Vortix Gaming Store" />
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border flex items-center justify-center text-vgs-silver-muted mb-4 mx-auto">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h1 className="font-display font-bold text-2xl text-vgs-silver-bright mb-2">
+                        Produk Tidak Ditemukan
+                    </h1>
+                    <p className="text-sm text-vgs-silver-muted mb-6">
+                        {loadError || 'Produk yang Anda cari mungkin sudah tidak tersedia.'}
+                    </p>
+                    <Button onClick={() => router.visit('/products')} variant="secondary">
+                        Lihat Semua Produk
+                    </Button>
+                </div>
+            </StorefrontLayout>
+        );
+    }
 
     // Calculations
     const priceModifier = selectedVariant?.priceModifier || 0;
@@ -66,41 +148,7 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
     };
 
     // Dummy realistic gamer reviews
-    const dummyReviews = [
-        {
-            id: 'rev-1',
-            author: 'Reza "VortexAim" Pratama',
-            role: 'Semi-Pro Valorant Player',
-            rating: 5,
-            date: '3 hari yang lalu',
-            variant: selectedVariant?.value || 'Standar',
-            comment:
-                'Sensornya bener-bener gila presisi! Gak ada delay sama sekali pas flicking di turnamen lokal kemaren. Build quality kokoh banget dan grip-nya pas di tangan.',
-            helpfulCount: 42,
-        },
-        {
-            id: 'rev-2',
-            author: 'Budi Santoso',
-            role: 'Hardware Enthusiast',
-            rating: 5,
-            date: '1 minggu yang lalu',
-            variant: product.variants?.[0]?.value || 'Default',
-            comment:
-                'Pengiriman super aman pakai double bubble wrap tebal. Barang 100% original bergaransi resmi VGS. Rekomendasi setup gaming terbaik di kelas harganya!',
-            helpfulCount: 19,
-        },
-        {
-            id: 'rev-3',
-            author: 'Dimas Anggoro',
-            role: 'Streamer / Content Creator',
-            rating: 4,
-            date: '2 minggu yang lalu',
-            variant: product.variants?.[1]?.value || 'Default',
-            comment:
-                'Overall sangat puas. Desain minimalis technical aesthetic-nya cocok banget sama setup clean saya di meja. Baterai awet berhari-hari.',
-            helpfulCount: 8,
-        },
-    ];
+    const noReviews = reviews.length === 0;
 
     return (
         <StorefrontLayout>
@@ -392,50 +440,39 @@ export default function ProductShow({ slug, product: propProduct }: ProductShowP
 
                                 {/* Review Items List */}
                                 <div className="flex flex-col gap-4">
-                                    {dummyReviews.map((rev) => (
-                                        <div
-                                            key={rev.id}
-                                            className="p-5 rounded-2xl bg-vgs-black-surface/60 border border-vgs-gray-border flex flex-col gap-3"
-                                        >
-                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-vgs-blue-electric/20 border border-vgs-blue-electric/40 font-mono font-bold text-xs text-vgs-blue-electric flex items-center justify-center">
-                                                        {rev.author.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
+                                    {noReviews ? (
+                                        <div className="p-8 rounded-2xl bg-vgs-black-surface/60 border border-dashed border-vgs-gray-border text-center text-sm text-vgs-silver-muted">
+                                            Belum ada ulasan untuk produk ini.
+                                        </div>
+                                    ) : (
+                                        reviews.map((rev) => (
+                                            <div
+                                                key={rev.id}
+                                                className="p-5 rounded-2xl bg-vgs-black-surface/60 border border-vgs-gray-border flex flex-col gap-3"
+                                            >
+                                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-full bg-vgs-blue-electric/20 border border-vgs-blue-electric/40 font-mono font-bold text-xs text-vgs-blue-electric flex items-center justify-center">
+                                                            {rev.author.charAt(0)}
+                                                        </div>
+                                                        <div>
                                                             <span className="font-semibold text-xs sm:text-sm text-vgs-silver-bright">
                                                                 {rev.author}
                                                             </span>
-                                                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-vgs-black-elevated border border-vgs-gray-border text-vgs-silver-muted">
-                                                                {rev.role}
+                                                            <span className="text-[11px] font-mono text-vgs-silver-muted block">
+                                                                {rev.date || ''}
                                                             </span>
                                                         </div>
-                                                        <span className="text-[11px] font-mono text-vgs-silver-muted">
-                                                            Varian: {rev.variant} • {rev.date}
-                                                        </span>
                                                     </div>
+                                                    <RatingStars rating={rev.rating} size="xs" />
                                                 </div>
-                                                <RatingStars rating={rev.rating} size="xs" />
-                                            </div>
 
-                                            <p className="text-sm text-vgs-silver-mid leading-relaxed">
-                                                &quot;{rev.comment}&quot;
-                                            </p>
-
-                                            <div className="flex items-center gap-1.5 text-xs text-vgs-silver-muted pt-1">
-                                                <button
-                                                    type="button"
-                                                    className="flex items-center gap-1.5 hover:text-vgs-blue-electric transition-colors cursor-pointer"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                                                    </svg>
-                                                    <span>Membantu ({rev.helpfulCount})</span>
-                                                </button>
+                                                <p className="text-sm text-vgs-silver-mid leading-relaxed">
+                                                    &quot;{rev.comment}&quot;
+                                                </p>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         )}

@@ -23,6 +23,9 @@ class HandleInertiaRequests
                     ]
                     : null,
             ],
+            'flash' => fn () => [
+                'success' => $request->session()->get('success'),
+            ],
         ]);
 
         return $next($request);

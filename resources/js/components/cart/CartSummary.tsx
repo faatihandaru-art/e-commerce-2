@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 
 export interface CartSummaryProps {
     subtotal: number;

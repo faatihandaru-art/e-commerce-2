@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -17,6 +18,7 @@ class Product extends Model
         'slug',
         'type',
         'status',
+        'featured',
         'short_description',
         'description',
         'meta_title',
@@ -25,6 +27,7 @@ class Product extends Model
     ];
 
     protected $casts = [
+        'featured' => 'boolean',
         'published_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
@@ -32,6 +35,11 @@ class Product extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class);
     }
 
     public function options(): HasMany
@@ -47,5 +55,10 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
     }
 }

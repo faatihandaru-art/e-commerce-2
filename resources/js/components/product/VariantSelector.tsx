@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ProductVariant } from '@/types/product';
 import Chip from '@/components/ui/Chip';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 
 export interface VariantSelectorProps {
     variants: ProductVariant[];

@@ -1,159 +1,183 @@
-import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import React, { useMemo, useState } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useCart, getCartItemKey } from '@/context/CartContext';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
+import {
+    placeOrder,
+    ApiError,
+    type CheckoutAddressPayload,
+    type PaymentMethodPayload,
+    type PlaceOrderPayload,
+    type ShippingOptionPayload,
+} from '@/lib/api';
 
-interface PaymentOption {
-    id: string;
-    name: string;
-    group: string;
-    logo: string;
-    fee: number;
-    desc?: string;
+interface CheckoutPageProps {
+    addresses: CheckoutAddressPayload[];
+    shippingMethods: ShippingOptionPayload[];
+    paymentMethods: PaymentMethodPayload[];
 }
 
-interface ShippingOption {
-    id: string;
-    name: string;
-    eta: string;
-    cost: number;
-    logoUrl: string;
+interface OrderResultInfo {
+    order_number: string;
+    grand_total: number;
+    paymentName: string;
 }
-
-const FREE_SHIPPING_THRESHOLD = 1000000;
-
-const PAYMENT_GROUPS: { id: string; name: string }[] = [
-    { id: 'ewallet', name: 'E-Wallet' },
-    { id: 'qris', name: 'QRIS' },
-    { id: 'cod', name: 'Bayar di Tempat (COD)' },
-];
-
-const PAYMENT_METHODS: PaymentOption[] = [
-    {
-        id: 'shopeepay',
-        name: 'ShopeePay',
-        group: 'ewallet',
-        logo: '/images/products/shopeepay.png',
-        fee: 0,
-        desc: 'Saldo & Voucher',
-    },
-    {
-        id: 'gopay',
-        name: 'GoPay',
-        group: 'ewallet',
-        logo: '/images/products/gopay.png',
-        fee: 0,
-    },
-    {
-        id: 'ovo',
-        name: 'OVO',
-        group: 'ewallet',
-        logo: '/images/products/ovo.jpg',
-        fee: 0,
-    },
-    {
-        id: 'dana',
-        name: 'DANA',
-        group: 'ewallet',
-        logo: '/images/products/dana.jpg',
-        fee: 0,
-    },
-    {
-        id: 'qris',
-        name: 'QRIS (Semua Aplikasi E-Wallet / Mobile Banking)',
-        group: 'qris',
-        logo: '/images/products/qris.png',
-        fee: 0,
-        desc: 'Scan sekali untuk semua pembayaran',
-    },
-    {
-        id: 'cod',
-        name: 'Bayar di Tempat (COD)',
-        group: 'cod',
-        logo: '/images/products/cod.jpg',
-        fee: 0,
-        desc: 'Tersedia hanya di area tertentu',
-    },
-];
-
-const SHIPPING_OPTIONS: ShippingOption[] = [
-    {
-        id: 'jne',
-        name: 'JNE Reguler',
-        eta: '2-4 hari',
-        cost: 18000,
-        logoUrl: '/images/products/logojne.jpg',
-    },
-    {
-        id: 'jnt',
-        name: 'J&T Express',
-        eta: '2-3 hari',
-        cost: 17000,
-        logoUrl: '/images/products/jntex.png',
-    },
-    {
-        id: 'sicepat',
-        name: 'SiCepat BEST',
-        eta: '1-2 hari',
-        cost: 22000,
-        logoUrl: '/images/products/sicepat.jpg',
-    },
-   
-];
 
 export default function Checkout() {
-    const { items, selectedItems, selectedSubtotal, cartCount } = useCart();
+    const page = usePage();
+    const props = (page.props ?? {}) as unknown as CheckoutPageProps;
+    const addresses = props.addresses ?? [];
+    const shippingMethods = props.shippingMethods ?? [];
+    const paymentMethods = props.paymentMethods ?? [];
 
-    const [paymentId, setPaymentId] = useState<string>('shopeepay');
-    const [shippingId, setShippingId] = useState<string>('jne');
-    const [addressId, setAddressId] = useState<number>(1);
+    const { items, selectedItems, selectedSubtotal, clearCart } = useCart();
+
+    const [paymentId, setPaymentId] = useState<string>(() => paymentMethods[0]?.id ?? '');
+    const [shippingId, setShippingId] = useState<number | string>(
+        () => shippingMethods[0]?.id ?? ''
+    );
+    const [addressId, setAddressId] = useState<number | string>(
+        () => addresses[0]?.id ?? ''
+    );
+    const [couponCode, setCouponCode] = useState('');
     const [notes, setNotes] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
     const [placing, setPlacing] = useState(false);
+    const [orderInfo, setOrderInfo] = useState<OrderResultInfo | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    // Inline shipping fields dipakai ketika user belum punya alamat tersimpan.
+    const [newAddress, setNewAddress] = useState({
+        recipient: '',
+        phone: '',
+        address_line1: '',
+        city: '',
+        province: '',
+        postal_code: '',
+    });
+
+    const paymentGroups = useMemo(() => {
+        const groups: { id: string; name: string; methods: PaymentMethodPayload[] }[] = [];
+        paymentMethods.forEach((m) => {
+            let group = groups.find((g) => g.id === m.group);
+            if (!group) {
+                const names: Record<string, string> = {
+                    ewallet: 'E-Wallet',
+                    qris: 'QRIS',
+                    cod: 'Bayar di Tempat (COD)',
+                    banktransfer: 'Transfer Bank',
+                    virtualaccount: 'Virtual Account',
+                };
+                group = { id: m.group, name: names[m.group] || m.group, methods: [] };
+                groups.push(group);
+            }
+            group.methods.push(m);
+        });
+        return groups;
+    }, [paymentMethods]);
 
     const itemsToCheckout = selectedItems.length > 0 ? selectedItems : items;
-    const subtotal = selectedItems.length > 0 ? selectedSubtotal : (itemsToCheckout.reduce((acc, i) => acc + (i.product ? i.product.price + (i.variant?.priceModifier || 0) : 0) * i.quantity, 0));
 
-    const shipping = SHIPPING_OPTIONS.find((o) => o.id === shippingId)!;
-    const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : shipping.cost;
-    const payment = PAYMENT_METHODS.find((p) => p.id === paymentId)!;
-    const paymentFee = payment.fee;
+    const subtotal =
+        selectedItems.length > 0
+            ? selectedSubtotal
+            : itemsToCheckout.reduce(
+                  (acc, i) =>
+                      acc +
+                      (i.product ? i.product.price + (i.variant?.priceModifier || 0) : 0) *
+                          i.quantity,
+                  0
+              );
+
+    const shipping = shippingMethods.find((o) => String(o.id) === String(shippingId));
+    const shippingCost = shipping?.cost ?? 0;
+    const payment = paymentMethods.find((p) => p.id === paymentId);
+    const paymentFee = payment?.fee ?? 0;
     const grandTotal = subtotal + shippingCost + paymentFee;
 
-    const addresses = [
-        {
-            id: 1,
-            label: 'Alamat Rumah',
-            recipient: 'Rizky Pratama',
-            phone: '0812-3456-7890',
-            line: 'Jl. Merdeka No. 45, RT 05/RW 02, Kel. Cideng, Kec. Gambir',
-            city: 'Jakarta Pusat, DKI Jakarta 10150',
-            note: 'Utama',
-        },
-        {
-            id: 2,
-            label: 'Alamat Kantor',
-            recipient: 'Rizky Pratama',
-            phone: '0812-3456-7890',
-            line: 'Gedung Vortix Tower, Lantai 12, Jl. Sudirman No. 28',
-            city: 'Jakarta Selatan, DKI Jakarta 12190',
-        },
-    ];
-
-    const selectedAddress = addresses.find((a) => a.id === addressId)!;
-
-    const handlePlaceOrder = () => {
-        setPlacing(true);
-        setTimeout(() => {
-            setPlacing(false);
-            setShowSuccess(true);
-        }, 1200);
-    };
+    const selectedAddress =
+        addresses.find((a) => String(a.id) === String(addressId)) || addresses[0];
 
     const count = itemsToCheckout.reduce((acc, i) => acc + i.quantity, 0);
+
+    const shippingPayload = useMemo(() => {
+        if (selectedAddress) {
+            return {
+                recipient: selectedAddress.recipient,
+                phone: selectedAddress.phone,
+                address_line1: selectedAddress.line,
+                city: selectedAddress.city.split(',')[0]?.trim() || selectedAddress.city,
+                province: selectedAddress.province,
+                postal_code: selectedAddress.postal_code,
+                country: selectedAddress.country ?? 'Indonesia',
+            };
+        }
+        return {
+            recipient: newAddress.recipient,
+            phone: newAddress.phone,
+            address_line1: newAddress.address_line1,
+            city: newAddress.city,
+            province: newAddress.province,
+            postal_code: newAddress.postal_code,
+            country: 'Indonesia',
+        };
+    }, [selectedAddress, newAddress]);
+
+    const handlePlaceOrder = async () => {
+        if (!payment) {
+            setError('Pilih metode pembayaran terlebih dahulu.');
+            return;
+        }
+        if (!shipping) {
+            setError('Pilih metode pengiriman terlebih dahulu.');
+            return;
+        }
+        if (!shippingPayload.recipient || !shippingPayload.address_line1 || !shippingPayload.city) {
+            setError('Lengkapi alamat pengiriman terlebih dahulu.');
+            return;
+        }
+
+        setPlacing(true);
+        setError(null);
+
+        const payload: PlaceOrderPayload = {
+            items: itemsToCheckout.map((i) => ({
+                variant_id: String(i.variantId ?? ''),
+                quantity: i.quantity,
+            })),
+            shipping: shippingPayload,
+            shipping_method_id: shipping.id,
+            shipping_cost: shippingCost,
+            shipping_name: shipping.name,
+            payment: {
+                method: payment.id,
+                group: payment.group,
+                fee: paymentFee,
+            },
+            coupon_code: couponCode.trim() || undefined,
+            notes: notes.trim() || undefined,
+        };
+
+        try {
+            const result = await placeOrder(payload);
+            clearCart();
+            setOrderInfo({
+                order_number: result.order.order_number,
+                grand_total: result.order.grand_total,
+                paymentName: payment.name,
+            });
+            setShowSuccess(true);
+        } catch (err) {
+            setError(
+                err instanceof ApiError ? err.message : 'Gagal membuat pesanan. Silakan coba lagi.'
+            );
+        } finally {
+            setPlacing(false);
+        }
+    };
 
     return (
         <StorefrontLayout>
@@ -162,9 +186,13 @@ export default function Checkout() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
                 {/* Breadcrumbs */}
                 <nav className="flex items-center gap-2 text-xs font-mono text-vgs-silver-muted mb-6">
-                    <Link href="/" className="hover:text-vgs-silver-bright transition-colors">Home</Link>
+                    <Link href="/" className="hover:text-vgs-silver-bright transition-colors">
+                        Home
+                    </Link>
                     <span>/</span>
-                    <Link href="/cart" className="hover:text-vgs-silver-bright transition-colors">Keranjang</Link>
+                    <Link href="/cart" className="hover:text-vgs-silver-bright transition-colors">
+                        Keranjang
+                    </Link>
                     <span>/</span>
                     <span className="text-vgs-silver-bright font-medium">Checkout</span>
                 </nav>
@@ -178,6 +206,13 @@ export default function Checkout() {
                         Checkout
                     </h1>
                 </div>
+
+                {/* Coupon feedback */}
+                {error && (
+                    <div className="mb-6 p-4 rounded-xl bg-vgs-danger/10 border border-vgs-danger/40 text-sm text-vgs-danger font-medium">
+                        {error}
+                    </div>
+                )}
 
                 {itemsToCheckout.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-center py-16 sm:py-24 px-4 bg-vgs-black-surface/40 rounded-3xl border border-dashed border-vgs-gray-border max-w-2xl mx-auto">
@@ -227,23 +262,103 @@ export default function Checkout() {
                                         </span>
                                         Alamat Pengiriman
                                     </h2>
-                                    <span className="text-[11px] font-mono text-vgs-blue-electric">GANTI</span>
+                                    <span className="text-[11px] font-mono text-vgs-silver-muted">
+                                        {addresses.length} tersimpan
+                                    </span>
                                 </div>
 
                                 <div className="p-5">
-                                    <div className="flex items-start gap-3">
-                                        <span className={`mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase ${selectedAddress.note ? 'text-vgs-blue-electric bg-vgs-blue-electric/10 border border-vgs-blue-electric/30' : 'text-vgs-silver-mid bg-vgs-black-void border border-vgs-gray-border'}`}>
-                                            {selectedAddress.note || 'Alamat'}
-                                        </span>
-                                        <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-vgs-silver-bright">{selectedAddress.recipient}</span>
-                                                <span className="text-xs font-mono text-vgs-silver-muted">{selectedAddress.phone}</span>
-                                            </div>
-                                            <p className="text-sm text-vgs-silver-mid">{selectedAddress.line}</p>
-                                            <p className="text-xs text-vgs-silver-muted">{selectedAddress.city}</p>
+                                    {addresses.length > 0 ? (
+                                        <div className="flex flex-col gap-2">
+                                            {addresses.map((addr) => (
+                                                <label
+                                                    key={addr.id}
+                                                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                        String(addressId) === String(addr.id)
+                                                            ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
+                                                            : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="address"
+                                                        value={String(addr.id)}
+                                                        checked={String(addressId) === String(addr.id)}
+                                                        onChange={() => setAddressId(addr.id)}
+                                                        className="accent-vgs-blue-electric w-4 h-4 mt-1"
+                                                    />
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-semibold text-vgs-silver-bright text-sm">
+                                                                {addr.recipient}
+                                                            </span>
+                                                            <span className="text-xs font-mono text-vgs-silver-muted">
+                                                                {addr.phone}
+                                                            </span>
+                                                            {addr.note && (
+                                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase text-vgs-blue-electric bg-vgs-blue-electric/10 border border-vgs-blue-electric/30">
+                                                                    {addr.note}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-vgs-silver-mid mt-0.5">{addr.line}</p>
+                                                        <p className="text-xs text-vgs-silver-muted">{addr.city}</p>
+                                                    </div>
+                                                </label>
+                                            ))}
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-3">
+                                            <p className="text-xs text-vgs-silver-muted">
+                                                Anda belum memiliki alamat tersimpan. Lengkapi alamat pengiriman di bawah ini.
+                                            </p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <Input
+                                                    placeholder="Nama Penerima"
+                                                    value={newAddress.recipient}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, recipient: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    placeholder="No. HP (08xx)"
+                                                    value={newAddress.phone}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, phone: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    containerClassName="sm:col-span-2"
+                                                    placeholder="Alamat Lengkap (Jalan, RT/RW, Kelurahan, Kecamatan)"
+                                                    value={newAddress.address_line1}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, address_line1: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    placeholder="Kota / Kabupaten"
+                                                    value={newAddress.city}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, city: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    placeholder="Provinsi"
+                                                    value={newAddress.province}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, province: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    placeholder="Kode Pos"
+                                                    value={newAddress.postal_code}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, postal_code: e.target.value }))
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </section>
 
@@ -262,45 +377,51 @@ export default function Checkout() {
                                 </div>
 
                                 <div className="p-3 flex flex-col gap-2">
-                                    {SHIPPING_OPTIONS.map((opt) => {
-                                        const cost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : opt.cost;
-                                        return (
-                                            <label
-                                                key={opt.id}
-                                                className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                                                    shippingId === opt.id
-                                                        ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
-                                                        : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
-                                                }`}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="shipping"
-                                                    value={opt.id}
-                                                    checked={shippingId === opt.id}
-                                                    onChange={() => setShippingId(opt.id)}
-                                                    className="accent-vgs-blue-electric w-4 h-4"
+                                    {shippingMethods.map((opt) => (
+                                        <label
+                                            key={opt.id}
+                                            className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                String(shippingId) === String(opt.id)
+                                                    ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
+                                                    : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="shipping"
+                                                value={String(opt.id)}
+                                                checked={String(shippingId) === String(opt.id)}
+                                                onChange={() => setShippingId(opt.id)}
+                                                className="accent-vgs-blue-electric w-4 h-4"
+                                            />
+                                            <div className="w-14 h-10 rounded-lg bg-white border border-vgs-gray-border flex items-center justify-center overflow-hidden shrink-0 p-1.5">
+                                                <img
+                                                    src={opt.logoUrl}
+                                                    alt={`Logo ${opt.name}`}
+                                                    className="max-w-full max-h-full w-auto h-auto object-contain block"
+                                                    loading="lazy"
                                                 />
-                                                <div className="w-14 h-10 rounded-lg bg-white border border-vgs-gray-border flex items-center justify-center overflow-hidden shrink-0 p-1.5">
-                                                    <img
-                                                        src={opt.logoUrl}
-                                                        alt={`Logo ${opt.name}`}
-                                                        className="max-w-full max-h-full w-auto h-auto object-contain block"
-                                                        loading="lazy"
-                                                    />
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="font-semibold text-vgs-silver-bright text-sm">{opt.name}</p>
+                                                    <p className="text-xs text-vgs-silver-muted">Estimasi {opt.eta}</p>
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-between gap-3">
-                                                    <div className="min-w-0">
-                                                        <p className="font-semibold text-vgs-silver-bright text-sm">{opt.name}</p>
-                                                        <p className="text-xs text-vgs-silver-muted">Estimasi {opt.eta}</p>
-                                                    </div>
-                                                    <span className="font-mono font-bold text-sm text-vgs-blue-electric shrink-0">
-                                                        {cost === 0 ? <span className="text-vgs-success uppercase text-xs font-bold">GRATIS</span> : formatRupiah(cost)}
-                                                    </span>
-                                                </div>
-                                            </label>
-                                        );
-                                    })}
+                                                <span className="font-mono font-bold text-sm text-vgs-blue-electric shrink-0">
+                                                    {opt.cost === 0 ? (
+                                                        <span className="text-vgs-success uppercase text-xs font-bold">GRATIS</span>
+                                                    ) : (
+                                                        formatRupiah(opt.cost)
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {shippingMethods.length === 0 && (
+                                        <p className="p-3 text-sm text-vgs-silver-muted">
+                                            Belum ada metode pengiriman yang tersedia.
+                                        </p>
+                                    )}
                                 </div>
                             </section>
 
@@ -319,73 +440,90 @@ export default function Checkout() {
                                 </div>
 
                                 <div className="p-3 flex flex-col gap-3">
-                                    {PAYMENT_GROUPS.map((group) => {
-                                        const methods = PAYMENT_METHODS.filter((m) => m.group === group.id);
-                                        if (methods.length === 0) return null;
-                                        return (
-                                            <div key={group.id}>
-                                                <p className="px-2 pb-2 text-[11px] font-mono font-bold uppercase tracking-wider text-vgs-silver-muted">
-                                                    {group.name}
-                                                </p>
-                                                <div className="flex flex-col gap-2">
-                                                    {methods.map((m) => (
-                                                        <label
-                                                            key={m.id}
-                                                            className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                                                                paymentId === m.id
-                                                                    ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
-                                                                    : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
-                                                            }`}
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                name="payment"
-                                                                value={m.id}
-                                                                checked={paymentId === m.id}
-                                                                onChange={() => setPaymentId(m.id)}
-                                                                className="accent-vgs-blue-electric w-4 h-4"
-                                                            />
-<div className="w-14 h-10 rounded-lg bg-white border border-vgs-gray-border flex items-center justify-center shrink-0 overflow-hidden p-1.5">
-    {m.logo ? (
-        <img
-            src={m.logo}
-            alt={`Logo ${m.name}`}
-            className="max-w-full max-h-full w-auto h-auto object-contain block"
-            loading="lazy"
-        />
-    ) : (
-        <span className="text-xs font-bold text-vgs-black-void">COD</span>
-    )}
-</div>
-                                                            <div className="flex-1">
-                                                                <p className="font-semibold text-vgs-silver-bright text-sm">{m.name}</p>
-                                                                {m.desc && <p className="text-xs text-vgs-silver-muted">{m.desc}</p>}
-                                                            </div>
-                                                            {m.fee > 0 && (
-                                                                <span className="text-xs font-mono text-vgs-silver-muted">
-                                                                    {formatRupiah(m.fee)}
-                                                                </span>
+                                    {paymentGroups.map((group) => (
+                                        <div key={group.id}>
+                                            <p className="px-2 pb-2 text-[11px] font-mono font-bold uppercase tracking-wider text-vgs-silver-muted">
+                                                {group.name}
+                                            </p>
+                                            <div className="flex flex-col gap-2">
+                                                {group.methods.map((m) => (
+                                                    <label
+                                                        key={m.id}
+                                                        className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                            paymentId === m.id
+                                                                ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
+                                                                : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
+                                                        }`}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="payment"
+                                                            value={m.id}
+                                                            checked={paymentId === m.id}
+                                                            onChange={() => setPaymentId(m.id)}
+                                                            className="accent-vgs-blue-electric w-4 h-4"
+                                                        />
+                                                        <div className="w-14 h-10 rounded-lg bg-white border border-vgs-gray-border flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+                                                            {m.logo ? (
+                                                                <img
+                                                                    src={m.logo}
+                                                                    alt={`Logo ${m.name}`}
+                                                                    className="max-w-full max-h-full w-auto h-auto object-contain block"
+                                                                    loading="lazy"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-xs font-bold text-vgs-black-void">COD</span>
                                                             )}
-                                                        </label>
-                                                    ))}
-                                                </div>
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-semibold text-vgs-silver-bright text-sm">{m.name}</p>
+                                                            {m.desc && <p className="text-xs text-vgs-silver-muted">{m.desc}</p>}
+                                                        </div>
+                                                        {m.fee > 0 && (
+                                                            <span className="text-xs font-mono text-vgs-silver-muted">
+                                                                {formatRupiah(m.fee)}
+                                                            </span>
+                                                        )}
+                                                    </label>
+                                                ))}
                                             </div>
-                                        );
-                                    })}
+                                        </div>
+                                    ))}
+                                    {paymentMethods.length === 0 && (
+                                        <p className="p-3 text-sm text-vgs-silver-muted">
+                                            Belum ada metode pembayaran yang tersedia.
+                                        </p>
+                                    )}
                                 </div>
                             </section>
 
-                            {/* Order Notes */}
-                            <section className="rounded-2xl bg-vgs-black-surface border border-vgs-gray-border p-5">
-                                <h2 className="font-display font-bold text-vgs-silver-bright mb-3">
-                                    Catatan untuk Penjual
-                                </h2>
-                                <Input
-                                    placeholder="Contoh: Tolong kirim dengan packaging bubble wrap tambahan"
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                />
-                            </section>
+                            {/* Order Notes & Coupon */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <section className="rounded-2xl bg-vgs-black-surface border border-vgs-gray-border p-5">
+                                    <h2 className="font-display font-bold text-vgs-silver-bright mb-3">
+                                        Catatan untuk Penjual
+                                    </h2>
+                                    <Input
+                                        placeholder="Contoh: Tolong kirim dengan packaging bubble wrap tambahan"
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                    />
+                                </section>
+
+                                <section className="rounded-2xl bg-vgs-black-surface border border-vgs-gray-border p-5">
+                                    <h2 className="font-display font-bold text-vgs-silver-bright mb-3">
+                                        Kupon Diskon
+                                    </h2>
+                                    <Input
+                                        placeholder="Masukkan kode kupon (opsional)"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                    />
+                                    <p className="text-[11px] font-mono text-vgs-silver-muted mt-2">
+                                        Kupon divalidasi saat pesanan dibuat. Coba VGSWIN / ESPORTS10.
+                                    </p>
+                                </section>
+                            </div>
                         </div>
 
                         {/* Right: Order Summary */}
@@ -401,8 +539,12 @@ export default function Checkout() {
                                     {/* Items */}
                                     <div className="flex flex-col gap-3 max-h-64 overflow-y-auto pr-1">
                                         {itemsToCheckout.map((item) => {
-                                            const unit = item.product ? item.product.price + (item.variant?.priceModifier || 0) : 0;
-                                            const img = item.product?.images?.[0] || 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80';
+                                            const unit = item.product
+                                                ? item.product.price + (item.variant?.priceModifier || 0)
+                                                : 0;
+                                            const img =
+                                                item.product?.images?.[0] ||
+                                                'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&auto=format&fit=crop&q=80';
                                             return (
                                                 <div key={getCartItemKey(item)} className="flex items-center gap-3">
                                                     <div className="relative w-12 h-12 rounded-lg bg-vgs-black-void border border-vgs-gray-border p-1 flex items-center justify-center shrink-0 overflow-hidden">
@@ -412,8 +554,14 @@ export default function Checkout() {
                                                         </span>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-xs font-semibold text-vgs-silver-bright truncate">{item.product?.name}</p>
-                                                        {item.variant && <p className="text-[10px] font-mono text-vgs-silver-muted truncate">{item.variant.value}</p>}
+                                                        <p className="text-xs font-semibold text-vgs-silver-bright truncate">
+                                                            {item.product?.name}
+                                                        </p>
+                                                        {item.variant && (
+                                                            <p className="text-[10px] font-mono text-vgs-silver-muted truncate">
+                                                                {item.variant.value}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                     <span className="font-mono text-xs font-bold text-vgs-silver-bright shrink-0">
                                                         {formatRupiah(unit * item.quantity)}
@@ -427,19 +575,35 @@ export default function Checkout() {
                                     <div className="flex flex-col gap-2 text-xs font-medium border-t border-vgs-gray-border/60 pt-4">
                                         <div className="flex items-center justify-between text-vgs-silver-mid">
                                             <span>Subtotal ({count} item)</span>
-                                            <span className="font-mono font-semibold text-vgs-silver-bright">{formatRupiah(subtotal)}</span>
+                                            <span className="font-mono font-semibold text-vgs-silver-bright">
+                                                {formatRupiah(subtotal)}
+                                            </span>
                                         </div>
                                         <div className="flex items-center justify-between text-vgs-silver-mid">
-                                            <span>Ongkos Kirim ({shipping.name})</span>
-                                            <span className="font-mono font-semibold">{shippingCost === 0 ? <span className="text-vgs-success uppercase font-bold text-[10px]">GRATIS</span> : formatRupiah(shippingCost)}</span>
+                                            <span>Ongkos Kirim ({shipping?.name ?? '-'})</span>
+                                            <span className="font-mono font-semibold">
+                                                {shippingCost === 0 ? (
+                                                    <span className="text-vgs-success uppercase font-bold text-[10px]">GRATIS</span>
+                                                ) : (
+                                                    formatRupiah(shippingCost)
+                                                )}
+                                            </span>
                                         </div>
                                         <div className="flex items-center justify-between text-vgs-silver-mid">
-                                            <span>Biaya Layanan ({payment.name})</span>
-                                            <span className="font-mono font-semibold">{paymentFee === 0 ? <span className="text-vgs-success font-bold text-[10px] uppercase">Rp 0</span> : formatRupiah(paymentFee)}</span>
+                                            <span>Biaya Layanan ({payment?.name ?? '-'})</span>
+                                            <span className="font-mono font-semibold">
+                                                {paymentFee === 0 ? (
+                                                    <span className="text-vgs-success font-bold text-[10px] uppercase">Rp 0</span>
+                                                ) : (
+                                                    formatRupiah(paymentFee)
+                                                )}
+                                            </span>
                                         </div>
                                         <div className="flex items-center justify-between border-t border-vgs-gray-border pt-3 text-sm sm:text-base">
                                             <span className="font-bold text-vgs-silver-bright">Total Tagihan</span>
-                                            <span className="font-mono font-extrabold text-lg text-vgs-blue-electric">{formatRupiah(grandTotal)}</span>
+                                            <span className="font-mono font-extrabold text-lg text-vgs-blue-electric">
+                                                {formatRupiah(grandTotal)}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -450,6 +614,7 @@ export default function Checkout() {
                                         block
                                         loading={placing}
                                         onClick={handlePlaceOrder}
+                                        disabled={itemsToCheckout.length === 0}
                                     >
                                         {placing ? 'Memproses...' : `Buat Pesanan · ${formatRupiah(grandTotal)}`}
                                     </Button>
@@ -468,7 +633,7 @@ export default function Checkout() {
             </div>
 
             {/* Success Modal */}
-            {showSuccess && (
+            {showSuccess && orderInfo && (
                 <div className="fixed inset-0 z-[60] overflow-hidden flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowSuccess(false)} />
                     <div className="relative w-full max-w-md bg-vgs-black-elevated border border-vgs-gray-border rounded-3xl p-8 shadow-2xl text-center animate-in zoom-in-95 duration-200">
@@ -480,11 +645,14 @@ export default function Checkout() {
                         <h3 className="font-display font-extrabold text-2xl text-vgs-silver-bright mb-2">
                             Pesanan Berhasil Dibuat!
                         </h3>
-                        <p className="text-sm text-vgs-silver-muted mb-1">
-                            Pesanan Anda telah kami terima.
+                        <p className="text-xs font-mono text-vgs-blue-electric mb-1">
+                            No. Pesanan: <span className="font-bold">{orderInfo.order_number}</span>
                         </p>
-                        <p className="text-xs font-mono text-vgs-blue-electric mb-6">
-                            Pembayaran dengan <span className="font-bold">{payment.name}</span>
+                        <p className="text-sm text-vgs-silver-muted mb-1">
+                            Total tagihan: <span className="font-mono font-bold text-vgs-silver-bright">{formatRupiah(orderInfo.grand_total)}</span>
+                        </p>
+                        <p className="text-xs font-mono text-vgs-silver-muted mb-6">
+                            Pembayaran dengan <span className="font-bold">{orderInfo.paymentName}</span>
                         </p>
                         <div className="flex flex-col gap-2">
                             <Button variant="primary" size="lg" block href="/account/orders">

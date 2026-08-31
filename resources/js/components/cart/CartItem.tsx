@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import type { CartItem as CartItemType } from '@/types/product';
 import QuantityStepper from '@/components/ui/QuantityStepper';
-import { formatRupiah } from '@/data/dummy-products';
+import { formatRupiah } from '@/lib/format';
 
 export interface CartItemProps {
     item: CartItemType;
