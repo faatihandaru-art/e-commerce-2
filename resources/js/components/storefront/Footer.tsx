@@ -40,8 +40,8 @@ export const Footer: React.FC = () => {
                                <img
                                     src="/images/products/logo..vgs2.png"
                                     alt="VORTIX STORE"
-                                    className="w-14 h-14 object-contain drop-shadow-[0_0_30px_var()] transition-transform duration-500 hover:scale-105"
-/>
+                                    className="w-14 h-14 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
+                                />
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-display font-black text-2xl tracking-wider text-vgs-silver-bright leading-none">
