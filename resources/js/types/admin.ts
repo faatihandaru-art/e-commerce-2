@@ -20,7 +20,7 @@ export interface AdminUser {
 
 export interface AdminPageProps {
     [key: string]: unknown;
-    auth: {
+    auth?: {
         user: AdminUser | null;
     };
     flash?: {
