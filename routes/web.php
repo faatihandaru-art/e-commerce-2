@@ -52,6 +52,7 @@ Route::middleware('auth')->prefix('account')->group(function () {
 });
 
 // Admin Routes (Protected by auth + staff middleware)
+<<<<<<< HEAD
 Route::middleware(['auth', 'staff'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn () => Inertia::render('Admin/Dashboard'))->name('dashboard');
 
@@ -59,3 +60,6 @@ Route::middleware(['auth', 'staff'])->prefix('admin')->name('admin.')->group(fun
         ->except(['show'])
         ->names('products');
 });
+=======
+require __DIR__.'/admin.php';
+>>>>>>> 98c2ebd8d06ed9a1a4efbe10f036d25a05958aba

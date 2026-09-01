@@ -20,12 +20,11 @@ class CatalogController extends Controller
             ->withMin('variants', 'price')
             ->withCount('reviews');
 
-        if ($request->boolean('featured')) {
-            $query->where('featured', true);
-        }
-
         if ($categorySlug = $request->string('category')->toString()) {
-            $query->whereHas('categories', fn ($q) => $q->where('categories.slug', $categorySlug));
+            $query->whereHas('categories', function ($q) use ($categorySlug) {
+                $q->where('categories.slug', $categorySlug)
+                  ->orWhere('categories.id', $categorySlug);
+            });
         }
 
         if ($request->filled('q')) {
@@ -39,25 +38,27 @@ class CatalogController extends Controller
         }
 
         if ($request->filled('minPrice')) {
-            $query->where('variants_min_price', '>=', (int) $request->integer('minPrice'));
+            $minPrice = (int) $request->integer('minPrice');
+            $query->whereHas('variants', fn ($v) => $v->where('price', '>=', $minPrice));
         }
 
         if ($request->filled('maxPrice')) {
-            $query->where('variants_min_price', '<=', (int) $request->integer('maxPrice'));
+            $maxPrice = (int) $request->integer('maxPrice');
+            $query->whereHas('variants', fn ($v) => $v->where('price', '<=', $maxPrice));
         }
 
         if ($request->boolean('inStock')) {
-            $query->whereHas('variants', fn ($v) => $v->where('stock', '>', 0));
+            $query->whereHas('variants', fn ($v) => $v->where('status', 'active'));
         }
 
-        $sort = $request->string('sort')->toString() ?: 'featured';
+        $sort = $request->string('sort')->toString() ?: 'newest';
 
         match ($sort) {
             'price-asc' => $query->orderBy('variants_min_price', 'asc'),
             'price-desc' => $query->orderBy('variants_min_price', 'desc'),
             'rating' => $query->orderByDesc('reviews_count'),
             'newest' => $query->orderByDesc('published_at'),
-            default => $query->orderByDesc('featured')->orderByDesc('published_at'),
+            default => $query->orderByDesc('published_at'),
         };
 
         $paginator = $query->paginate($request->integer('per_page', 12));

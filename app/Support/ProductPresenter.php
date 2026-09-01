@@ -35,8 +35,17 @@ class ProductPresenter
         $reviews = $product->reviews ?? collect();
         $approved = $reviews->filter(fn (ProductReview $r) => $r->status === 'approved');
 
-        $stock = (int) $variants->sum('stock');
+        $activeVariants = $variants->filter(fn ($v) => $v->status === 'active');
+        $stock = $activeVariants->isNotEmpty() ? 100 : 0;
         $isNew = (bool) $product->published_at && $product->published_at->gte(now()->subDays(30));
+
+        $formattedImages = $images->map(function ($img) {
+            if (empty($img->path)) return '';
+            if (str_starts_with($img->path, 'http://') || str_starts_with($img->path, 'https://')) {
+                return $img->path;
+            }
+            return asset('storage/' . ltrim($img->path, '/'));
+        })->filter()->values()->all();
 
         return [
             'id' => $product->id,
@@ -45,7 +54,7 @@ class ProductPresenter
             'description' => $product->description ?? $product->short_description ?? '',
             'categoryId' => $category?->id,
             'category' => $category ? self::category($category) : null,
-            'images' => $images->pluck('path')->values()->all(),
+            'images' => $formattedImages,
             'price' => $basePrice,
             'compareAtPrice' => $compareAt ?: null,
             'variants' => $variants->map(fn (ProductVariant $v) => self::variant($v, $basePrice))->values()->all(),
@@ -53,7 +62,7 @@ class ProductPresenter
             'rating' => $approved->isEmpty() ? 0 : (float) round($approved->avg('rating'), 1),
             'reviewCount' => $approved->count(),
             'stock' => $stock,
-            'isFeatured' => (bool) $product->featured,
+            'isFeatured' => false,
             'isNew' => $isNew,
             'badge' => self::badge($basePrice, $compareAt, $stock, $isNew),
             'brand' => $brandName,
@@ -91,7 +100,7 @@ class ProductPresenter
             'name' => $optionNames->implode(' · ') ?: 'Pilihan',
             'value' => $optionLiteral->implode(' / ') ?: $variant->sku,
             'priceModifier' => $variant->price - $base,
-            'stock' => (int) $variant->stock,
+            'stock' => $variant->status === 'active' ? 100 : 0,
             'sku' => $variant->sku,
         ];
     }

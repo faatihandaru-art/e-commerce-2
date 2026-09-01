@@ -23,6 +23,21 @@ class ProductImage extends Model
         'sort_order' => 'integer',
     ];
 
+    protected $appends = [
+        'url',
+    ];
+
+    public function getUrlAttribute(): string
+    {
+        if (empty($this->path)) {
+            return '';
+        }
+        if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
+            return $this->path;
+        }
+        return asset('storage/' . ltrim($this->path, '/'));
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
