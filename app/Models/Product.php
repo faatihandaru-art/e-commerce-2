@@ -18,7 +18,6 @@ class Product extends Model
         'slug',
         'type',
         'status',
-        'featured',
         'short_description',
         'description',
         'meta_title',
@@ -27,7 +26,6 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'featured' => 'boolean',
         'published_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
@@ -55,6 +53,16 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_primary', true);
+    }
+
+    public function mainImage()
+    {
+        return $this->images()->where('is_primary', true)->first() ?? $this->images()->first();
     }
 
     public function reviews(): HasMany
