@@ -9,6 +9,7 @@ use App\Http\Controllers\Customer\AddressController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Account\OrdersController;
 use App\Http\Controllers\Account\ProfileController;
+use App\Http\Controllers\Admin\ProductController;
 
 // Storefront (Orang 1)
 Route::get('/', fn () => Inertia::render('Storefront/Home'))->name('home');
@@ -53,4 +54,8 @@ Route::middleware('auth')->prefix('account')->group(function () {
 // Admin Routes (Protected by auth + staff middleware)
 Route::middleware(['auth', 'staff'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn () => Inertia::render('Admin/Dashboard'))->name('dashboard');
+
+    Route::resource('products', ProductController::class)
+        ->except(['show'])
+        ->names('products');
 });
