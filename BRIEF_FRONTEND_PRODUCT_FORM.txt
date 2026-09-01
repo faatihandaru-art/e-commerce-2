@@ -1,0 +1,222 @@
+====================================================================
+PROMPT UNTUK OPENCODE -- FRONTEND: FORM TAMBAH/EDIT PRODUK
+BAGIAN KAMU: Create.tsx, Edit.tsx, Upload Gambar, Input Varian
+Vortix Gaming Store (VGS) -- CRUD Produk Admin ke Storefront
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke OpenCode sebagai prompt awal. Simpan
+juga file ini di project sebagai BRIEF_FRONTEND_PRODUCT_FORM.md.
+
+Ada rekan yang mengerjakan BACKEND (BRIEF_BACKEND_PRODUCT.md, di
+Antigravity) dan rekan lain yang mengerjakan TABEL daftar produk +
+koneksi ke halaman customer (BRIEF_FRONTEND_PRODUCT_TABLE.md, di
+Copilot). Tugas kamu BERGANTUNG PADA route dan struktur data yang
+dibuat rekan backend -- TUNGGU dia menyelesaikan bagian Controller
++ Route (lihat CATATAN_CRUD_PRODUCT.md yang akan dia buat) sebelum
+mulai, karena kamu butuh tahu PERSIS nama field yang dikirim/
+diterima form ini.
+
+Form yang kamu buat ini adalah bagian PALING KOMPLEKS dari fitur
+CRUD Product -- upload multi-gambar dan input varian produk. Kerjakan
+dengan hati-hati dan bertahap.
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Area admin SUDAH ADA dengan
+AdminLayout, Sidebar (menu "Catalog" sudah ada placeholder-nya),
+Header, dan Dashboard yang sudah tampil. Style memakai warna dari
+tailwind.config yang sudah ada (vgs-black-void, vgs-blue-electric,
+vgs-black-surface, dst -- CEK FILE tailwind.config untuk daftar
+lengkap sebelum menulis kode) dan komponen dari components/ui/ yang
+sudah ada (Button, Input, dst -- PAKAI ULANG, jangan bikin versi
+baru).
+
+====================================================================
+STRUKTUR DATA YANG AKAN KAMU PAKAI
+====================================================================
+
+CEK file CATATAN_CRUD_PRODUCT.md di root project (dibuat rekan
+backend) untuk bentuk PERSIS:
+- Nama kolom sebenarnya di tabel products, product_images,
+  product_variants, categories, brands (hasil konfirmasi query
+  tinker, BUKAN sekadar dari dokumen arsitektur)
+- Route admin.products.store dan admin.products.update beserta
+  data yang diharapkan
+- Props yang dikirim ke halaman Admin/Product/Create (categories,
+  brands untuk dropdown) dan Admin/Product/Edit (product lengkap
+  dengan images dan variants yang sudah ada, plus categories, brands)
+
+JANGAN menebak struktur field jika dokumentasi backend belum
+tersedia atau belum lengkap -- tunggu atau tanyakan lewat catatan
+di ringkasan akhir kamu.
+
+====================================================================
+TUGAS KAMU
+====================================================================
+
+1. HALAMAN: resources/js/pages/Admin/Product/Create.tsx
+   Form untuk menambah produk baru, dibungkus AdminLayout yang
+   sudah ada. Berisi:
+
+   a. INFORMASI DASAR
+      - Input nama produk (pakai Input dari ui/)
+      - Textarea deskripsi
+      - Dropdown/select brand (dari props brands)
+      - Multi-select atau checkbox group kategori (dari props
+        categories, MINIMAL 1 kategori wajib dipilih)
+      - Dropdown status (draft/published, atau sesuai enum yang
+        dikonfirmasi backend)
+
+   b. UPLOAD GAMBAR (BAGIAN PALING PENTING -- galeri multi-gambar)
+      - Input file dengan atribut multiple, terima beberapa gambar
+        sekaligus
+      - Setelah dipilih, tampilkan PREVIEW thumbnail semua gambar
+        yang akan diupload (pakai URL.createObjectURL() dari file
+        yang dipilih, browser API bawaan, tidak perlu upload dulu
+        ke server untuk preview)
+      - User HARUS bisa: menghapus salah satu gambar dari daftar
+        sebelum submit, mengubah URUTAN gambar (drag untuk reorder,
+        atau tombol naik/turun sederhana jika drag terlalu rumit
+        untuk tahap ini), MENANDAI salah satu gambar sebagai gambar
+        utama/cover (radio button di bawah tiap thumbnail)
+      - Validasi di sisi frontend SEBELUM submit: minimal 1 gambar
+        harus dipilih, tampilkan pesan error jelas jika kosong
+      - Kirim data file lewat useForm() dari @inertiajs/react --
+        PENTING: karena ada file upload, form HARUS dikirim sebagai
+        multipart/form-data. Inertia menangani ini otomatis jika kamu
+        memasukkan object File langsung ke dalam data useForm(), TAPI
+        untuk UPDATE (method PUT/PATCH) dengan file, Laravel/Inertia
+        punya keterbatasan dengan FormData -- gunakan pola
+        forceFormData: true pada opsi post()/put() jika diperlukan,
+        atau method spoofing dengan menambahkan field _method: 'PUT'
+        dan tetap memakai post(). Sesuaikan dengan yang benar-benar
+        berfungsi, uji dulu sebelum menganggap selesai.
+
+   c. INPUT VARIAN PRODUK
+      - Minimal 1 baris varian wajib ada (tampilkan 1 baris kosong
+        secara default)
+      - Tiap baris varian berisi: SKU (input teks, wajib, harus
+        unik), harga (input angka), harga coret/compare_at_price
+        (opsional), nama varian jika ada sistem pilihan seperti
+        warna/ukuran (untuk tahap ini BOLEH disederhanakan jadi
+        satu field teks bebas seperti "Hitam - Wireless" tanpa
+        sistem product_options/product_option_values yang lebih
+        rumit dari dokumen arsitektur -- CATAT sebagai keterbatasan
+        di ringkasan akhir jika disederhanakan begini)
+      - Tombol "Tambah Varian" untuk menambah baris baru, tombol
+        hapus di tiap baris (kecuali baris terakhir yang tersisa,
+        minimal harus ada 1 varian)
+      - Validasi: SKU tidak boleh kosong dan tidak boleh duplikat
+        ANTAR BARIS DI FORM YANG SAMA (cek di frontend sebelum
+        submit), harga harus angka positif
+
+   d. SUBMIT
+      - Tombol "Simpan Produk" memakai Button dari ui/ (varian
+        primary)
+      - Tampilkan state loading saat processing (disable tombol,
+        ubah teks jadi "Menyimpan...")
+      - Tampilkan error validasi dari backend di bawah field yang
+        relevan (errors.name, errors.images, errors['variants.0.sku'],
+        dst -- perhatikan Laravel mengirim error array bertingkat
+        dengan format seperti ini untuk field array, sesuaikan cara
+        membaca errors object dari Inertia)
+      - Setelah sukses, redirect otomatis ke halaman index (ini
+        akan ditangani otomatis oleh response redirect dari backend)
+
+2. HALAMAN: resources/js/pages/Admin/Product/Edit.tsx
+   Form yang SANGAT MIRIP dengan Create.tsx, tapi:
+   - Semua field TERISI dengan data produk yang sudah ada (dari
+     props product)
+   - Galeri gambar menampilkan gambar yang SUDAH TERSIMPAN (dari
+     props product.images, sebagai URL lengkap yang bisa langsung
+     dipakai di <img src>, BUKAN File object seperti saat create --
+     cek dokumentasi backend untuk tahu apakah URL sudah lengkap
+     atau perlu disusun sendiri dari path relatif)
+   - User bisa MENGHAPUS gambar yang sudah ada (tandai untuk
+     dihapus, kirim info ini ke backend saat submit) DAN menambah
+     gambar BARU sekaligus dalam satu form yang sama
+   - Varian yang sudah ada ditampilkan di baris form yang sudah
+     terisi, user bisa edit, hapus, atau tambah baris baru
+   - Submit memakai method PUT/PATCH ke route admin.products.update
+     (lihat catatan soal file upload + method PUT di atas)
+
+   PERTIMBANGKAN: apakah membuat komponen bersama
+   (components/admin/ProductForm.tsx) yang dipakai KEDUA halaman
+   Create dan Edit dengan props mode="create" atau mode="edit" untuk
+   menghindari duplikasi kode -- ini pendekatan yang LEBIH BAIK
+   dibanding menulis dua form terpisah dari nol, karena sebagian
+   besar strukturnya identik. Putuskan sendiri berdasarkan seberapa
+   mirip kebutuhan keduanya setelah kamu mulai membangun Create.tsx.
+
+RESPONSIVENESS -- WAJIB DICEK
+--------------------------------------------------------------------
+- Form tetap bisa dipakai di tablet (768-1024px) walau area admin
+  umumnya dipakai di desktop -- jangan sampai input terlalu sempit
+  atau tombol tidak terjangkau
+- Grid thumbnail gambar preview menyesuaikan lebar layar (misal 3
+  kolom di desktop, 2 kolom di layar lebih sempit)
+
+AKSESIBILITAS -- WAJIB DICEK
+--------------------------------------------------------------------
+- Semua input punya label yang jelas (bukan cuma placeholder)
+- Tombol hapus gambar/varian punya aria-label jelas (misal "Hapus
+  gambar ke-2")
+- Fokus keyboard terlihat jelas di semua elemen interaktif
+
+====================================================================
+YANG TIDAK PERLU/BOLEH KAMU KERJAKAN DI TAHAP INI
+====================================================================
+
+- JANGAN membangun halaman Admin/Product/Index (tabel daftar
+  produk) -- itu tugas Rekan 3
+- JANGAN mengubah halaman /products yang dilihat customer -- itu
+  juga bagian Rekan 3
+- JANGAN membangun sistem product_options/product_option_values
+  yang kompleks (varian dengan kombinasi warna x ukuran, dst) kecuali
+  dokumentasi backend secara eksplisit mengharuskan struktur itu --
+  default ke pendekatan sederhana (satu field nama varian bebas)
+  seperti dijelaskan di atas kecuali ada instruksi lain
+- JANGAN mengubah AdminLayout/Sidebar/Header yang sudah ada
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Tambahkan section baru di file CATATAN_CRUD_PRODUCT.md yang sudah
+ada (JANGAN timpa isi yang sudah ada, tambahkan di bagian bawah
+dengan heading "## Frontend: Form Produk"), berisi:
+
+1. Daftar file yang dibuat (Create.tsx, Edit.tsx, dan
+   ProductForm.tsx jika dipakai pendekatan komponen bersama).
+2. Penjelasan pendekatan upload gambar yang dipakai (forceFormData
+   atau method spoofing, dan kenapa).
+3. Penjelasan keterbatasan varian (jika disederhanakan jadi field
+   teks bebas, jelaskan ini dengan jelas sebagai catatan untuk
+   pengembangan lanjutan nanti).
+4. Konfirmasi bahwa form sudah dites dan berhasil submit data
+   (baik create maupun update) ke backend.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) Create.tsx bagian informasi dasar dulu, (b)
+  bagian upload gambar dengan preview, (c) bagian input varian, (d)
+  uji coba submit Create sampai berhasil tersimpan (koordinasikan
+  dengan backend jika perlu data test), (e) Edit.tsx (kemungkinan
+  besar dengan refactor ke komponen bersama), (f) uji coba submit
+  Edit sampai berhasil, (g) dokumentasi.
+- Tampilkan ringkasan tiap bagian selesai sebelum lanjut, supaya
+  saya bisa cek dan commit git bertahap.
+- Jika ternyata struktur data dari backend TIDAK SESUAI dengan yang
+  didokumentasikan (field hilang, nama beda), JANGAN menebak/
+  memaksakan -- laporkan dengan jelas di ringkasan supaya bisa
+  dikoordinasikan ulang dengan rekan backend.
+====================================================================

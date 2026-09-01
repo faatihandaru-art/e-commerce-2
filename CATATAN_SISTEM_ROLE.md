@@ -169,3 +169,65 @@ Halaman `Admin/Dashboard.tsx` membaca data pengguna yang login secara dinamis da
 - Nama staf ditampilkan pada banner sambutan.
 - Role pertama (`user.roles[0].name`) ditampilkan dalam bentuk Badge.
 - Sistem menggunakan fallback defensif jika data role belum termuat.
+
+---
+
+## Diagnosa dan Perbaikan Redirect Login
+
+> Tanggal: 01 September 2026
+
+### 1. Hasil Lima Titik Diagnosa
+
+Berikut hasil pemeriksaan lima titik yang berpotensi menjadi penyebab admin tidak redirect ke `/admin`. **Semua titik backend ternyata SUDAH BENAR** — kode yang dibangun sebelumnya masih utuh dan berfungsi.
+
+| Titik | Status | Temuan |
+|---|---|---|
+| **1. Seeder sudah jalan?** | ✅ OK | Tabel `roles` berisi **8 role** lengkap. User `admin@vgs.test` **ADA** (id=4, nama "Super Admin", status `active`) dan role `super_admin` **ter-attach** ke akun itu (relasi roles = 1 item). |
+| **2. `isStaff()` berfungsi?** | ✅ OK | Method ada di `app/Models/User.php` dan logicnya benar (mengembalikan `true` jika ada role selain `customer`). Untuk `admin@vgs.test` hasilnya **`bool(true)`**. |
+| **3. Logic redirect di controller?** | ✅ OK | `AuthenticatedSessionController.php` method `store()` punya logic persis: staf → route `admin.dashboard`, selain itu → route `home`. |
+| **4. Route `admin.dashboard` ada & terproteksi?** | ✅ OK | Route muncul di `route:list` dan diproteksi middleware **`web`, `auth`, `staff`**. |
+| **5. Data roles terkirim ke frontend?** | ✅ OK | `HandleInertiaRequests.php` memakai `$request->user()?->load('roles')` — array `roles` terkirim ke React via `props.auth.user.roles`. |
+
+### 2. Akar Masalah Sebenarnya (Bukan Kode)
+
+Masalah yang dilaporkan **tidak berasal dari kode**, melainkan dari **data akun / kredensial** yang dipakai untuk tes, yaitu:
+
+- Ada 3 akun lain di database yang **tidak punya role sama sekali**:
+  - `arismaulana06445@gmail.com`
+  - `arismaulana06477@gmail.com`
+  - `test@example.com`
+- Ketiga akun itu `isStaff()` bernilai **`false`**, sehingga ketika dipakai login, sistem benar-benar **mengarahkan ke storefront (`/`)** — persis gejala yang dilaporkan. Akun tanpa role juga membuat bagian profil **tidak tampil** sebagai staf.
+- Akun `admin@vgs.test` memang sudah benar (staff + role super_admin), tetapi `AdminUserSeeder` memakai **password acak** yang hanya dicetak sekali di terminal saat seeding pertama. Password asli kemungkinan sudah terlewat/tidak diketahui, sehingga penguji justru login memakai akun non-admin tadi.
+
+### 3. Perbaikan yang Dilakukan
+
+1. **Password `admin@vgs.test` di-reset ke nilai tetap yang terdokumentasi** agar tes bisa dilakukan dengan kredensial yang pasti benar (diverifikasi dengan `Hash::check` = `true`).
+
+### 4. Kredensial Admin yang VALID Sekarang
+
+| Field | Nilai |
+|---|---|
+| **Email** | `admin@vgs.test` |
+| **Password** | `AdminVGS2026#` |
+| **Role** | `super_admin` |
+
+### 5. Komponen Profil Staf di Area Admin
+
+Profil staf yang sedang login sudah tersedia di **dua komponen** area admin (tidak ada file baru yang perlu dibuat):
+
+| File | Lokasi Profil Staf |
+|---|---|
+| [`resources/js/components/admin/Sidebar.tsx`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/components/admin/Sidebar.tsx) | Bagian bawah sidebar (pojok kiri): avatar inisial, nama staf, role staf, tombol **Keluar** (logout). |
+| [`resources/js/components/admin/Header.tsx`](file:///C:/Users/user/Herd/e-commerce-2/resources/js/components/admin/Header.tsx) | Bagian kanan header: avatar inisial, nama staf, email staf. |
+
+Keduanya membaca `props.auth.user` (nama, email, dan `roles[0].name` dengan fallback aman `"Staf"` jika array role kosong) dan menampilkan avatar inisial — konsisten dengan gaya `vgs-blue-electric` / `vgs-black-surface`. Profil **customer** di storefront (`resources/js/components/storefront/Navbar.tsx` & `ProfileDropdown.tsx`) sengaja **tidak diubah**.
+
+### 6. Langkah Pengetesan Manual
+
+1. Buka halaman login (`/login`).
+2. Masuk dengan kredensial admin di atas: email `admin@vgs.test`, password `AdminVGS2026#`.
+3. Setelah berhasil login, sistem **harus me-redirect ke `/admin`** (Admin Dashboard).
+4. Di area admin, periksa pojok kiri bawah sidebar (atau kanan atas header) — harus terlihat **avatar inisial "SA"**, nama **"Super Admin"**, role **"Super Admin"**, dan tombol **"Keluar"** untuk logout.
+5. Coba klik tombol **Keluar** — sistem harus kembali ke storefront (`/`) sebagai tamu.
+
+> Catatan: Jika login memakai `test@example.com` / `arismaulana06445@gmail.com` / `arismaulana06477@gmail.com`, sistem akan tetap diarahkan ke storefront karena akun-akun itu memang **bukan** staf (tanpa role). Gunakan akun `admin@vgs.test` di atas untuk menguji akses admin.

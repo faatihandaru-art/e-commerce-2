@@ -1,0 +1,214 @@
+====================================================================
+PROMPT UNTUK COPILOT -- FRONTEND: TABEL PRODUK & KONEKSI STOREFRONT
+BAGIAN KAMU: Index.tsx (admin), verifikasi halaman /products customer
+Vortix Gaming Store (VGS) -- CRUD Produk Admin ke Storefront
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke Copilot sebagai prompt awal. Simpan
+juga file ini di project sebagai BRIEF_FRONTEND_PRODUCT_TABLE.md.
+
+Ada rekan yang mengerjakan BACKEND (BRIEF_BACKEND_PRODUCT.md, di
+Antigravity) dan rekan lain yang mengerjakan FORM tambah/edit produk
+(BRIEF_FRONTEND_PRODUCT_FORM.md, di OpenCode). Tugas kamu
+BERGANTUNG PADA route dan struktur data dari backend, TAPI TIDAK
+bergantung langsung pada hasil kerja rekan form -- kamu bisa mulai
+begitu backend selesai bagian Controller+Route, TIDAK perlu
+menunggu form Create/Edit selesai (kamu hanya perlu LINK ke
+halaman-halaman itu, bukan membangunnya).
+
+Tugas kamu punya DUA bagian: (1) tabel daftar produk di ADMIN, (2)
+memastikan halaman /products yang dilihat CUSTOMER benar-benar
+menampilkan data sungguhan -- ini bagian yang PALING PENTING karena
+membuktikan seluruh fitur CRUD ini benar-benar berguna, bukan cuma
+berfungsi di sisi admin saja.
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Area admin SUDAH ADA dengan
+AdminLayout, Sidebar, Header, Dashboard yang sudah tampil. Halaman
+customer /products SUDAH ADA secara visual (filter kategori, rentang
+harga, checkbox stok tersedia, dropdown urutan -- lihat referensi
+tampilan yang sudah jadi) tapi SAAT INI KOSONG karena tidak ada data
+produk sungguhan. Style memakai warna dari tailwind.config yang
+sudah ada dan komponen dari components/ui/ dan components/product/
+yang sudah ada (termasuk ProductCard yang sudah dibangun di tahap
+desain awal -- CEK DULU apakah komponen ini sudah ada dan PAKAI
+ULANG, jangan bikin versi baru).
+
+====================================================================
+STRUKTUR DATA YANG AKAN KAMU PAKAI
+====================================================================
+
+CEK file CATATAN_CRUD_PRODUCT.md di root project (dibuat rekan
+backend) untuk bentuk PERSIS:
+- Route admin.products.index, admin.products.create,
+  admin.products.edit, admin.products.destroy
+- Props yang dikirim ke halaman Admin/Product/Index (daftar produk
+  ter-paginate, dengan relasi images dan variants)
+- Props yang dikirim ke halaman Storefront/Product/Index (data
+  produk sungguhan yang sudah difilter status published)
+- Cara URL gambar disusun (path relatif vs URL lengkap)
+
+====================================================================
+TUGAS KAMU
+====================================================================
+
+1. HALAMAN: resources/js/pages/Admin/Product/Index.tsx
+   Tabel daftar semua produk, dibungkus AdminLayout yang sudah ada.
+   Berisi:
+
+   a. HEADER HALAMAN
+      - Judul "Kelola Produk" atau serupa
+      - Tombol "Tambah Produk Baru" (link ke route
+        admin.products.create -- HALAMAN INI dibangun rekan lain,
+        kamu HANYA membuat link/tombol ke sana menggunakan Inertia
+        Link component: <Link href={route('admin.products.create')}>)
+
+   b. TABEL PRODUK
+      Kolom yang ditampilkan per baris:
+      - Thumbnail gambar utama produk kecil (dari relasi images,
+        ambil yang is_primary=true, atau gambar pertama jika tidak
+        ada yang ditandai utama)
+      - Nama produk
+      - Kategori (jika produk punya banyak kategori, tampilkan yang
+        pertama + indikator jumlah lainnya, misal "Gaming Mouse +2")
+      - Harga (dari varian pertama, atau rentang harga jika ada
+        beberapa varian dengan harga berbeda, misal "Rp150.000 -
+        Rp250.000")
+      - Jumlah varian (angka)
+      - Status (badge dari components/ui/Badge, warna berbeda untuk
+        draft vs published)
+      - Kolom aksi: tombol/ikon Edit (link ke
+        route('admin.products.edit', product.id)) dan tombol Hapus
+
+   c. AKSI HAPUS
+      - Klik tombol hapus MEMUNCULKAN KONFIRMASI dulu (modal
+        sederhana "Yakin ingin menghapus produk [nama]? Tindakan
+        ini tidak dapat dibatalkan" dengan tombol Batal dan Hapus)
+        -- JANGAN langsung menghapus tanpa konfirmasi, ini
+        mencegah kehilangan data karena klik tidak sengaja
+      - Setelah konfirmasi, kirim request DELETE ke
+        route('admin.products.destroy', product.id) memakai router
+        dari @inertiajs/react: router.delete(url)
+      - Tampilkan pesan sukses setelah berhasil (bisa dari flash
+        message backend yang sudah dikirim lewat redirect, cek pola
+        yang sudah dipakai fitur lain di project untuk konsistensi)
+
+   d. PAGINASI
+      Jika props products berupa paginated response Laravel (punya
+      data, links, meta, dst), tampilkan kontrol paginasi sederhana
+      di bawah tabel (Sebelumnya/Selanjutnya, atau nomor halaman)
+
+   e. STATE KOSONG
+      Jika belum ada produk sama sekali, tampilkan pesan yang jelas
+      ("Belum ada produk, mulai dengan menambahkan produk pertama")
+      dengan tombol ke halaman tambah produk -- BUKAN tabel kosong
+      tanpa penjelasan
+
+2. VERIFIKASI DAN PERBAIKAN HALAMAN CUSTOMER /products (BAGIAN
+   PALING PENTING DARI TUGAS KAMU)
+   Backend SUDAH/SEDANG menyambungkan halaman ini ke data
+   sungguhan (lihat CATATAN_CRUD_PRODUCT.md bagian terkait). Tugas
+   kamu adalah MEMVERIFIKASI dan MEMPERBAIKI tampilan React-nya
+   supaya benar-benar cocok dengan data sungguhan yang dikirim,
+   BUKAN membangun ulang halaman dari nol (halaman ini sudah ada
+   dan sudah bagus secara visual sesuai referensi tampilan yang
+   sudah jadi):
+
+   - Cek resources/js/pages/Storefront/Product/Index.tsx -- apakah
+     saat ini masih membaca dari data/dummy-products.ts (data
+     dummy) atau sudah membaca dari props Inertia yang dikirim
+     backend? UBAH supaya membaca dari props yang benar-benar
+     dikirim backend.
+   - Pastikan ProductCard yang dipakai halaman ini menerima data
+     dengan struktur yang SESUAI dengan yang benar-benar dikirim
+     backend (nama field gambar, harga, dst) -- SESUAIKAN props
+     yang diteruskan ke ProductCard jika ada perbedaan nama field
+     antara data dummy sebelumnya dengan data sungguhan sekarang.
+   - Pastikan FILTER yang sudah ada di tampilan (kategori, rentang
+     harga, checkbox "Hanya Stok Tersedia", dropdown urutan) benar-
+     benar mengirim parameter ke backend dan hasilnya ter-update --
+     cek apakah filter ini submit lewat Inertia (reload halaman
+     dengan query parameter) atau butuh logic tambahan supaya
+     benar-benar mempengaruhi data yang ditampilkan. Jika filter
+     sebelumnya cuma UI kosong tanpa fungsi (karena memang belum
+     ada data untuk difilter), sekarang WAJIB benar-benar berfungsi.
+   - Pastikan galeri gambar produk (jika halaman ProductCard/detail
+     menampilkan multi-gambar sesuai desain awal) menyusun URL
+     gambar dengan BENAR dari path yang dikirim backend (lihat
+     penjelasan di CATATAN_CRUD_PRODUCT.md soal path relatif vs
+     URL lengkap).
+
+3. UJI COBA END-TO-END (WAJIB DILAKUKAN, LAPORKAN HASILNYA)
+   Setelah rekan yang mengerjakan form (BRIEF_FRONTEND_PRODUCT_FORM.md)
+   menyelesaikan bagian mereka DAN backend sudah berjalan:
+   - Minta salah satu dari kalian membuat 2-3 produk contoh lewat
+     form admin yang sudah jadi (atau jika form belum selesai saat
+     kamu sampai di tahap ini, koordinasikan untuk membuat data
+     lewat Tinker sementara sesuai instruksi backend)
+   - Buka halaman /products sebagai customer (tanpa login admin),
+     VERIFIKASI produk yang baru dibuat benar-benar muncul dengan
+     gambar, nama, dan harga yang benar
+   - Coba filter kategori dan rentang harga, VERIFIKASI hasilnya
+     benar-benar berubah sesuai filter
+   - Laporkan hasil pengujian ini secara jelas di ringkasan akhir --
+     jika ADA yang tidak sesuai harapan, jelaskan detail masalahnya
+
+====================================================================
+YANG TIDAK PERLU/BOLEH KAMU KERJAKAN DI TAHAP INI
+====================================================================
+
+- JANGAN membangun halaman Admin/Product/Create atau Edit -- itu
+  tugas Rekan yang mengerjakan BRIEF_FRONTEND_PRODUCT_FORM.md, kamu
+  HANYA membuat link ke sana
+- JANGAN mengubah struktur/styling ProductCard yang sudah ada dari
+  tahap desain awal kecuali BENAR-BENAR perlu menyesuaikan nama
+  props supaya cocok dengan data sungguhan -- jika perlu diubah,
+  jelaskan perubahannya dengan jelas di ringkasan
+- JANGAN mengubah AdminLayout/Sidebar/Header yang sudah ada
+- JANGAN membangun fitur pencarian teks bebas jika belum ada di
+  tampilan yang sudah jadi -- fokus pada filter yang SUDAH terlihat
+  di referensi tampilan (kategori, harga, stok, urutan)
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Tambahkan section baru di file CATATAN_CRUD_PRODUCT.md yang sudah
+ada (JANGAN timpa isi yang sudah ada, tambahkan di bagian bawah
+dengan heading "## Frontend: Tabel Admin & Koneksi Storefront"),
+berisi:
+
+1. Daftar file yang dibuat/diubah (Admin/Product/Index.tsx, dan
+   file storefront yang disesuaikan).
+2. Konfirmasi hasil uji coba end-to-end dari bagian 3 di atas --
+   ini WAJIB ada dan jelas, karena ini bukti fitur CRUD Product
+   benar-benar selesai dan berfungsi dari admin sampai customer.
+3. Catatan jika ada penyesuaian nama field/props yang dilakukan
+   dibanding desain awal, dan alasannya.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) tabel Admin/Product/Index dulu (bisa mulai
+  segera setelah backend selesai Controller+Route, tidak perlu
+  tunggu form), (b) aksi hapus dengan konfirmasi, (c) verifikasi
+  dan perbaikan halaman customer /products supaya baca data
+  sungguhan, (d) tunggu form Create selesai untuk membuat data
+  contoh, uji coba end-to-end, (e) dokumentasi.
+- Tampilkan ringkasan tiap bagian selesai sebelum lanjut, supaya
+  saya bisa cek dan commit git bertahap.
+- Jika di titik manapun kamu menemukan bahwa data yang dikirim
+  backend TIDAK SESUAI dokumentasi, atau ProductCard yang sudah ada
+  tidak cocok dengan struktur data sungguhan, JANGAN memaksakan
+  perubahan besar sendiri -- laporkan dengan jelas di ringkasan
+  supaya bisa dikoordinasikan ulang.
+====================================================================

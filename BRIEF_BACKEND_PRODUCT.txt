@@ -1,0 +1,270 @@
+====================================================================
+PROMPT UNTUK ANTIGRAVITY -- BACKEND CRUD PRODUCT
+BAGIAN KAMU: Model, Action, Controller, Route, Storage Gambar
+Vortix Gaming Store (VGS) -- CRUD Produk Admin ke Storefront
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke Antigravity sebagai prompt awal.
+Simpan juga file ini di project sebagai BRIEF_BACKEND_PRODUCT.md.
+
+Ada 2 rekan yang mengerjakan FRONTEND: Rekan 2 mengerjakan FORM
+tambah/edit produk (BRIEF_FRONTEND_PRODUCT_FORM.md, di OpenCode),
+Rekan 3 mengerjakan TABEL daftar produk di admin DAN koneksi ke
+halaman /products yang dilihat customer
+(BRIEF_FRONTEND_PRODUCT_TABLE.md, di Copilot). KEDUANYA bergantung
+pada endpoint API/route yang kamu buat -- SELESAIKAN dan commit git
+bagian route dan Controller LEBIH DULU sebelum bagian lain, supaya
+mereka bisa mulai testing lebih awal.
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Struktur folder modular
+monolith: app/Domain/<Domain>/Actions/ untuk logic bisnis,
+app/Http/Controllers/ untuk request, app/Http/Requests/ untuk
+validasi.
+
+Sistem role staf SUDAH BERJALAN -- akun admin bisa login dan masuk
+ke /admin dengan layout, sidebar, dan dashboard placeholder yang
+sudah tampil (lihat CATATAN_SISTEM_ROLE.md untuk detail). Middleware
+'staff' sudah melindungi semua route di bawah /admin/*.
+
+MASALAH YANG HARUS DISELESAIKAN
+--------------------------------------------------------------------
+Menu "Catalog" di sidebar admin sudah ADA secara visual tapi belum
+mengarah ke halaman fungsional apapun. Halaman /products yang
+dilihat CUSTOMER saat ini KOSONG (menampilkan "Tidak Ada Produk yang
+Cocok") karena tabel products di database masih benar-benar kosong
+(0 rows). Dibutuhkan sistem CRUD (Create, Read, Update, Delete)
+produk yang LENGKAP, dari admin mengisi form sampai produk itu
+benar-benar muncul di halaman /products milik customer.
+
+====================================================================
+STRUKTUR DATABASE YANG DIPAKAI (SUDAH ADA, JANGAN BUAT MIGRATION BARU)
+====================================================================
+
+CATATAN PENTING: tabel-tabel ini SUDAH ADA secara fisik di database
+(sudah pernah dibuat sebelumnya dan sudah didaftarkan lewat migration
+di proses migrate:generate yang sudah dilakukan -- cek
+CATATAN_MIGRATION_LENGKAP.md jika ada, untuk konfirmasi). TUGAS KAMU
+BUKAN membuat migration baru, tapi membuat Model, Action, dan
+Controller yang membaca/menulis ke struktur yang SUDAH ADA. SEBELUM
+menulis kode apapun, jalankan di terminal:
+
+   php artisan tinker
+   >>> Schema::getColumnListing('products')
+   >>> Schema::getColumnListing('product_images')
+   >>> Schema::getColumnListing('product_variants')
+   >>> Schema::getColumnListing('categories')
+   >>> Schema::getColumnListing('brands')
+
+CATAT hasil PERSIS dari perintah di atas dan SESUAIKAN semua kode
+Model/Action/Controller ke nama kolom yang BENAR-BENAR ADA -- JANGAN
+menebak nama kolom dari dokumen arsitektur semata, karena struktur
+sebenarnya di database bisa saja sedikit berbeda dari dokumen asli.
+Dokumen arsitektur bagian 6.2 adalah PANDUAN UMUM, hasil query di
+atas adalah KEBENARAN AKTUAL yang wajib diikuti.
+
+Sebagai referensi awal (SEBELUM dikonfirmasi lewat query di atas),
+tabel-tabel yang relevan dan perkiraan isinya sesuai dokumen
+arsitektur bagian 6.2:
+- categories: id, parent_id, name, slug, status, sort_order
+- brands: id, name, slug, logo, status
+- products: id, brand_id, name, slug, type, status, descriptions,
+  SEO fields
+- category_product: category_id, product_id (pivot many-to-many)
+- product_images: id, product_id, variant_id (nullable), path,
+  alt_text, sort_order, is_primary
+- product_variants: id, product_id, sku, barcode, price,
+  compare_at_price, cost_price, dimensions, status
+
+====================================================================
+TUGAS KAMU (BACKEND)
+====================================================================
+
+1. MODEL
+   Buat/lengkapi model berikut di app/Models/ (cek dulu apakah
+   sudah ada file kosong/parsial dari proses generate migration
+   sebelumnya):
+   - Product.php: relasi belongsTo(Brand), belongsToMany(Category)
+     lewat category_product, hasMany(ProductImage),
+     hasMany(ProductVariant). $fillable sesuai kolom yang
+     dikonfirmasi lewat query tinker di atas.
+   - ProductImage.php: relasi belongsTo(Product).
+   - ProductVariant.php: relasi belongsTo(Product).
+   - Category.php: relasi belongsToMany(Product) lewat
+     category_product.
+   - Brand.php: relasi hasMany(Product).
+   Tambahkan accessor/method praktis jika membantu, misal
+   Product::mainImage() untuk ambil gambar dengan is_primary=true.
+
+2. ACTION (app/Domain/Catalog/Actions/ -- buat folder Catalog jika
+   belum ada, sejajar dengan Domain/Customer yang sudah ada)
+   - CreateProductAction.php: terima data produk tervalidasi
+     (termasuk array file gambar dan data varian), simpan produk,
+     simpan setiap gambar (lihat bagian PENYIMPANAN GAMBAR di
+     bawah), simpan setiap varian, lakukan dalam DB::transaction()
+     supaya jika salah satu langkah gagal, semuanya dibatalkan
+     (tidak ada produk "setengah jadi" tanpa gambar/varian).
+   - UpdateProductAction.php: pola serupa untuk update, termasuk
+     logic untuk gambar yang DIHAPUS user saat edit (hapus file
+     fisik dari storage juga, bukan cuma baris database) dan
+     gambar BARU yang ditambahkan.
+   - DeleteProductAction.php: hapus produk. Pertimbangkan apakah
+     ini hard delete atau soft delete (cek apakah model Product
+     punya SoftDeletes trait dari hasil query tinker di atas --
+     jika kolom deleted_at ada di tabel, pakai soft delete; jika
+     tidak ada, hard delete biasa sudah cukup untuk tahap ini).
+     Saat produk dihapus, HAPUS JUGA semua file gambar fisiknya
+     dari storage, jangan biarkan file yatim menumpuk.
+
+3. PENYIMPANAN GAMBAR (PENTING -- INI BAGIAN PALING SERING SALAH)
+   Gunakan Laravel Storage facade dengan disk 'public':
+   - Gambar disimpan lewat $request->file('images')->store('products', 'public')
+     atau pola serupa, JANGAN menyimpan file langsung ke folder
+     public/ tanpa lewat Storage facade (supaya konsisten dan mudah
+     dipindah ke cloud storage nanti sesuai rencana S3-compatible
+     object storage di dokumen arsitektur bagian 3.1).
+   - Pastikan php artisan storage:link SUDAH dijalankan (buat symlink
+     dari public/storage ke storage/app/public) -- CEK dulu apakah
+     symlink ini sudah ada, jika belum jalankan perintahnya dan
+     laporkan di ringkasan.
+   - Path yang disimpan ke kolom product_images.path adalah path
+     RELATIF (misal 'products/abc123.jpg'), BUKAN URL lengkap --
+     biarkan frontend/Resource yang menyusun URL lengkapnya nanti
+     lewat asset('storage/'.$path) atau Storage::url($path).
+   - Validasi file gambar: tipe harus image (jpeg, png, webp),
+     ukuran maksimal wajar (misal 2MB per file), MINIMAL 1 gambar
+     wajib ada saat create produk baru (sesuai requirement galeri
+     multi-gambar yang sudah dirancang di tahap desain sebelumnya).
+   - Simpan urutan gambar (sort_order) sesuai urutan upload, dan
+     tandai gambar PERTAMA sebagai is_primary=true secara default
+     kecuali user memilih gambar lain sebagai utama.
+
+4. FORM REQUEST (app/Http/Requests/Admin/)
+   Buat StoreProductRequest.php dan UpdateProductRequest.php:
+   - name: required, string, max 255
+   - slug: nullable saat create (auto-generate dari name jika
+     kosong, pakai Str::slug()), unique:products,slug (kecualikan
+     ID sendiri saat update)
+   - brand_id: nullable, exists:brands,id
+   - category_ids: required, array, min:1 -- exists:categories,id
+     untuk tiap elemen
+   - description: nullable, string
+   - status: required, in:draft,published (atau sesuai enum yang
+     terkonfirmasi dari tinker)
+   - images: required (saat create) array, min:1 -- images.*: image,
+     mimes:jpeg,png,webp, max:2048
+   - variants: required, array, min:1 -- tiap varian minimal punya
+     sku (required, string, unique di seluruh product_variants),
+     price (required, numeric, min:0)
+
+5. CONTROLLER (app/Http/Controllers/Admin/ProductController.php)
+   Method standar resource controller:
+   - index(): kembalikan Inertia::render('Admin/Product/Index')
+     dengan props products berisi daftar produk (paginate, dengan
+     eager load relasi images dan variants secukupnya untuk
+     ditampilkan di tabel -- JANGAN N+1 query, gunakan with())
+   - create(): kembalikan Inertia::render('Admin/Product/Create')
+     dengan props categories dan brands untuk dropdown/pilihan di
+     form
+   - store(StoreProductRequest $request, CreateProductAction $action):
+     panggil action, redirect ke admin.products.index dengan pesan
+     sukses
+   - edit(Product $product): kembalikan
+     Inertia::render('Admin/Product/Edit') dengan props product
+     (lengkap dengan images dan variants), categories, brands
+   - update(UpdateProductRequest $request, Product $product,
+     UpdateProductAction $action): panggil action, redirect dengan
+     pesan sukses
+   - destroy(Product $product, DeleteProductAction $action):
+     panggil action, redirect dengan pesan sukses
+
+6. ROUTE (routes/web.php atau routes/admin.php, di dalam grup
+   middleware(['auth', 'staff'])->prefix('admin') yang sudah ada)
+   Route::resource('products', ProductController::class)
+       ->names('admin.products');
+   Ini otomatis membuat route index, create, store, edit, update,
+   destroy dengan nama admin.products.index, admin.products.create,
+   dst -- CATAT nama-nama route ini persis di dokumentasi akhir,
+   karena kedua rekan frontend akan memakainya.
+
+7. SAMBUNGKAN KE HALAMAN CUSTOMER /products (PALING PENTING --
+   INI YANG MEMBUKTIKAN FITUR INI BENAR-BENAR NYAMBUNG)
+   Cek route/controller yang saat ini merender halaman
+   Storefront/Product/Index (kemungkinan saat ini masih Inertia
+   render kosong tanpa data sungguhan, atau memakai data dummy dari
+   data/dummy-products.ts sesuai tahap desain awal). UBAH supaya
+   controller ini benar-benar query dari database:
+   Product::where('status', 'published')->with(['images', 'variants', 'categories'])->paginate(...)
+   Sesuaikan dengan filter yang SUDAH ADA di halaman /products
+   (kategori, rentang harga, stok tersedia -- lihat tampilan yang
+   sudah jadi di screenshot referensi) supaya filter itu benar-benar
+   berfungsi terhadap data sungguhan, bukan lagi dummy. CATAT
+   endpoint/props yang dipakai halaman ini di dokumentasi akhir,
+   karena Rekan 3 akan mengerjakan bagian ini bersamamu/setelahmu.
+
+====================================================================
+YANG TIDAK BOLEH DILAKUKAN
+====================================================================
+
+- JANGAN membuat migration baru untuk tabel yang sudah ada -- pakai
+  struktur yang sudah dikonfirmasi lewat query tinker.
+- JANGAN menyimpan file gambar langsung ke folder public/ tanpa
+  Storage facade.
+- JANGAN mengizinkan create/update produk tanpa MINIMAL 1 gambar
+  dan MINIMAL 1 varian -- ini melanggar requirement desain yang
+  sudah ditetapkan sebelumnya (galeri multi-gambar wajib ada).
+- JANGAN mengubah struktur AdminLayout/Sidebar/Dashboard yang sudah
+  dibangun sebelumnya -- kamu hanya menambah halaman baru di bawah
+  menu Catalog yang sudah ada placeholder-nya.
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Buat file CATATAN_CRUD_PRODUCT.md di root project, berisi:
+
+1. Hasil KONFIRMASI struktur kolom sebenarnya dari query tinker di
+   awal (semua tabel yang dicek), supaya kedua rekan frontend tahu
+   nama field yang BENAR untuk dipakai, bukan menebak dari dokumen
+   arsitektur semata.
+2. Daftar semua route admin.products.* beserta method HTTP dan
+   Controller method yang menanganinya.
+3. Bentuk PERSIS props yang dikirim ke tiap halaman Inertia
+   (Admin/Product/Index, Admin/Product/Create, Admin/Product/Edit)
+   -- contoh struktur JSON konkret untuk masing-masing, supaya kedua
+   rekan tahu persis field apa yang tersedia untuk dipakai di form
+   dan tabel.
+4. Penjelasan singkat cara kerja penyimpanan gambar (path relatif
+   vs URL lengkap, cara frontend menyusun URL untuk ditampilkan
+   lewat <img src>).
+5. Konfirmasi bahwa halaman /products customer sudah terhubung ke
+   data sungguhan, dan bentuk props yang dikirim ke halaman itu.
+6. Alur kerja end-to-end secara ringkas (poin bernomor): admin buka
+   form -> isi data -> submit -> tersimpan -> muncul di tabel admin
+   -> muncul di /products customer.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) query tinker konfirmasi struktur dulu, (b)
+  model + relasi, (c) Action (Create/Update/Delete), (d) Form
+  Request, (e) Controller + route -- SEGERA laporkan setelah bagian
+  ini selesai supaya rekan frontend bisa mulai, (f) sambungkan
+  halaman /products customer ke data sungguhan, (g) dokumentasi.
+- Tampilkan ringkasan tiap langkah, supaya saya bisa cek dan commit
+  git bertahap serta segera membagikan progres ke rekan frontend.
+- Setelah semua selesai, jelaskan langkah pengetesan manual: cara
+  membuat produk baru lewat Tinker atau lewat route sementara (jika
+  form frontend belum jadi saat kamu selesai duluan) untuk
+  memastikan backend benar-benar bisa menyimpan sebelum frontend
+  selesai dibangun.
+====================================================================
