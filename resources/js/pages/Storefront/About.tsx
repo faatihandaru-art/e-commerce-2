@@ -22,8 +22,8 @@ export default function About() {
                     />
                 </svg>
             ),
-            title: 'Garansi Resmi 1-to-1 Replacement',
-            desc: 'Kami bermitra langsung dengan manufaktur resmi. Jika terjadi kerusakan teknis selama masa garansi, kami berikan penggantian unit baru tanpa proses birokrasi berbelit.',
+            title: 'Perlindungan Garansi',
+            desc: 'Setiap produk memiliki ketentuan garansi yang berbeda sesuai dengan brand dan jenis produknya. Kami membantu memberikan informasi garansi agar kamu berbelanja dengan lebih tenang.',
         },
         {
             icon: (
@@ -41,7 +41,7 @@ export default function About() {
                 </svg>
             ),
             title: 'Standar Pengujian Hardware Ketat',
-            desc: 'Setiap mouse, keyboard, dan monitor diuji di lab internal kami untuk memastikan konsistensi sakelar, akurasi sensor optik, dan ketiadaan ghosting atau jitter.',
+            desc: 'Setiap produk di VGS dipilih dengan mempertimbangkan kualitas, performa, dan spesifikasi agar kamu mendapatkan gaming gear yang sesuai dengan kebutuhan.',
         },
         {
             icon: (
@@ -56,7 +56,7 @@ export default function About() {
                 </svg>
             ),
             title: 'Pengemasan Khusus Anti-Benturan',
-            desc: 'Semua periferal dikemas menggunakan heavy-duty protective foam & bubble cushion tebal untuk memastikan barang sampai dalam kondisi presisi turnamen.',
+            desc: 'Setiap produk dikemas dengan perlindungan tambahan untuk membantu menjaga kondisi gaming gear tetap aman selama proses pengiriman.',
         },
         {
             icon: (
@@ -66,7 +66,7 @@ export default function About() {
                 </svg>
             ),
             title: 'Dukungan Komunitas & Teknisi Berpengalaman',
-            desc: 'Tim teknis kami adalah gamer dan modder aktif yang siap membantu kalibrasi DPI, switch lubing guide, hingga firmware debugging kapan saja.',
+            desc: 'Kami siap membantu memilih gear yang tepat, memberikan informasi spesifikasi yang jelas, dan menjawab pertanyaan seputar produk untuk membantu kamu membangun setup gaming yang sesuai.',
         },
     ];
 
@@ -162,22 +162,22 @@ export default function About() {
                                 100%
                             </div>
                             <div className="font-bold text-sm text-vgs-silver-bright mt-1">
-                                Garansi Resmi 1-to-1
+                                Garansi Resmi
                             </div>
                             <p className="text-xs text-vgs-silver-muted mt-1 leading-relaxed">
-                                Penggantian unit baru langsung jika ditemukan cacat pabrik atau sensor.
+                                Produk dilengkapi garansi sesuai dengan ketentuan dan periode garansi dari masing-masing brand
                             </p>
                         </div>
 
                         <div className="p-6 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border">
                             <div className="font-display font-extrabold text-3xl sm:text-4xl text-vgs-blue-electric font-mono">
-                                14
+                                31
                             </div>
                             <div className="font-bold text-sm text-vgs-silver-bright mt-1">
                                 Kategori Terkurasi
                             </div>
                             <p className="text-xs text-vgs-silver-muted mt-1 leading-relaxed">
-                                Dari mouse ultra-light 49g hingga monitor Fast-IPS 360Hz.
+                                Dari mouse ultra-light 49g hingga monitor Fast-IPS 240Hz.
                             </p>
                         </div>
 
@@ -242,7 +242,7 @@ export default function About() {
                                 Siap Meningkatkan Performa Game-mu?
                             </h3>
                             <p className="text-sm text-vgs-silver-mid">
-                                Jelajahi 14 kategori periferal esports berkualitas tinggi dengan garansi resmi dan pengiriman aman.
+                                Jelajahi 31 kategori periferal esports berkualitas tinggi dengan garansi resmi dan pengiriman aman.
                             </p>
                             <div className="pt-2">
                                 <Button

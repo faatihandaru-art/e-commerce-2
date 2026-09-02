@@ -46,7 +46,7 @@ export default function Home() {
                 </svg>
             ),
             title: '100% Original & Garansi Resmi',
-            desc: 'Semua unit didistribusikan resmi dengan garansi penggantian langsung 1-to-1 replacement jika terjadi cacat pabrik.',
+            desc: 'Semua produk yang tersedia merupakan produk original dengan garansi resmi sesuai ketentuan dan periode garansi dari masing-masing brand.',
         },
         {
             icon: (
@@ -60,7 +60,7 @@ export default function Home() {
                 </svg>
             ),
             title: 'Standar Kalibrasi Turnamen',
-            desc: 'Setiap mouse, keyboard, dan monitor telah lolos uji latensi input dan stabilitas polling rate sub-millisecond.',
+            desc: 'Setiap mouse, keyboard monitor dan perlengkapan lainnya telah lolos uji latensi input dan stabilitas polling rate sub-millisecond.',
         },
         {
             icon: (

@@ -119,7 +119,7 @@ export const CategoryGrid: React.FC = () => {
                         href="/products"
                         className="inline-flex items-center gap-2 text-xs font-mono font-bold text-vgs-blue-electric hover:text-vgs-blue-glow transition-colors self-start sm:self-auto group py-2"
                     >
-                        <span>Lihat Semua ({categories.length} Kategori)</span>
+                        <span>Lihat Semua 31 Kategori</span>
                         <svg
                             className="w-4 h-4 transition-transform group-hover:translate-x-1"
                             fill="none"
