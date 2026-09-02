@@ -85,7 +85,7 @@ class CatalogPresenter
             ->values()
             ->map(fn (ProductImage $img) => [
                 'id' => $img->id,
-                'url' => $img->path ? asset('storage/'.$img->path) : null,
+                'url' => \App\Support\ProductPresenter::imageUrl($img->path),
                 'sort_order' => $img->sort_order,
                 'is_primary' => (bool) $img->is_primary,
             ])

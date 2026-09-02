@@ -41,10 +41,7 @@ class ProductPresenter
 
         $formattedImages = $images->map(function ($img) {
             if (empty($img->path)) return '';
-            if (str_starts_with($img->path, 'http://') || str_starts_with($img->path, 'https://')) {
-                return $img->path;
-            }
-            return asset('storage/' . ltrim($img->path, '/'));
+            return self::imageUrl($img->path);
         })->filter()->values()->all();
 
         return [
@@ -145,6 +142,38 @@ class ProductPresenter
         }
 
         return $specs;
+    }
+
+    /**
+     * Build a full, web-accessible URL for a stored image path.
+     *
+     * Path disimpan dalam dua bentuk:
+     *  - 'images/...'  : relatif thd folder public/ (data seed/demo), cukup dipanggil via asset().
+     *  - 'products/...': path Storage disk public (hasil upload form CRUD), harus lewat symlink /storage.
+     *
+     * @return string|null
+     */
+    public static function imageUrl(?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        $trimmed = ltrim($path, '/');
+
+        if (str_starts_with($trimmed, 'storage/')) {
+            return asset($trimmed);
+        }
+
+        if (str_starts_with($trimmed, 'images/')) {
+            return asset($trimmed);
+        }
+
+        return asset('storage/' . $trimmed);
     }
 
     private static function badge(int $price, ?int $compareAt, int $stock, bool $isNew): ?string

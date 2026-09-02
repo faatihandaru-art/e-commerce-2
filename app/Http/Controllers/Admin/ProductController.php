@@ -18,28 +18,38 @@ class ProductController extends Controller
 {
     public function index(): Response
     {
-        $products = Product::query()
-            ->with(['images' => fn ($q) => $q->orderBy('sort_order'), 'variants'])
+        $paginator = Product::query()
+            ->with([
+                'brand',
+                'categories',
+                'images' => fn ($q) => $q->orderBy('sort_order'),
+                'variants',
+            ])
             ->latest('id')
-            ->paginate(10)
-            ->through(fn (Product $product) => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'slug' => $product->slug,
-                'status' => $product->status,
-                'brand' => $product->brand?->name,
-                'category_names' => $product->categories->pluck('name')->values(),
-                'image' => $product->images->firstWhere('is_primary', true)?->path
-                    ?? $product->images->first()?->path,
-                'variants' => $product->variants->map(fn ($v) => [
-                    'sku' => $v->sku,
-                    'price' => (int) $v->price,
-                ])->values(),
-                'created_at' => $product->created_at?->format('d M Y'),
-            ]);
+            ->paginate(10);
+
+        $paginator->setCollection(
+            $paginator->getCollection()
+                ->map(fn (Product $product) => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'status' => $product->status,
+                    'brand' => $product->brand?->name,
+                    'category_names' => $product->categories->pluck('name')->values(),
+                    'image' => $product->images->firstWhere('is_primary', true)?->path
+                        ?? $product->images->first()?->path,
+                    'variants' => $product->variants->map(fn ($v) => [
+                        'sku' => $v->sku,
+                        'price' => (int) $v->price,
+                    ])->values(),
+                    'created_at' => $product->created_at?->format('d M Y'),
+                ])
+                ->values()
+        );
 
         return Inertia::render('Admin/Product/Index', [
-            'products' => $products,
+            'products' => $paginator,
         ]);
     }
 
