@@ -83,7 +83,7 @@ export default function Home() {
                 </svg>
             ),
             title: 'Dukungan dan Layanan Responsif',
-            desc: 'Akses langsung ke forum tuning firmware, preset audio turnamen, dan customer support teknikal 24/7.',
+            desc: 'Tim kami siap membantu memilih gear terbaik, jawab pertanyaan, dan memberikan solusi untuk kebutuhan gaming kamu.',
         },
     ];
 

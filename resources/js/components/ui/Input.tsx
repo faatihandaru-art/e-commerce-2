@@ -52,7 +52,7 @@ export const Input: React.FC<InputProps> = ({
                     id={inputId}
                     disabled={disabled}
                     required={required}
-                    className={`w-full bg-vgs-black-surface text-vgs-silver-bright placeholder:text-vgs-silver-muted text-sm rounded-xl px-4 py-3 border transition-all duration-200 focus:outline-none min-h-[44px] ${
+                    className={`w-full bg-vgs-black-surface text-vgs-silver-bright placeholder:text-vgs-silver-muted text-sm rounded-xl px-4 py-3 border transition-[border-color,box-shadow,background-color] duration-200 focus:outline-none min-h-[44px] ${
                         prefix ? 'pl-10' : ''
                     } ${suffix ? 'pr-10' : ''} ${
                         error
@@ -87,4 +87,4 @@ export const Input: React.FC<InputProps> = ({
     );
 };
 
-export default Input;
+export default React.memo(Input);

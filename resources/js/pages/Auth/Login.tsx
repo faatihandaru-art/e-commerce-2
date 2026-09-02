@@ -5,6 +5,15 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
 export default function Login() {
+    return (
+        <AuthLayout title="Masuk ke Akun" subtitle="Selamat datang kembali">
+            <Head title="Masuk" />
+            <LoginForm />
+        </AuthLayout>
+    );
+}
+
+const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
@@ -17,9 +26,6 @@ export default function Login() {
     };
 
     return (
-        <AuthLayout title="Masuk ke Akun" subtitle="Selamat datang kembali">
-            <Head title="Masuk" />
-
             <form onSubmit={handleSubmit} className="space-y-4">
                 <Input label="Email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} required />
                 <Input
@@ -61,6 +67,5 @@ export default function Login() {
                     <Link href="/register" className="text-vgs-blue-electric font-semibold">Daftar</Link>
                 </div>
             </form>
-        </AuthLayout>
     );
-}
+};

@@ -37,16 +37,23 @@ export const Modal: React.FC<ModalProps> = ({
         if (!isOpen) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+            if (e.key === 'Escape') {
+                onClose();
+            }
         };
 
         document.addEventListener('keydown', handleKeyDown);
+
+        // Cegah halaman belakang ikut scroll saat modal terbuka
+        const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
+
+        // Fokus ke modal setelah terbuka
         panelRef.current?.focus();
 
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
-            document.body.style.overflow = '';
+            document.body.style.overflow = previousOverflow;
         };
     }, [isOpen, onClose]);
 
@@ -59,44 +66,95 @@ export const Modal: React.FC<ModalProps> = ({
             aria-modal="true"
             aria-labelledby={title ? titleId : undefined}
         >
+            {/* Overlay */}
             <div
-                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/70"
                 onClick={closeOnOverlay ? onClose : undefined}
                 aria-hidden="true"
             />
 
+            {/* Modal Panel */}
             <div
                 ref={panelRef}
                 tabIndex={-1}
-                className={`relative w-full ${SIZE_CLASSES[size]} bg-vgs-black-elevated border border-vgs-gray-border rounded-2xl shadow-2xl focus:outline-none ${className}`}
+                className={`
+                    relative
+                    w-full
+                    ${SIZE_CLASSES[size]}
+                    bg-vgs-black-elevated
+                    border
+                    border-vgs-gray-border
+                    rounded-2xl
+                    shadow-2xl
+                    focus:outline-none
+                    ${className}
+                `}
             >
+                {/* Header */}
                 {(title || !hideCloseButton) && (
                     <div className="flex items-center justify-between px-6 py-4 border-b border-vgs-gray-border">
                         {title && (
-                            <h2 id={titleId} className="font-display text-lg font-bold text-vgs-silver-bright">
+                            <h2
+                                id={titleId}
+                                className="font-display text-lg font-bold text-vgs-silver-bright"
+                            >
                                 {title}
                             </h2>
                         )}
+
                         {!hideCloseButton && (
                             <button
                                 type="button"
                                 onClick={onClose}
                                 aria-label="Tutup modal"
-                                className={`inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-vgs-silver-mid transition-colors hover:bg-vgs-black-surface hover:text-vgs-silver-bright focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric ${!title ? 'absolute right-4 top-4' : ''}`}
+                                className={`
+                                    inline-flex
+                                    h-8
+                                    w-8
+                                    shrink-0
+                                    cursor-pointer
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    text-vgs-silver-mid
+                                    transition-colors
+                                    hover:bg-vgs-black-surface
+                                    hover:text-vgs-silver-bright
+                                    focus-visible:outline-none
+                                    focus-visible:ring-2
+                                    focus-visible:ring-vgs-blue-electric
+                                    ${!title ? 'absolute right-4 top-4' : ''}
+                                `}
                             >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
                                 </svg>
                             </button>
                         )}
                     </div>
                 )}
 
-                <div className="px-6 py-5">{children}</div>
+                {/* Content */}
+                <div className="px-6 py-5">
+                    {children}
+                </div>
             </div>
         </div>,
-        document.body,
+        document.body
     );
 };
 
 export default Modal;
+
+
