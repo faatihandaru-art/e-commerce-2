@@ -137,7 +137,19 @@ admin memakai helper serupa `imageUrl()` di `Index.tsx`.
 
 ---
 
-## 5. Koneksi Halaman Customer `/products` Ke Data Real Database
+## 5. Alur Kerja End-to-End
+
+1. Admin membuka menu **Catalog** (sidebar → `/admin/products`). Daftar produk tampil.
+2. Klik "Tambah Produk" → halaman `Create`.
+3. Isi informasi dasar, pilih kategori (minimal 1), unggah minimal 1 gambar, tandai gambar utama, tambah minimal 1 varian (SKU + harga).
+4. Klik "Simpan Produk" → data dikirim multipart ke `admin.products.store`.
+5. Backend `CreateProductAction` menyimpan produk, kategori (pivot), varian, dan gambar dalam satu transaksi DB.
+6. Redirect ke `admin.products.index` dengan pesan sukses → produk muncul di tabel admin.
+7. Untuk edit, admin membuka form edit, mengubah data, lalu `UpdateProductAction` memperbarui semuanya (termasuk hapus gambar/varian yang tidak lagi dipakai).
+
+---
+
+## 6. Koneksi Halaman Customer `/products` Ke Data Real Database
 
 - Halaman customer `/products` dan endpoint `/api/catalog/products` terhubung langsung ke query
   Eloquent `Product::where('status', 'published')`.
@@ -171,44 +183,73 @@ admin memakai helper serupa `imageUrl()` di `Index.tsx`.
 
 ## Frontend: Form Produk
 
-### 1. Daftar File
+Bagian ini ditambahkan sesuai BRIEF_FRONTEND_PRODUCT_FORM dan dikerjakan bersama bagian backend.
+
+### 1. Daftar File Yang Dibuat
 
 | File | Keterangan |
 |------|-----------|
-| `resources/js/components/admin/ProductForm.tsx` | Komponen form bersama untuk Create & Edit. |
+| `resources/js/components/admin/ProductForm.tsx` | Komponen form bersama untuk Create & Edit (mode create / edit). |
 | `resources/js/pages/Admin/Product/Create.tsx` | Halaman tambah produk. |
 | `resources/js/pages/Admin/Product/Edit.tsx` | Halaman edit produk. |
-| `resources/js/pages/Admin/Product/Index.tsx` | Halaman daftar produk (dibahas bagian Frontend Tabel). |
+| `resources/js/pages/Admin/Product/Index.tsx` | Halaman daftar produk (tabel) — dibahas lebih lanjut di bagian Frontend Tabel. |
 
 ### 2. Pendekatan Upload Gambar (forceFormData + method spoofing)
 
-- **Create**: `form.post('/admin/products', { forceFormData: true })`.
-- **Update (Edit)**: `form.post('/admin/products/{id}', { forceFormData: true })` dengan field
-  `_method: 'PUT'` (method spoofing), menghindari keterbatasan Inertia dengan file.
+Karena form mengirim **file gambar** (multipart) dan update memakai **PUT**, kami memakai
+kombinasi:
 
-Kontrak data gambar:
+- **Create**: `form.post('/admin/products', { forceFormData: true })`. Inertia otomatis
+  mengirim `FormData` saat ada objek `File` di data form.
+- **Update (Edit)**: `form.post('/admin/products/{id}', { forceFormData: true })` dengan field
+  `_method: 'PUT'` di dalam data form (method spoofing). Ini menghindari keterbatasan Inertia
+  dengan `put()` + file, dan Laravel tetap menerimanya sebagai PUT/update.
+
+Kontrak data gambar yang dikirim:
+
 | Mode | Field | Isi |
 |------|-------|-----|
-| Create | `images` | array `File`, wajib min 1 |
+| Create | `images` | array `File` (urutan tampil), wajib min 1 |
 | Create | `primary_index` | indeks gambar utama (0-based) |
-| Edit | `kept_images` | `[{ id, sort_order }]` gambar lama yang dipertahankan |
-| Edit | `new_images` | array `File` gambar baru |
-| Edit | `delete_image_ids` | `[id]` gambar lama yang dihapus |
+| Edit | `kept_images` | `[{ id, sort_order }]` — gambar lama yang dipertahankan, urutan tampil |
+| Edit | `new_images` | array `File` — gambar baru yang ditambahkan |
+| Edit | `delete_image_ids` | `[id]` — id gambar lama yang dihapus |
 | Edit | `primary_ref` | `"existing:{id}"` atau `"new:{index}"` penanda gambar utama |
+
+Alasan: memisahkan gambar lama (referensi id) dan gambar baru (File) ke array berbeda supaya
+serialisasi FormData oleh Inertia berjalan benar (tidak mencampur File dengan skalar di satu array).
 
 ### 3. Keterbatasan Varian (catatan pengembangan lanjutan)
 
-Varian disederhanakan menjadi satu baris **SKU + harga (+ harga coret opsional)**. Tidak dibangun
-sistem `product_options` / `product_option_values` pada tahap ini sesuai izin di brief. Untuk
-pengembangan lanjutan perlu ditambahkan sistem opsi/atribut kombinasi (warna × ukuran).
+Varian produk **disederhanakan** menjadi satu baris berisi **SKU + harga (+ harga coret opsional)**.
+Kami **tidak** membangun sistem `product_options` / `product_option_values` (kombinasi warna ×
+ukuran yang rumit) pada tahap ini, sesuai izin di brief. Artinya satu varian = satu SKU dengan
+harganya sendiri.
+
+Untuk pengembangan lanjutan, perlu ditambahkan:
+- Sistem opsi/atribut (`product_options`, `product_option_values`, pivot `product_variant_option_values`).
+- Penamaan varian lebih informatif (mis. "Hitam - Wireless") yang saat ini otomatis diambil dari
+  SKU/relasi di sisi storefront (`ProductPresenter::variant()`).
 
 ### 4. Konfirmasi Pengetesan
 
 - **Backend**: `CreateProductAction`, `UpdateProductAction`, dan `DeleteProductAction` sudah diuji
-  terhadap database asli (create, slug otomatis, gambar utama, varian; update maintain/hapus
-  gambar; delete menghapus file fisik).
-- **Frontend**: `npm run build` berhasil tanpa error.
-- Route `admin.products.*` dan API `/api/catalog/*` terdaftar dengan benar.
+  langsung (via skrip tinker sementara) terhadap database asli:
+  - Create: produk tersimpan, slug otomatis, gambar tersimpan + `is_primary` sesuai pilihan, varian tersimpan.
+  - Create dengan `primary_index` tidak nol: gambar terpilih ditandai utama, `published_at` terisi saat status published.
+  - Update: gambar lama dipertahankan/diurutkan, gambar yang dihapus ikut terhapus, gambar baru ditambah,
+    penggantian gambar utama berfungsi, kategori tersinkron, harga varian ter-update.
+  - Delete: menghapus produk beserta file fisik gambarnya.
+  - Hasil uji berhasil; data uji lalu dibersihkan (produk uji dihapus + file fisik dihapus).
+- **Frontend**: `npm run build` **berhasil tanpa error** (semua halaman `Admin/Product/*` dan
+  komponen `ProductForm` ter-compile).
+- Route `admin.products.*` dan API `/api/catalog/*` terdaftar dengan benar (`php artisan route:list`).
+
+> Catatan terkoordinasi: karena backend/dokumentasi `CATATAN_CRUD_PRODUCT.md` ditemukan belum ada
+> saat form dikerjakan, dan atas persetujuan pemilik proyek, bagian backend (Model sudah ada,
+> Action, Request, Controller, Route, Presenter) ikut dibangun supaya form bisa diuji end-to-end.
+> Rekan lain (tabel daftar & koneksi customer) tetap dapat memakai route `admin.products.*` dan
+> props yang sudah didokumentasikan di atas.
 
 ---
 

@@ -30,6 +30,7 @@ export interface ExistingVariant {
 }
 
 export interface ProductInitialData {
+    id?: number | string;
     name: string;
     slug?: string | null;
     brand_id?: number | string | null;
@@ -67,41 +68,39 @@ const STATUS_OPTIONS = [
 export default function ProductForm({ mode, categories, brands, initialProduct }: ProductFormProps) {
     const isEdit = mode === 'edit';
 
-    const [form] = [
-        useForm<{
-            _method?: string;
-            name: string;
-            slug: string;
-            brand_id: number | string | null;
-            category_ids: (number | string)[];
-            description: string;
-            status: string;
-            images: File[];
-            primary_index: number;
-            kept_images: { id: number | string; sort_order: number }[];
-            new_images: File[];
-            delete_image_ids: (number | string)[];
-            primary_ref: string;
-            variants: { id?: number | string; sku: string; price: string; compare_at_price: string }[];
-            delete_variant_ids: (number | string)[];
-        }>({
-            _method: isEdit ? 'PUT' : undefined,
-            name: initialProduct?.name ?? '',
-            slug: initialProduct?.slug ?? '',
-            brand_id: initialProduct?.brand_id ?? null,
-            category_ids: initialProduct?.category_ids ?? [],
-            description: initialProduct?.description ?? '',
-            status: initialProduct?.status ?? 'draft',
-            images: [],
-            primary_index: 0,
-            kept_images: [],
-            new_images: [],
-            delete_image_ids: [],
-            primary_ref: '',
-            variants: [],
-            delete_variant_ids: [],
-        }),
-    ][0];
+    const form = useForm<{
+        _method?: string;
+        name: string;
+        slug: string;
+        brand_id: number | string | null;
+        category_ids: (number | string)[];
+        description: string;
+        status: string;
+        images: File[];
+        primary_index: number;
+        kept_images: { id: number | string; sort_order: number }[];
+        new_images: File[];
+        delete_image_ids: (number | string)[];
+        primary_ref: string;
+        variants: { id?: number | string; sku: string; price: string; compare_at_price: string }[];
+        delete_variant_ids: (number | string)[];
+    }>({
+        _method: isEdit ? 'PUT' : undefined,
+        name: initialProduct?.name ?? '',
+        slug: initialProduct?.slug ?? '',
+        brand_id: initialProduct?.brand_id ?? null,
+        category_ids: initialProduct?.category_ids ?? [],
+        description: initialProduct?.description ?? '',
+        status: initialProduct?.status ?? 'draft',
+        images: [],
+        primary_index: 0,
+        kept_images: [],
+        new_images: [],
+        delete_image_ids: [],
+        primary_ref: '',
+        variants: [],
+        delete_variant_ids: [],
+    });
 
     // --- Kategori ---
     const toggleCategory = (id: number | string) => {
