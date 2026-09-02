@@ -15,7 +15,7 @@ interface ProductRow {
     brand?: string | null;
     category_names?: string[];
     image?: string | null;
-    variants?: { sku: string; price: number }[];
+    variants?: { sku: string; price: number; stock?: number }[];
     created_at?: string | null;
 }
 
@@ -101,6 +101,9 @@ export default function Index() {
                                         Varian
                                     </th>
                                     <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-vgs-silver-muted">
+                                        Stok
+                                    </th>
+                                    <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-vgs-silver-muted">
                                         Status
                                     </th>
                                     <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-vgs-silver-muted">
@@ -114,7 +117,7 @@ export default function Index() {
                             <tbody className="divide-y divide-vgs-gray-border/60">
                                 {rows.length === 0 && (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center">
+                                        <td colSpan={8} className="px-6 py-12 text-center">
                                             <p className="text-vgs-silver-mid">
                                                 Belum ada produk. Mulai dengan menambahkan produk pertama.
                                             </p>
@@ -191,6 +194,9 @@ export default function Index() {
                                             </td>
                                             <td className="px-6 py-4 text-vgs-silver-mid">
                                                 {product.variants?.length ?? 0}
+                                            </td>
+                                            <td className="px-6 py-4 text-vgs-silver-mid whitespace-nowrap">
+                                                {(product.variants ?? []).reduce((sum, v) => sum + (v.stock ?? 0), 0)}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Badge variant={statusVariant[product.status] ?? 'neutral'} dot>

@@ -27,6 +27,7 @@ export interface ExistingVariant {
     sku: string;
     price: number;
     compare_at_price?: number | null;
+    stock?: number | null;
 }
 
 export interface ProductInitialData {
@@ -58,6 +59,7 @@ interface VariantRow {
     sku: string;
     price: string;
     compareAtPrice: string;
+    stock: string;
 }
 
 const STATUS_OPTIONS = [
@@ -82,7 +84,7 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
         new_images: File[];
         delete_image_ids: (number | string)[];
         primary_ref: string;
-        variants: { id?: number | string; sku: string; price: string; compare_at_price: string }[];
+        variants: { id?: number | string; sku: string; price: string; compare_at_price: string; stock: string }[];
         delete_variant_ids: (number | string)[];
     }>({
         _method: isEdit ? 'PUT' : undefined,
@@ -197,16 +199,17 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                 sku: v.sku,
                 price: String(v.price ?? ''),
                 compareAtPrice: v.compare_at_price != null ? String(v.compare_at_price) : '',
+                stock: v.stock != null ? String(v.stock) : '0',
             }));
         }
-        return [{ key: 0, sku: '', price: '', compareAtPrice: '' }];
+        return [{ key: 0, sku: '', price: '', compareAtPrice: '', stock: '0' }];
     });
     const variantKeyCounter = useRef(variants.length);
     const [removedVariantIds, setRemovedVariantIds] = useState<(number | string)[]>([]);
 
     const addVariantRow = () => {
         const key = variantKeyCounter.current++;
-        setVariants((prev) => [...prev, { key, sku: '', price: '', compareAtPrice: '' }]);
+        setVariants((prev) => [...prev, { key, sku: '', price: '', compareAtPrice: '', stock: '0' }]);
     };
 
     const removeVariantRow = (rowKey: number) => {
@@ -278,6 +281,7 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                     sku: v.sku.trim(),
                     price: v.price,
                     compare_at_price: v.compareAtPrice,
+                    stock: v.stock,
                 })),
                 delete_variant_ids: removedVariantIds,
             });
@@ -300,6 +304,7 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                 sku: v.sku.trim(),
                 price: v.price,
                 compare_at_price: v.compareAtPrice,
+                stock: v.stock,
             })),
         }));
 
@@ -542,9 +547,10 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                     )}
 
                     <div className="hidden sm:grid grid-cols-12 gap-3 text-[10px] font-mono uppercase tracking-widest text-vgs-silver-muted">
-                        <div className="col-span-4">SKU *</div>
+                        <div className="col-span-3">SKU *</div>
                         <div className="col-span-3">Harga *</div>
-                        <div className="col-span-3">Harga Coret (Opsional)</div>
+                        <div className="col-span-2">Harga Coret (Opsional)</div>
+                        <div className="col-span-2">Stok</div>
                         <div className="col-span-2 text-right">Hapus</div>
                     </div>
 
@@ -557,7 +563,7 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                         );
                         return (
                             <div key={variant.key} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
-                                <div className="col-span-6 sm:col-span-4">
+                                <div className="col-span-6 sm:col-span-3">
                                     <Input
                                         label="SKU"
                                         required
@@ -582,7 +588,7 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                                         )}
                                     />
                                 </div>
-                                <div className="col-span-6 sm:col-span-3">
+                                <div className="col-span-6 sm:col-span-2">
                                     <Input
                                         label="Harga Coret"
                                         type="number"
@@ -590,6 +596,16 @@ export default function ProductForm({ mode, categories, brands, initialProduct }
                                         placeholder="200000"
                                         value={variant.compareAtPrice}
                                         onChange={(e) => updateVariant(variant.key, 'compareAtPrice', e.target.value)}
+                                    />
+                                </div>
+                                <div className="col-span-6 sm:col-span-2">
+                                    <Input
+                                        label="Stok"
+                                        type="number"
+                                        min={0}
+                                        placeholder="0"
+                                        value={variant.stock}
+                                        onChange={(e) => updateVariant(variant.key, 'stock', e.target.value)}
                                     />
                                 </div>
                                 <div className="col-span-6 sm:col-span-2 flex sm:justify-end items-end">

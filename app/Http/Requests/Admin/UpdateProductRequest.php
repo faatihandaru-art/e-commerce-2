@@ -38,12 +38,13 @@ class UpdateProductRequest extends FormRequest
             'primary_ref' => ['nullable', 'string', 'max:50'],
             'variants' => ['required', 'array', 'min:1'],
             'variants.*.id' => ['nullable', 'integer'],
-            'variants.*.sku' => [
-                'required', 'string', 'max:100', 'distinct',
-                Rule::unique('product_variants', 'sku')->ignore($existingVariantIds ?? []),
-            ],
+'variants.*.sku' => [
+                    'required', 'string', 'max:100', 'distinct',
+                    Rule::unique('product_variants', 'sku')->whereNot('id', $existingVariantIds ?? []),
+                ],
             'variants.*.price' => ['required', 'numeric', 'min:0'],
             'variants.*.compare_at_price' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.stock' => ['nullable', 'integer', 'min:0'],
             'delete_variant_ids' => ['nullable', 'array'],
             'delete_variant_ids.*' => ['integer'],
         ];
@@ -51,7 +52,9 @@ class UpdateProductRequest extends FormRequest
 
     private function productId(): int
     {
-        return (int) $this->route('product');
+        $routeParam = $this->route('product');
+
+        return $routeParam instanceof Product ? (int) $routeParam->id : (int) $routeParam;
     }
 
     /**

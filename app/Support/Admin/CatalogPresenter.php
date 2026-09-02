@@ -107,6 +107,7 @@ class CatalogPresenter
                 'sku' => $v->sku,
                 'price' => (int) $v->price,
                 'compare_at_price' => $v->compare_at_price !== null ? (int) $v->compare_at_price : null,
+                'stock' => (int) $v->stock,
             ])
             ->all();
     }

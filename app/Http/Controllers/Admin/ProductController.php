@@ -42,6 +42,7 @@ class ProductController extends Controller
                     'variants' => $product->variants->map(fn ($v) => [
                         'sku' => $v->sku,
                         'price' => (int) $v->price,
+                        'stock' => (int) $v->stock,
                     ])->values(),
                     'created_at' => $product->created_at?->format('d M Y'),
                 ])

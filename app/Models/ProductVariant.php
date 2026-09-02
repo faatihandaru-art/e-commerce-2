@@ -24,6 +24,7 @@ class ProductVariant extends Model
         'length_mm',
         'width_mm',
         'height_mm',
+        'stock',
         'status',
     ];
 
@@ -35,6 +36,7 @@ class ProductVariant extends Model
         'length_mm' => 'integer',
         'width_mm' => 'integer',
         'height_mm' => 'integer',
+        'stock' => 'integer',
         'deleted_at' => 'datetime',
     ];
 

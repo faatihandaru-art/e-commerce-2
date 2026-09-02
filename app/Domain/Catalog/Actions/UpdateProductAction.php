@@ -64,6 +64,9 @@ final class UpdateProductAction
                     ? (int) round($v['compare_at_price'])
                     : null,
                 'cost_price' => isset($v['cost_price']) && $v['cost_price'] !== '' ? (int) round($v['cost_price']) : null,
+                'stock' => isset($v['stock']) && $v['stock'] !== '' && $v['stock'] !== null
+                    ? (int) $v['stock']
+                    : 0,
                 'status' => 'active',
             ];
 
