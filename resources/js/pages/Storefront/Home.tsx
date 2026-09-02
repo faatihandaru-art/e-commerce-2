@@ -46,22 +46,22 @@ export default function Home() {
                 </svg>
             ),
             title: '100% Original & Garansi Resmi',
-            desc: 'Semua produk yang tersedia merupakan produk original dengan garansi resmi sesuai ketentuan dan periode garansi dari masing-masing brand.',
+            desc: 'Semua produk yang tersedia merupakan produk 100% original dengan garansi resmi sesuai ketentuan dan periode garansi dari masing-masing brand.',
         },
-        {
-            icon: (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <polygon
-                        points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
-            ),
-            title: 'Standar Kalibrasi Turnamen',
-            desc: 'Setiap mouse, keyboard monitor dan perlengkapan lainnya telah lolos uji latensi input dan stabilitas polling rate sub-millisecond.',
-        },
+       {
+    icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+                d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    title: 'Performa Teruji, Siap Kompetisi',
+    desc: 'Setiap produk dipilih secara ketat untuk memastikan kualitas, akurasi, dan performa terbaik untuk gamer kompetitif.',
+},
         {
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ export default function Home() {
                     <circle cx="18.5" cy="18.5" r="2.5" strokeWidth="2" />
                 </svg>
             ),
-            title: 'Pengiriman Aman Anti-Guncang',
+            title: 'Pengiriman Aman dan cepat',
             desc: 'Kemasan protektif berlapis foam tebal khusus peripheral presisi, siap dikirim cepat ke seluruh Indonesia.',
         },
         {
@@ -82,7 +82,7 @@ export default function Home() {
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeWidth="2" />
                 </svg>
             ),
-            title: 'Komunitas & Dukungan Teknis',
+            title: 'Dukungan dan Layanan Responsif',
             desc: 'Akses langsung ke forum tuning firmware, preset audio turnamen, dan customer support teknikal 24/7.',
         },
     ];
@@ -161,11 +161,11 @@ export default function Home() {
                                 <span className="w-1.5 h-1.5 rounded-full bg-vgs-blue-electric" />
                                 <span>Standart Laboratorium VGS</span>
                             </div>
-                            <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-vgs-silver-bright tracking-tight">
-                                Kenapa Atlet Esports Memilih VGS?
-                            </h2>
+                            <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-vgs-silver-bright tracking-tight">
+                                gear terbaik, pengalaman <span className="text-blue-500">tanpa kompromi</span>
+                            </h3>
                             <p className="text-sm text-vgs-silver-mid mt-2">
-                              Karena kami memilih setiap sensor, switch, dan perfoma terbaik untuk memastikan kesiapan kompetitif tanpa celah.
+                                kami menghadirkan gear gaming original dengan layanan terbaik agar kamu bisa fokus dengan kemenanganmu.
                             </p>
                         </div>
 
