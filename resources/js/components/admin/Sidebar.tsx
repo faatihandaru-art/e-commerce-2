@@ -170,13 +170,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, navGroups }) => {
                         onClick={close}
                         className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric rounded-lg px-1 py-0.5"
                     >
-                        <div className="w-9 h-9 rounded-lg bg-vgs-black-elevated border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-all">
-                            {/* VGS bolt emblem */}
-                            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-                                <polygon points="12 2, 21 7, 21 17, 12 22, 3 17, 3 7" stroke="#2B6FF6" strokeWidth="1.5" fill="#0A0A0C" />
-                                <path d="M7 8L12 17L17 8" stroke="#E8E9ED" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
+                         <img
+                                src="/images/logo/logo..vgs2.png"
+                                alt="VGS Logo"
+                                className="w-13 sm:w-13 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)] transition-transform duration-500 hover:scale-105"
+                            />
+                           
                         <div className="flex flex-col leading-none">
                             <span className="font-display font-extrabold text-lg tracking-wider text-vgs-silver-bright">
                                 V<span className="text-vgs-blue-electric">G</span>S
