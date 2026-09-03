@@ -185,3 +185,99 @@ bukan bagian brief ini.
 - `app/Http/Requests/Admin/StoreProductRequest.php`, `UpdateProductRequest.php` (hapus validasi `stock`)
 - `database/seeders/DatabaseSeeder.php` (daftarkan `WarehouseSeeder`)
 - Migration seri `030712` untuk `warehouses` & `inventories` (penyesuaian struktur sesuai brief)
+
+## Frontend: Form Penyesuaian Stok
+
+Dokumentasi hasil pengerjaan modal/form penyesuaian stok oleh Rekan 2 (frontend),
+mengikuti `BRIEF_FRONTEND_INVENTORY_FORM.txt`.
+
+### 1. File yang dibuat
+
+- `resources/js/components/admin/AdjustStockModal.tsx` — modal untuk menyesuaikan
+  jumlah stok satu baris inventory. Satu-satunya file baru dari bagian ini.
+
+> **Riwayat pergerakan stok (inventory_movements) dilewati.** Backend saat ini
+> hanya mengirim data inventori (daftar `inventories`) di halaman Index, tidak
+> mengirim riwayat `inventory_movements` per item. Sesuai brief poin 2, sesi
+> ini riwayat dilewati dan bisa ditambahkan nanti jika backend sudah menyediakan
+> data pergerakan.
+
+### 2. Props yang diterima `AdjustStockModal`
+
+Modal dipanggil dari halaman/tabel Inventory Index (dibangun Rekan 3) dengan
+kontrak sebagai berikut:
+
+```ts
+interface AdjustStockModalProps {
+    inventory: AdjustStockInventory;
+    onClose: () => void;
+}
+
+interface AdjustStockInventory {
+    id: number;
+    warehouse_id: number;
+    warehouse_name: string | null;
+    variant_id: number;
+    sku: string | null;
+    product_name: string | null;
+    quantity_on_hand: number;
+    quantity_reserved: number;
+    available_quantity: number;
+    reorder_level: number;
+    is_low: boolean;
+    is_out_of_stock: boolean;
+}
+```
+
+- `inventory` — satu baris data dari prop `inventories` yang dikirim
+  `InventoryController@index` (lihat bagian 4 di atas).
+- `onClose` — fungsi untuk menutup modal.
+
+Cara memanggil dari tabel (contoh untuk Rekan 3):
+
+```tsx
+import { AdjustStockModal, AdjustStockInventory } from '@/components/admin/AdjustStockModal';
+
+// di state:
+const [adjusting, setAdjusting] = useState<AdjustStockInventory | null>(null);
+
+// di JSX:
+{adjusting && (
+    <AdjustStockModal inventory={adjusting} onClose={() => setAdjusting(null)} />
+)}
+```
+
+### 3. Cara refresh data setelah adjustment berhasil
+
+Modal memakai **callback `onSuccess`** dari `form.post(...)`. Setelah submit
+berhasil, `onSuccess` menutup modal. **Bukan** `router.reload()` langsung dari
+modal — refresh tabel di halaman induk diserahkan ke Rekan 3 lewat mekanisme
+yang dia pilih (misal `router.reload()` di `onSuccess`, atau meng-update state
+lokal). Kontraknya: modal menutup dirinya sendiri saat sukses; Rekan 3 menangani
+pembaruan tabel.
+
+> Catatan: `InventoryController@adjust` langsung me-`redirect` ke
+> `admin.inventory.index` (full page reload Inertia). Jadi jika halaman tabel
+> dipakai sebagai halaman tujuan, tabel otomatis ter-refresh oleh redirect itu.
+> Namun modal tetap memakai callback `onSuccess` agar konsisten dan fleksibel.
+
+### 4. Konfirmasi hasil tes & validasi
+
+- **File lolos typecheck** (`npm run typecheck` / `tsc --noEmit`).
+- Modal mengirim `{ quantity, reason }` via POST ke `admin.inventory.adjust`
+  (`/admin/inventory/{id}/adjust`), sesuai kontrak backend:
+  - `quantity` positif = tambah stok, negatif = kurangi stok.
+- **Validasi frontend:**
+  - Jumlah wajib > 0 (`min=1`, dicek sebelum submit).
+  - Alasan wajib diisi (dropdown pilihan umum + input bebas untuk "Lainnya").
+  - Preview "Stok setelah penyesuaian: [angka]" ditampilkan real-time.
+  - Jika "Kurangi Stok" membuat hasil akhir negatif, muncul peringatan dan tombol
+    submit diblokir (`disabled`).
+- **Error dari backend** (misal `errors.quantity`, `errors.reason`) ditampilkan
+  pada field yang bersangkutan (validasi stok negatif yang ditolak ulang backend
+  muncul di `form.errors.quantity`).
+
+> Catatan penting: Modal belum diuji end-to-end lewat halaman tabel karena
+> halaman `Admin/Inventory/Index` (tugas Rekan 3) belum ada. Validasi logika sudah
+> memenuhi kontrak data backend dari `CATATAN_INVENTORY.md`.
+
