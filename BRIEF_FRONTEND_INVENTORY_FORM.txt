@@ -1,0 +1,169 @@
+====================================================================
+PROMPT UNTUK AI FRONTEND -- FORM PENYESUAIAN STOK
+BAGIAN KAMU: Modal/form Adjust Stock, riwayat pergerakan stok
+Vortix Gaming Store (VGS) -- Pemisahan Stok dari Product ke Inventory
+Kompatibel dipakai di: Antigravity, OpenCode, Copilot, atau AI
+coding assistant lain apapun -- ikuti instruksi ini apa adanya.
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke AI coding tool pilihanmu sebagai
+prompt awal. Simpan juga file ini di project sebagai
+BRIEF_FRONTEND_INVENTORY_FORM.md.
+
+Ada rekan yang mengerjakan BACKEND (BRIEF_BACKEND_INVENTORY.md) dan
+rekan lain yang mengerjakan TABEL/DASHBOARD stok
+(BRIEF_FRONTEND_INVENTORY_TABLE.md). Tugas kamu BERGANTUNG PADA
+route dan struktur data dari backend -- TUNGGU dia menyelesaikan
+Controller+Route (cek CATATAN_INVENTORY.md yang akan dia buat)
+sebelum mulai.
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Area admin SUDAH ADA dengan
+AdminLayout, Sidebar (menu "Inventory" sudah ada di sidebar tapi
+belum mengarah ke halaman fungsional), Header, Dashboard, dan CRUD
+Product yang sudah berjalan lengkap. Style memakai warna dari
+tailwind.config yang sudah ada (vgs-black-void, vgs-blue-electric,
+dst) dan komponen dari components/ui/ yang sudah ada (Button, Input,
+Badge, dst -- PAKAI ULANG, jangan bikin versi baru).
+
+PENTING: field "stock" yang SEBELUMNYA ada di form Tambah/Edit
+Produk SUDAH DIHAPUS oleh rekan backend -- stok sekarang dikelola
+SEPENUHNYA lewat halaman Inventory yang sedang dibangun ini, BUKAN
+lagi lewat form Product.
+
+====================================================================
+STRUKTUR DATA YANG AKAN KAMU PAKAI
+====================================================================
+
+CEK file CATATAN_INVENTORY.md di root project (dibuat rekan backend)
+untuk bentuk PERSIS:
+- Route admin.inventory.adjust (method POST, menerima jumlah
+  penyesuaian dan alasan)
+- Struktur data satu baris inventory (quantity_on_hand,
+  quantity_reserved, reorder_level, relasi ke variant dan product,
+  relasi ke warehouse)
+- Field apa saja yang wajib diisi saat submit adjustment
+
+====================================================================
+TUGAS KAMU
+====================================================================
+
+1. KOMPONEN: resources/js/components/admin/AdjustStockModal.tsx
+   Modal/dialog yang muncul saat admin klik tombol "Sesuaikan Stok"
+   pada satu baris inventory (baris ini ada di tabel yang dibangun
+   Rekan 3 -- modal ini dipanggil dari sana, terima props seperti
+   inventory (data baris yang sedang disesuaikan) dan onClose).
+
+   Isi form:
+   - Tampilkan info produk (nama, SKU, nama gudang) sebagai
+     KONTEKS/read-only di bagian atas modal, supaya admin yakin
+     sedang menyesuaikan stok yang benar
+   - Tampilkan stok SAAT INI (quantity_on_hand) dengan jelas
+   - Pilihan jenis penyesuaian: radio button atau tab "Tambah Stok"
+     / "Kurangi Stok" -- ini menentukan apakah angka yang diinput
+     akan dijumlah atau dikurang dari stok saat ini (di sisi
+     frontend, hitung dan TAMPILKAN preview "Stok setelah
+     penyesuaian: [angka]" secara real-time saat admin mengetik,
+     supaya tidak salah input)
+   - Input jumlah (angka, wajib, harus lebih dari 0 -- validasi di
+     frontend sebelum submit, jangan izinkan 0 atau negatif di
+     field ini karena arah tambah/kurang sudah ditentukan pilihan
+     di atas)
+   - Input/dropdown alasan: WAJIB diisi, sediakan beberapa pilihan
+     umum sebagai dropdown/quick-select (misal "Stok masuk dari
+     supplier", "Koreksi stock opname", "Barang rusak/hilang",
+     "Lainnya") DAN opsi untuk mengetik alasan bebas jika memilih
+     "Lainnya" -- field alasan tidak boleh kosong saat submit
+   - VALIDASI PENTING: jika admin memilih "Kurangi Stok" dengan
+     jumlah yang membuat hasil akhir jadi NEGATIF (misal stok saat
+     ini 5, mau dikurangi 10), TAMPILKAN peringatan jelas SEBELUM
+     submit dan JANGAN izinkan submit -- backend juga akan menolak
+     ini, tapi validasi di frontend memberi feedback lebih cepat ke
+     admin
+   - Tombol "Simpan Penyesuaian" (Button primary dari ui/), state
+     loading saat processing
+   - Tampilkan error dari backend jika ada (errors.quantity,
+     errors.reason, dst)
+   - Setelah sukses, modal tertutup otomatis dan tabel di halaman
+     induk ter-refresh (koordinasikan dengan Rekan 3 soal cara
+     refresh data setelah adjustment berhasil -- opsi paling
+     sederhana: memakai router.reload() dari Inertia setelah sukses,
+     atau callback onSuccess yang dipanggil parent)
+
+2. TAMPILAN RIWAYAT PERGERAKAN STOK (opsional tapi sangat
+   disarankan jika waktu memungkinkan)
+   Jika backend sudah menyediakan data inventory_movements untuk
+   satu varian/inventory (cek CATATAN_INVENTORY.md apakah ini sudah
+   tersedia), tambahkan section kecil di modal atau di halaman
+   terpisah yang menampilkan riwayat penyesuaian stok sebelumnya
+   untuk item ini: tanggal, jenis (masuk/keluar), jumlah, alasan,
+   siapa yang melakukan. Jika data ini BELUM disediakan backend
+   saat kamu sampai di titik ini, LEWATI bagian ini dan catat di
+   ringkasan akhir sebagai hal yang bisa ditambahkan nanti.
+
+RESPONSIVENESS -- WAJIB DICEK
+--------------------------------------------------------------------
+- Modal tetap bisa dipakai dengan baik di tablet (768-1024px)
+- Semua tombol tap-able minimal 44x44px di mobile
+
+AKSESIBILITAS -- WAJIB DICEK
+--------------------------------------------------------------------
+- Modal bisa ditutup dengan tombol Escape di keyboard
+- Fokus otomatis pindah ke input pertama saat modal terbuka
+- Semua input punya label jelas
+
+====================================================================
+YANG TIDAK PERLU/BOLEH KAMU KERJAKAN DI TAHAP INI
+====================================================================
+
+- JANGAN membangun halaman Admin/Inventory/Index (tabel utama) --
+  itu tugas Rekan 3, kamu hanya membangun MODAL yang dipanggil dari
+  sana
+- JANGAN membangun CRUD Warehouse (kelola daftar gudang) kecuali
+  diminta terpisah -- fokus pada form penyesuaian stok
+- JANGAN mengubah form Product (Create/Edit) yang sudah tidak punya
+  field stock -- itu sudah benar, jangan dikembalikan
+- JANGAN membangun logic reservasi stok otomatis -- itu di luar
+  cakupan tahap ini
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Tambahkan section baru di file CATATAN_INVENTORY.md yang sudah ada
+(JANGAN timpa isi yang sudah ada, tambahkan di bagian bawah dengan
+heading "## Frontend: Form Penyesuaian Stok"), berisi:
+
+1. Daftar file yang dibuat (AdjustStockModal.tsx, dan komponen
+   riwayat jika sempat dibuat).
+2. Props yang diterima AdjustStockModal, supaya Rekan 3 tahu cara
+   memanggilnya dari tabel yang dia bangun.
+3. Cara refresh data yang dipakai setelah adjustment berhasil
+   (router.reload() atau callback), supaya konsisten dengan yang
+   dipakai Rekan 3.
+4. Konfirmasi bahwa form sudah dites dan berhasil submit adjustment
+   ke backend, termasuk kasus validasi (stok tidak boleh negatif).
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) struktur modal dan tampilan info produk
+  read-only, (b) input jumlah dan pilihan tambah/kurang dengan
+  preview real-time, (c) input alasan dengan validasi wajib, (d)
+  validasi stok tidak boleh negatif, (e) submit dan uji coba sampai
+  berhasil, (f) riwayat pergerakan jika data tersedia, (g)
+  dokumentasi.
+- Tampilkan ringkasan tiap bagian selesai sebelum lanjut, supaya
+  bisa dicek dan commit git bertahap.
+- Jika struktur data dari backend TIDAK SESUAI dokumentasi, JANGAN
+  menebak -- laporkan dengan jelas di ringkasan.
+====================================================================

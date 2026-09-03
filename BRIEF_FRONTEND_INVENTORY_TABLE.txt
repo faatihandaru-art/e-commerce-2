@@ -1,0 +1,185 @@
+====================================================================
+PROMPT UNTUK AI FRONTEND -- TABEL INVENTORY & KONEKSI KE PRODUK
+BAGIAN KAMU: Halaman Admin/Inventory/Index, update tampilan stok
+di halaman Product yang sudah ada
+Vortix Gaming Store (VGS) -- Pemisahan Stok dari Product ke Inventory
+Kompatibel dipakai di: Antigravity, OpenCode, Copilot, atau AI
+coding assistant lain apapun -- ikuti instruksi ini apa adanya.
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke AI coding tool pilihanmu sebagai
+prompt awal. Simpan juga file ini di project sebagai
+BRIEF_FRONTEND_INVENTORY_TABLE.md.
+
+Ada rekan yang mengerjakan BACKEND (BRIEF_BACKEND_INVENTORY.md) dan
+rekan lain yang mengerjakan FORM penyesuaian stok
+(BRIEF_FRONTEND_INVENTORY_FORM.md). Tugas kamu bisa MULAI SEGERA
+setelah backend selesai Controller+Route, TIDAK perlu menunggu
+form/modal adjustment selesai dulu (kamu hanya perlu MEMANGGIL
+komponen modal itu, bukan membangun isinya).
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Area admin SUDAH ADA dengan
+AdminLayout, Sidebar (menu "Inventory" sudah ada tapi belum
+mengarah ke halaman fungsional), Header, Dashboard, dan CRUD
+Product yang sudah berjalan lengkap (termasuk halaman
+Admin/Product/Index yang menampilkan tabel produk -- bisa jadi
+REFERENSI GAYA untuk tabel Inventory yang akan kamu buat, supaya
+konsisten). Style memakai warna dari tailwind.config yang sudah ada
+dan komponen dari components/ui/ yang sudah ada.
+
+PENTING: field "stock" yang SEBELUMNYA ada di form Tambah/Edit
+Produk dan di tabel Admin/Product/Index SUDAH DIHAPUS/PERLU DIUBAH
+oleh rekan backend -- stok sekarang ditampilkan lewat relasi ke
+inventory, bukan lagi kolom stock langsung di variant.
+
+====================================================================
+STRUKTUR DATA YANG AKAN KAMU PAKAI
+====================================================================
+
+CEK file CATATAN_INVENTORY.md di root project (dibuat rekan backend)
+untuk bentuk PERSIS:
+- Route admin.inventory.index dan props yang dikirim (daftar
+  inventory dengan relasi variant, product, warehouse)
+- Cara menghitung/menandai status "stok menipis"
+  (quantity_on_hand <= reorder_level)
+- Method ProductVariant::totalStock() yang bisa dipakai untuk
+  menampilkan total stok gabungan di halaman produk
+
+====================================================================
+TUGAS KAMU
+====================================================================
+
+1. HALAMAN: resources/js/pages/Admin/Inventory/Index.tsx
+   Dibungkus AdminLayout yang sudah ada. Berisi:
+
+   a. HEADER HALAMAN
+      - Judul "Kelola Inventory" atau serupa
+      - Ringkasan singkat di atas tabel (opsional tapi bagus):
+        beberapa kartu kecil seperti "Total Varian", "Stok Menipis",
+        "Stok Habis" -- mirip gaya kartu statistik yang sudah ada
+        di Dashboard, pakai komponen yang sama jika memungkinkan
+
+   b. FILTER/PENCARIAN
+      - Search box untuk cari berdasarkan nama produk atau SKU
+      - Filter dropdown gudang (jika ada lebih dari 1 warehouse)
+      - Checkbox/toggle "Tampilkan hanya stok menipis"
+
+   c. TABEL INVENTORY
+      Kolom per baris:
+      - Nama produk + SKU varian (gabungkan, atau dua baris kecil)
+      - Nama gudang
+      - Stok saat ini (quantity_on_hand) -- tampilkan besar dan
+        jelas
+      - Stok direservasi (quantity_reserved) jika lebih dari 0
+      - Status: Badge dari ui/, warna berbeda untuk kondisi normal
+        (hijau/default), stok menipis (kuning/warning -- sesuai
+        vgs-warning dari tailwind.config), stok habis
+        (merah/danger -- vgs-danger)
+      - Kolom aksi: tombol "Sesuaikan Stok" yang MEMBUKA
+        AdjustStockModal.tsx yang dibangun Rekan 2 -- CEK DULU
+        apakah komponen itu sudah ada sebelum memanggilnya; jika
+        BELUM ada saat kamu sampai di titik ini, buat STUB tombol
+        yang belum berfungsi penuh dengan komentar TODO, JANGAN
+        membuat modal versi sendiri
+
+   d. PAGINASI
+      Sama seperti pola yang sudah dipakai di Admin/Product/Index,
+      untuk konsistensi
+
+   e. STATE KOSONG
+      Jika belum ada data inventory sama sekali (kemungkinan kecil
+      karena migrasi data dari backend seharusnya mengisi), tampilkan
+      pesan jelas
+
+2. UPDATE TAMPILAN STOK DI HALAMAN PRODUCT (PENTING -- KOORDINASI
+   DENGAN PERUBAHAN BACKEND)
+   Backend SUDAH/SEDANG menghapus field stock dari form dan
+   kemungkinan dari tabel Admin/Product/Index juga. Cek dan
+   PERBAIKI:
+   - resources/js/pages/Admin/Product/Index.tsx (tabel admin
+     produk yang SUDAH ADA dari fitur CRUD Product sebelumnya) --
+     jika sebelumnya menampilkan kolom stok langsung dari
+     variant.stock, UBAH supaya menampilkan total stok dari relasi
+     inventory (pakai data yang dikirim backend, kemungkinan lewat
+     method totalStock() yang disebutkan di dokumentasi backend)
+   - Cek juga apakah ada tampilan stok di halaman Storefront
+     customer (halaman detail produk atau card produk) yang
+     sebelumnya membaca variant.stock langsung -- SESUAIKAN supaya
+     tetap menampilkan informasi stok yang BENAR dari sumber baru,
+     TANPA mengubah tampilan visual card/badge yang sudah ada,
+     HANYA sumber datanya yang berubah
+
+3. TAMBAHKAN LINK DI SIDEBAR (jika belum otomatis aktif)
+   Cek components/admin/Sidebar.tsx yang sudah ada -- menu
+   "Inventory" kemungkinan sudah ada sebagai placeholder (lihat
+   referensi tampilan yang sudah jadi sebelumnya). PASTIKAN link ini
+   sekarang mengarah ke route('admin.inventory.index') yang
+   sebenarnya, bukan lagi placeholder "#".
+
+4. UJI COBA END-TO-END (WAJIB DILAKUKAN, LAPORKAN HASILNYA)
+   Setelah backend dan form Rekan 2 selesai:
+   - Buka halaman Inventory, VERIFIKASI data yang muncul cocok
+     dengan hasil migrasi stok lama (bandingkan dengan produk yang
+     tadinya punya stok di form Product versi lama)
+   - Coba sesuaikan stok lewat modal (tambah dan kurangi), VERIFIKASI
+     angka di tabel ter-update setelah submit
+   - Buka halaman Admin/Product/Index dan halaman Storefront produk,
+     VERIFIKASI angka stok yang ditampilkan di sana KONSISTEN dengan
+     yang ada di halaman Inventory
+   - Laporkan hasil pengujian ini dengan jelas di ringkasan akhir
+
+RESPONSIVENESS DAN AKSESIBILITAS
+--------------------------------------------------------------------
+Sama seperti pola yang sudah dipakai di Admin/Product/Index untuk
+konsistensi (grid/tabel menyesuaikan layar, tap target 44px di
+mobile, fokus keyboard jelas).
+
+====================================================================
+YANG TIDAK PERLU/BOLEH KAMU KERJAKAN DI TAHAP INI
+====================================================================
+
+- JANGAN membangun isi AdjustStockModal.tsx -- itu tugas Rekan 2,
+  kamu hanya MEMANGGILNYA
+- JANGAN membangun CRUD Warehouse (kelola daftar gudang)
+- JANGAN membangun logic reservasi stok otomatis saat checkout
+- JANGAN mengubah AdminLayout/Sidebar struktur besar/Dashboard yang
+  sudah ada di luar poin 3 (aktifkan link Inventory)
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Tambahkan section baru di file CATATAN_INVENTORY.md yang sudah ada
+(JANGAN timpa isi yang sudah ada, tambahkan di bagian bawah dengan
+heading "## Frontend: Tabel Inventory & Koneksi Produk"), berisi:
+
+1. Daftar file yang dibuat/diubah (Admin/Inventory/Index.tsx, dan
+   file Product/Storefront yang disesuaikan untuk sumber stok baru).
+2. Konfirmasi hasil uji coba end-to-end dari bagian 4 di atas.
+3. Catatan jika ada penyesuaian tampilan yang dilakukan di halaman
+   lain (Product admin, Storefront) dan alasannya.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) tabel Admin/Inventory/Index dengan data
+  dasar dulu, (b) filter dan status badge, (c) sambungkan tombol ke
+  AdjustStockModal (atau stub jika belum ada), (d) perbaiki tampilan
+  stok di Admin/Product/Index dan Storefront, (e) aktifkan link
+  sidebar, (f) tunggu Rekan 2 selesai untuk uji coba end-to-end
+  penuh, (g) dokumentasi.
+- Tampilkan ringkasan tiap bagian selesai sebelum lanjut, supaya
+  bisa dicek dan commit git bertahap.
+- Jika data dari backend TIDAK SESUAI dokumentasi, JANGAN menebak
+  -- laporkan dengan jelas di ringkasan.
+====================================================================

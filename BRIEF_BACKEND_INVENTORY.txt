@@ -1,0 +1,335 @@
+====================================================================
+PROMPT UNTUK AI BACKEND -- INVENTORY & MELENGKAPI DATABASE
+BAGIAN KAMU: Migration warehouses+inventories, migrasi data stok,
+Model, Action, Controller, Route, plus melengkapi tabel yang hilang
+Vortix Gaming Store (VGS) -- Pemisahan Stok dari Product ke Inventory
+Kompatibel dipakai di: Antigravity, OpenCode, Copilot, atau AI
+coding assistant lain apapun -- ikuti instruksi ini apa adanya.
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke AI coding tool pilihanmu sebagai
+prompt awal. Simpan juga file ini di project sebagai
+BRIEF_BACKEND_INVENTORY.md.
+
+Ada 2 rekan yang mengerjakan FRONTEND: Rekan 2 mengerjakan FORM
+penyesuaian stok (BRIEF_FRONTEND_INVENTORY_FORM.md), Rekan 3
+mengerjakan TABEL/DASHBOARD stok DAN koneksi ke halaman produk yang
+sudah ada (BRIEF_FRONTEND_INVENTORY_TABLE.md). KEDUANYA bergantung
+pada struktur tabel dan route yang kamu buat -- SELESAIKAN dan
+commit git bagian migration + Controller + Route LEBIH DULU sebelum
+bagian lain.
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Struktur folder modular
+monolith: app/Domain/<Domain>/Actions/ untuk logic bisnis,
+app/Http/Controllers/ untuk request, app/Http/Requests/ untuk
+validasi. Sistem role staf dan CRUD Product SUDAH BERJALAN --
+admin bisa login, kelola produk lengkap dengan gambar dan varian.
+
+====================================================================
+MASALAH YANG HARUS DISELESAIKAN
+====================================================================
+
+SAAT INI kolom stok (`stock`) tersimpan LANGSUNG di tabel
+product_variants (ditambahkan lewat migration terpisah belakangan,
+add_stock_to_product_variants_table). Ini TIDAK SESUAI dengan
+dokumen arsitektur bagian 6.3, yang merancang stok sebagai entitas
+TERPISAH per VARIAN dan per GUDANG, lewat tabel inventories yang
+merujuk ke warehouses. Desain saat ini tidak bisa merepresentasikan
+"variant A punya 50 unit di gudang Jakarta dan 20 unit di gudang
+Bali" -- cuma bisa satu angka stok per varian secara keseluruhan.
+
+Selain itu, fitur "stock" saat ini SALAH TEMPAT secara UX -- muncul
+di form Tambah/Edit Produk (halaman Catalog), padahal secara konsep
+bisnis, stok adalah tanggung jawab modul INVENTORY yang terpisah
+(lihat dokumen arsitektur bagian 4.2: Catalog dan Inventory adalah
+dua modul admin yang berbeda, dengan role staf yang bisa berbeda
+juga -- Catalog Manager vs Inventory Manager).
+
+TUJUAN
+--------------------------------------------------------------------
+1. Buat tabel warehouses dan inventories sesuai dokumen arsitektur
+2. MIGRASIKAN data stok yang sudah ada di product_variants.stock ke
+   struktur baru (JANGAN sampai data stok yang sudah diinput admin
+   hilang begitu saja)
+3. Setelah data berhasil dipindah, kolom product_variants.stock
+   TIDAK DIPAKAI LAGI oleh aplikasi (boleh dihapus di langkah
+   terpisah nanti setelah dipastikan semua bagian sudah pindah
+   membaca dari inventories -- untuk SEKARANG, JANGAN hapus dulu
+   kolomnya, cukup berhenti menulis/membaca dari situ, sebagai
+   jaring pengaman kalau ada yang belum sempat disesuaikan)
+4. Sediakan Controller dan route untuk CRUD warehouse sederhana dan
+   untuk MELIHAT + MENYESUAIKAN (adjust) stok per varian per gudang
+5. Cek dan lengkapi tabel-tabel LAIN yang menurut dokumen arsitektur
+   seharusnya ada tapi belum ada di database (lihat bagian
+   MELENGKAPI TABEL YANG HILANG di bawah)
+
+====================================================================
+STRUKTUR DATABASE YANG WAJIB DIIKUTI
+====================================================================
+
+Sesuai dokumen arsitektur bagian 6.3:
+
+TABEL warehouses
+id              bigint unsigned, primary key
+name            varchar(150), nama gudang (misal "Gudang Jakarta")
+code            varchar(50), unique, kode singkat (misal "JKT-01")
+address         text, nullable
+status          enum('active','inactive'), default 'active'
+created_at, updated_at
+
+TABEL inventories
+id                  bigint unsigned, primary key
+warehouse_id        bigint unsigned, foreign key ke warehouses,
+                    cascade on delete
+variant_id          bigint unsigned, foreign key ke product_variants,
+                    cascade on delete (SESUAIKAN nama kolom foreign
+                    key ke product_variants -- cek dulu apakah kolom
+                    di tabel lain yang sudah ada, seperti cart_items,
+                    memakai nama variant_id, IKUTI KONVENSI YANG
+                    SUDAH ADA supaya konsisten)
+quantity_on_hand    int unsigned, default 0, stok fisik total
+quantity_reserved   int unsigned, default 0, stok yang sedang
+                    ditahan untuk pesanan pending (untuk SEKARANG
+                    di tahap ini, field ini disediakan strukturnya
+                    tapi BELUM diisi logic otomatis -- fitur
+                    reservasi stok saat checkout adalah pekerjaan
+                    terpisah nanti sesuai roadmap Fase 4, JANGAN
+                    membangun logic reservasi otomatis sekarang)
+reorder_level       int unsigned, default 0, ambang batas stok
+                    menipis (untuk indikator "stok menipis" di
+                    dashboard)
+created_at, updated_at
+
+UNIQUE COMPOSITE: (warehouse_id, variant_id) -- satu varian hanya
+boleh punya SATU baris inventory per gudang, sesuai dokumen
+arsitektur bagian 6.8.
+
+====================================================================
+TUGAS KAMU
+====================================================================
+
+LANGKAH 1 -- KONFIRMASI STRUKTUR YANG SUDAH ADA
+Sebelum menulis migration, jalankan di tinker:
+   php artisan tinker
+   >>> Schema::getColumnListing('product_variants')
+   >>> \App\Models\ProductVariant::count()
+   >>> \App\Models\ProductVariant::whereNotNull('stock')->where('stock', '>', 0)->get(['id', 'sku', 'stock'])
+CATAT hasil query terakhir -- ini daftar varian yang PUNYA stok
+sekarang, yang HARUS dipindahkan datanya, jangan sampai ada yang
+terlewat.
+
+LANGKAH 2 -- MIGRATION warehouses DAN inventories
+Buat migration untuk kedua tabel sesuai struktur di atas. Jalankan
+php artisan migrate.
+
+LANGKAH 3 -- SEEDER GUDANG DEFAULT
+Buat database/seeders/WarehouseSeeder.php yang membuat MINIMAL satu
+gudang default (misal name: "Gudang Utama", code: "MAIN") -- karena
+toko ini sepertinya baru operasi dengan satu lokasi untuk sekarang,
+tapi struktur tabel tetap mendukung multi-gudang untuk masa depan
+sesuai dokumen arsitektur. Daftarkan di DatabaseSeeder.php, jalankan
+php artisan db:seed --class=WarehouseSeeder.
+
+LANGKAH 4 -- MIGRASI DATA STOK YANG SUDAH ADA (PALING PENTING,
+JANGAN SAMPAI DATA HILANG)
+Buat migration KHUSUS untuk migrasi data (bukan cuma ubah struktur),
+atau buat Artisan command sekali-jalan, yang:
+- Ambil gudang default dari Langkah 3
+- Untuk SETIAP baris di product_variants yang punya nilai stock
+  (dari hasil query Langkah 1), buat SATU baris baru di inventories
+  dengan warehouse_id = gudang default, variant_id = id varian itu,
+  quantity_on_hand = nilai stock yang lama, reorder_level = boleh
+  default masuk akal seperti 5
+- SETELAH migrasi ini dijalankan, VERIFIKASI dengan query:
+  >>> \App\Models\Inventory::sum('quantity_on_hand')
+  Bandingkan totalnya dengan jumlah total dari
+  ProductVariant::sum('stock') di Langkah 1 -- HARUS SAMA PERSIS.
+  Jika tidak sama, JANGAN lanjut, laporkan masalahnya dulu.
+
+LANGKAH 5 -- MODEL
+Buat app/Models/Warehouse.php: $fillable name, code, address,
+status. Relasi hasMany(Inventory::class).
+
+Buat app/Models/Inventory.php: $fillable warehouse_id, variant_id,
+quantity_on_hand, quantity_reserved, reorder_level. Relasi
+belongsTo(Warehouse::class), belongsTo(ProductVariant::class,
+'variant_id'). Tambahkan accessor availableQuantity() yang
+mengembalikan quantity_on_hand - quantity_reserved (sesuai bagian
+8.2 dokumen arsitektur, walau logic reservasi penuh belum dibangun
+di tahap ini, accessor ini tetap berguna untuk ditampilkan).
+
+Update app/Models/ProductVariant.php: tambahkan relasi
+hasMany(Inventory::class, 'variant_id'), dan method helper
+totalStock(): int yang menjumlahkan quantity_on_hand dari SEMUA
+baris inventory milik varian ini (dipakai untuk menampilkan total
+stok gabungan semua gudang di halaman produk, TANPA perlu tahu
+detail per gudang).
+
+LANGKAH 6 -- ACTION (app/Domain/Inventory/Actions/ -- buat folder
+Domain/Inventory baru, sejajar dengan Domain/Catalog yang sudah ada)
+- AdjustStockAction.php: terima Inventory (atau kombinasi
+  warehouse_id+variant_id), jumlah penyesuaian (bisa positif untuk
+  nambah stok masuk, negatif untuk stok keluar/rusak/hilang), dan
+  alasan (string, misal "Stok masuk dari supplier", "Koreksi hasil
+  stock opname", "Barang rusak"). Method ini HARUS:
+  * Memakai DB::transaction() dan lockForUpdate() pada baris
+    inventory yang diubah (sesuai prinsip concurrency di dokumen
+    arsitektur bagian 8.2, walau konteksnya beda -- prinsip locking
+    saat mengubah angka stok tetap penting untuk mencegah race
+    condition kalau dua admin menyesuaikan stok yang sama
+    bersamaan)
+  * Validasi: quantity_on_hand hasil akhir TIDAK BOLEH negatif
+  * Simpan LOG penyesuaian ini (lihat Langkah 7 soal tabel
+    inventory_movements yang perlu dibuat sebagai bagian dari
+    melengkapi tabel yang hilang)
+
+LANGKAH 7 -- MELENGKAPI TABEL YANG HILANG DARI DOKUMEN ARSITEKTUR
+Selain warehouses dan inventories yang sudah dibuat di atas, cek
+kembali dokumen arsitektur bagian 6 dan database yang sudah ada
+sekarang -- BUAT MIGRATION untuk tabel-tabel berikut yang BELUM ada
+(cek dulu satu per satu dengan Schema::hasTable() di tinker sebelum
+membuat, supaya tidak duplikat jika ternyata sudah ada):
+
+   a. inventory_movements (bagian 6.3) -- PALING PRIORITAS karena
+      dibutuhkan Langkah 6 di atas untuk audit trail:
+      id, warehouse_id (FK), variant_id (FK), type (enum:
+      'in','out','adjustment'), quantity (int, boleh negatif untuk
+      merepresentasikan pengurangan), before_quantity (int),
+      after_quantity (int), reference (varchar nullable, untuk
+      catatan asal perubahan), reason (varchar nullable),
+      created_by (FK ke users, nullable), created_at
+
+   b. stock_reservations (bagian 6.3) -- struktur saja untuk
+      sekarang (belum dipakai logic-nya, disiapkan untuk Fase 4
+      nanti): id, order_id (nullable dulu karena order belum
+      terhubung), warehouse_id (FK), variant_id (FK), quantity,
+      status (enum: 'active','released','committed'), expires_at,
+      created_at
+
+   c. warehouses dan inventories -- SUDAH dibuat di Langkah 2, skip
+
+   d. Cek juga tabel-tabel dari kategori LAIN yang menurut riwayat
+      project ini kemungkinan besar juga belum ada -- JALANKAN
+      Schema::hasTable() untuk cek satu per satu, dan BUAT migration
+      untuk yang BELUM ADA dari daftar berikut (struktur ikuti
+      dokumen arsitektur bagian 6.6 dan 6.7):
+      - payment_transactions (charge/refund/void history per payment)
+      - webhook_logs (idempotency provider callback, unique
+        composite provider+event_id)
+      - shipments, shipment_items
+      - refunds, refund_items
+      - returns, return_items
+      - promotions, promotion_rules, promotion_actions (jika belum,
+        cek dulu apakah coupons yang sudah ada dianggap cukup untuk
+        tahap ini -- jika ragu, BUAT strukturnya tapi TANDAI di
+        dokumentasi bahwa fitur promosi lanjutan ini belum
+        diimplementasikan logicnya)
+      - wishlists, wishlist_items
+      - settings (key-value config toko)
+      - pages (CMS sederhana)
+      - audit_logs (SUDAH ADA berdasarkan pengecekan sebelumnya,
+        skip jika terkonfirmasi ada)
+      - exports (riwayat export laporan)
+      - customer_notes
+
+   JANGAN terburu-buru membuat SEMUA sekaligus tanpa berpikir --
+   PRIORITASKAN inventory_movements dan stock_reservations dulu
+   (dibutuhkan fitur Inventory ini), lalu SISANYA boleh dibuat
+   sebagai migration kosong/struktur dasar tanpa Model/Controller
+   lengkap (itu pekerjaan fase berikutnya sesuai roadmap 8 fase),
+   CUKUP pastikan strukturnya TERDAFTAR di migration supaya database
+   rekan tim dan production nanti bisa disetup lengkap dari nol.
+
+LANGKAH 8 -- CONTROLLER (app/Http/Controllers/Admin/)
+   InventoryController.php:
+   - index(): Inertia::render('Admin/Inventory/Index') dengan props
+     inventories berisi SEMUA baris inventory, eager load relasi
+     variant.product (untuk nama produk) dan warehouse, PLUS
+     hitung/tampilkan status "menipis" (quantity_on_hand <=
+     reorder_level)
+   - adjust(Request $request, Inventory $inventory,
+     AdjustStockAction $action): terima jumlah penyesuaian dan
+     alasan, panggil action, redirect dengan pesan sukses
+
+   WarehouseController.php (CRUD sederhana, TIDAK perlu serumit
+   Product):
+   - index(), store(), update(), destroy() dasar untuk kelola
+     daftar gudang
+
+LANGKAH 9 -- ROUTE (di dalam grup middleware(['auth','staff'])
+->prefix('admin') yang sudah ada)
+   Route::get('inventory', [InventoryController::class, 'index'])
+       ->name('admin.inventory.index');
+   Route::post('inventory/{inventory}/adjust', [InventoryController::class, 'adjust'])
+       ->name('admin.inventory.adjust');
+   Route::resource('warehouses', WarehouseController::class)
+       ->names('admin.warehouses');
+
+LANGKAH 10 -- HAPUS TAMPILAN STOCK DARI FORM PRODUCT
+Cek app/Http/Requests/Admin/StoreProductRequest.php dan
+UpdateProductRequest.php serta Controller terkait -- HAPUS validasi
+dan logic apapun yang berkaitan dengan field stock di form
+Product (kolom stock di database TIDAK dihapus sesuai poin 3 di
+atas, tapi form Product TIDAK BOLEH lagi meminta/menampilkan input
+ini -- itu sudah pindah ke halaman Inventory yang baru). Beri tahu
+Rekan 2 dan Rekan 3 dengan jelas di dokumentasi bahwa field ini
+sudah dihapus dari form Product supaya mereka menyesuaikan juga di
+frontend.
+
+====================================================================
+YANG TIDAK BOLEH DILAKUKAN
+====================================================================
+
+- JANGAN menghapus kolom product_variants.stock di tahap ini --
+  cukup berhenti dipakai, sebagai jaring pengaman.
+- JANGAN melanjutkan proses migrasi data (Langkah 4) jika hasil
+  verifikasi jumlah tidak cocok -- STOP dan laporkan.
+- JANGAN membangun logic reservasi stok otomatis (saat checkout)
+  di tahap ini -- itu pekerjaan Fase 4 terpisah, cukup siapkan
+  strukturnya.
+- JANGAN mengubah AdminLayout/Sidebar/ProductController yang sudah
+  berjalan di luar poin 10 di atas (hapus field stock dari form).
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Buat file CATATAN_INVENTORY.md di root project, berisi:
+
+1. Hasil verifikasi migrasi data (jumlah stok sebelum vs sesudah,
+   harus cocok).
+2. Daftar SEMUA tabel baru yang dibuat di Langkah 7, per kategori,
+   dengan catatan mana yang sudah punya Model/Controller lengkap
+   dan mana yang baru strukturnya saja (untuk fase berikutnya).
+3. Daftar route admin.inventory.* dan admin.warehouses.* beserta
+   method HTTP-nya.
+4. Bentuk PERSIS props yang dikirim ke halaman Admin/Inventory/Index
+   -- contoh JSON konkret, untuk dipakai kedua rekan frontend.
+5. Konfirmasi bahwa field stock SUDAH DIHAPUS dari form
+   Product (Langkah 10), sebagai peringatan untuk rekan frontend
+   yang mengerjakan form Product sebelumnya.
+6. Alur kerja end-to-end secara ringkas: admin buka Inventory ->
+   lihat stok per varian -> sesuaikan stok dengan alasan -> tercatat
+   di inventory_movements -> total stok terupdate di halaman produk.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap sesuai urutan Langkah 1-10 di atas. Tampilkan
+  ringkasan tiap langkah sebelum lanjut, supaya bisa dicek dan
+  commit git bertahap, dan supaya bisa segera dibagikan ke rekan
+  frontend setelah Langkah 9 (route) selesai.
+- Jika di titik manapun menemukan sesuatu yang tidak terduga
+  (struktur kolom berbeda dari dugaan, data yang tidak konsisten),
+  STOP dan laporkan detail sebelum melanjutkan dengan asumsi sendiri.
+====================================================================
