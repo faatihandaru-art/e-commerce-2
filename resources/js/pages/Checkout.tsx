@@ -463,12 +463,12 @@ export default function Checkout() {
                                                             onChange={() => setPaymentId(m.id)}
                                                             className="accent-vgs-blue-electric w-4 h-4"
                                                         />
-                                                        <div className="w-14 h-10 rounded-lg bg-white border border-vgs-gray-border flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+                                                        <div className="w-15 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center shrink-0 overflow-hidden">
                                                             {m.logo ? (
                                                                 <img
                                                                     src={m.logo}
                                                                     alt={`Logo ${m.name}`}
-                                                                    className="max-w-full max-h-full w-auto h-auto object-contain block"
+                                                                    className="w-30 h-31 object-contain block"
                                                                     loading="lazy"
                                                                 />
                                                             ) : (
