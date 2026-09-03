@@ -4,16 +4,13 @@ import AdminLayout from '@/layouts/AdminLayout';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
+import {
+    AdjustStockModal,
+    type AdjustStockInventory,
+} from '@/components/admin/AdjustStockModal';
 import type { AdminPageProps } from '@/types/admin';
 
-interface InventoryRow {
-    id: number;
-    product_name: string;
-    sku: string;
-    warehouse_name: string;
-    quantity_on_hand: number;
-    quantity_reserved: number;
-    reorder_level: number;
+interface InventoryRow extends AdjustStockInventory {
     status: 'normal' | 'low' | 'out';
     updated_at: string | null;
 }
@@ -66,8 +63,6 @@ export default function InventoryIndex() {
         filters?.warehouse ?? ''
     );
     const [lowStock, setLowStock] = useState(!!filters?.lowStock);
-    // TODO (Rekan 2): ganti dengan state untuk membuka AdjustStockModal.tsx
-    // yang sedang dibangun. Saat modal siap, buka modal untuk baris terpilih.
     const [pendingAdjust, setPendingAdjust] = useState<InventoryRow | null>(null);
 
     const applyFilters = (overrides?: { search?: string; warehouse?: number | ''; lowStock?: boolean }) => {
@@ -285,16 +280,10 @@ export default function InventoryIndex() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-end">
-                                                    {/* TODO (Rekan 2): ganti stub ini dengan
-                                                        AdjustStockModal.tsx yang sedang dibangun.
-                                                        Saat modal tersedia, buka modal untuk `row`
-                                                        agar stok bisa disesuaikan (tambah/kurang). */}
                                                     <button
                                                         type="button"
                                                         onClick={() => setPendingAdjust(row)}
-                                                        disabled
-                                                        title="Fitur penyesuaian stok segera hadir"
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-vgs-blue-electric border border-vgs-blue-electric/30 hover:bg-vgs-blue-electric/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-vgs-blue-electric border border-vgs-blue-electric/30 hover:bg-vgs-blue-electric/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vgs-blue-electric"
                                                     >
                                                         Sesuaikan Stok
                                                     </button>
@@ -342,6 +331,13 @@ export default function InventoryIndex() {
                     )}
                 </div>
             </div>
+
+            {pendingAdjust && (
+                <AdjustStockModal
+                    inventory={pendingAdjust}
+                    onClose={() => setPendingAdjust(null)}
+                />
+            )}
         </AdminLayout>
     );
 }

@@ -7,11 +7,9 @@ import { Badge } from '@/components/ui/Badge';
 
 export interface AdjustStockInventory {
     id: number;
-    warehouse_id: number;
-    warehouse_name: string | null;
-    variant_id: number;
-    sku: string | null;
-    product_name: string | null;
+    warehouse_name: string;
+    sku: string;
+    product_name: string;
     quantity_on_hand: number;
     quantity_reserved: number;
     available_quantity: number;
@@ -98,13 +96,13 @@ export const AdjustStockModal: React.FC<AdjustStockModalProps> = ({ inventory, o
                 <div className="rounded-xl border border-vgs-gray-border bg-vgs-black-surface/60 p-4 space-y-2">
                     <div className="flex items-start justify-between gap-3">
                         <p className="font-semibold text-vgs-silver-bright text-sm leading-snug">
-                            {inventory.product_name ?? '(Produk tidak tersedia)'}
+                            {inventory.product_name}
                         </p>
                         {lowText && <Badge variant={inventory.is_out_of_stock ? 'danger' : 'warning'}>{lowText}</Badge>}
                     </div>
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-vgs-silver-mid">
-                        <span>SKU: <span className="font-mono text-vgs-silver-bright">{inventory.sku ?? '-'}</span></span>
-                        <span>Gudang: <span className="text-vgs-silver-bright">{inventory.warehouse_name ?? '-'}</span></span>
+                        <span>SKU: <span className="font-mono text-vgs-silver-bright">{inventory.sku}</span></span>
+                        <span>Gudang: <span className="text-vgs-silver-bright">{inventory.warehouse_name}</span></span>
                     </div>
                     <div className="pt-1 border-t border-vgs-gray-border flex items-baseline gap-2">
                         <span className="text-xs uppercase tracking-wider text-vgs-silver-mid">Stok saat ini</span>

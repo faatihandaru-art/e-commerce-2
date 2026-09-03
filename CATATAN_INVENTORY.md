@@ -171,11 +171,10 @@ Menu **Inventory** di `components/admin/Sidebar.tsx` diaktifkan:
 Menu lain yang masih placeholder (Orders, Customers, Marketing, dst) **tidak**
 diubah.
 
-### 5. Tombol "Sesuaikan Stok" (STUB)
-Komponen `AdjustStockModal.tsx` (tugas Rekan lain) **belum ada**. Tombol
-"Sesuaikan Stok" di tabel dibuat sebagai **stub** non-fungsional (disabled)
-dengan komentar `TODO (Rekan 2)`, sesuai kesepakatan — jangan membangun isi
-modal sendiri.
+### 5. Tombol "Sesuaikan Stok"
+Komponen `AdjustStockModal.tsx` sudah dibuat (Rekan 2) dan tombol "Sesuaikan
+Stok" di tabel sudah aktif, membuka modal saat diklik. Sebelumnya tombol ini
+berupa stub non-fungsional (disabled) dengan komentar `TODO (Rekan 2)`.
 
 ---
 
@@ -196,7 +195,8 @@ modal sendiri.
 - `routes/admin.php` (+ route `admin.inventory.index`)
 
 **Frontend**
-- `resources/js/pages/Admin/Inventory/Index.tsx` (baru)
+- `resources/js/pages/Admin/Inventory/Index.tsx` (baru; + modal terpasang)
+- `resources/js/components/admin/AdjustStockModal.tsx` (baru — modal penyesuaian stok)
 - `resources/js/components/admin/Sidebar.tsx` (aktifkan link Inventory)
 
 ---
@@ -213,9 +213,10 @@ Diuji dengan menjalankan controller langsung (simulasi request):
 - `npm run typecheck` → lulus, tidak ada error TypeScript.
 - `npm run build` → berhasil, halaman Inventory ter-bundle.
 
-### Belum diuji (menunggu Rekan lain)
-- Penyesuaian stok via modal `AdjustStockModal.tsx` (belum dibuat).
-- Perubahan stok real-time lewat UI saat modal submit (belum ada modal).
+### Perlu verifikasi lebih lanjut
+- Penyesuaian stok via modal `AdjustStockModal.tsx` — logika validasi & submit
+  sudah dibuat dan terhubung, namun perlu uji manual lewat UI untuk konfirmasi
+  akhir alur redirect & refresh tabel.
 
 ---
 
@@ -412,10 +413,13 @@ bukan bagian brief ini.
 Dokumentasi hasil pengerjaan modal/form penyesuaian stok oleh Rekan 2 (frontend),
 mengikuti `BRIEF_FRONTEND_INVENTORY_FORM.txt`.
 
-### 1. File yang dibuat
+### 1. File yang dibuat / diubah
 
 - `resources/js/components/admin/AdjustStockModal.tsx` — modal untuk menyesuaikan
-  jumlah stok satu baris inventory. Satu-satunya file baru dari bagian ini.
+  jumlah stok satu baris inventory.
+- `resources/js/pages/Admin/Inventory/Index.tsx` — **diubah** untuk memanggil
+  `AdjustStockModal` dari tombol "Sesuaikan Stok" di tiap baris tabel (tombol
+  stub yang tadinya `disabled` kini aktif).
 
 > **Riwayat pergerakan stok (inventory_movements) dilewati.** Backend saat ini
 > hanya mengirim data inventori (daftar `inventories`) di halaman Index, tidak
@@ -436,11 +440,9 @@ interface AdjustStockModalProps {
 
 interface AdjustStockInventory {
     id: number;
-    warehouse_id: number;
-    warehouse_name: string | null;
-    variant_id: number;
-    sku: string | null;
-    product_name: string | null;
+    warehouse_name: string;
+    sku: string;
+    product_name: string;
     quantity_on_hand: number;
     quantity_reserved: number;
     available_quantity: number;
@@ -450,11 +452,14 @@ interface AdjustStockInventory {
 }
 ```
 
+Field `warehouse_id` dan `variant_id` tidak dibutuhkan (tidak dikirim backend
+Index saat ini dan tidak dipakai untuk submit — submit hanya butuh `inventory.id`).
+
 - `inventory` — satu baris data dari prop `inventories` yang dikirim
   `InventoryController@index` (lihat bagian 4 di atas).
 - `onClose` — fungsi untuk menutup modal.
 
-Cara memanggil dari tabel (contoh untuk Rekan 3):
+Cara memanggil dari tabel (sudah diterapkan di `Admin/Inventory/Index.tsx`):
 
 ```tsx
 import { AdjustStockModal, AdjustStockInventory } from '@/components/admin/AdjustStockModal';
@@ -497,8 +502,9 @@ pembaruan tabel.
 - **Error dari backend** (misal `errors.quantity`, `errors.reason`) ditampilkan
   pada field yang bersangkutan (validasi stok negatif yang ditolak ulang backend
   muncul di `form.errors.quantity`).
-
-> Catatan penting: Modal belum diuji end-to-end lewat halaman tabel karena
-> halaman `Admin/Inventory/Index` (tugas Rekan 3) belum ada. Validasi logika sudah
-> memenuhi kontrak data backend dari `CATATAN_INVENTORY.md`.
+- **Build sukses** (`npm run build`) dan **typecheck sukses** (`npm run typecheck`).
+- Modal sudah terpasang di halaman `Admin/Inventory/Index` (tombol "Sesuaikan
+  Stok" aktif) dan terhubung ke route `admin.inventory.adjust`. Setelah sukses,
+  backend me-redirect ke `admin.inventory.index` sehingga tabel ter-refresh
+  otomatis.
 
