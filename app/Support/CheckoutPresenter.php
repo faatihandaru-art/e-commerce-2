@@ -62,7 +62,7 @@ class CheckoutPresenter
                 'provider' => $method->provider,
                 'eta' => $eta[$method->code] ?? '2-5 hari',
                 'cost' => (int) $method->base_price,
-                'logoUrl' => '/images/products/'.strtolower((string) $method->provider).'.png',
+                'logoUrl' => '/images/products/' . strtolower((string) $method->provider) . '.png',
             ])
             ->values()
             ->all();
@@ -74,12 +74,51 @@ class CheckoutPresenter
     public static function paymentMethods(): array
     {
         return [
-            ['id' => 'shopeepay', 'name' => 'ShopeePay', 'group' => 'ewallet', 'logo' => '/images/products/shopeepay.png', 'fee' => 0, 'desc' => 'Saldo & Voucher'],
-            ['id' => 'gopay', 'name' => 'GoPay', 'group' => 'ewallet', 'logo' => '/images/products/gopay.png', 'fee' => 0],
-            ['id' => 'ovo', 'name' => 'OVO', 'group' => 'ewallet', 'logo' => '/images/products/ovo.jpg', 'fee' => 0],
-            ['id' => 'dana', 'name' => 'DANA', 'group' => 'ewallet', 'logo' => '/images/products/dana.jpg', 'fee' => 0],
-            ['id' => 'qris', 'name' => 'QRIS (Semua Aplikasi E-Wallet / Mobile Banking)', 'group' => 'qris', 'logo' => '/images/products/qris.png', 'fee' => 0, 'desc' => 'Scan sekali untuk semua pembayaran'],
-            ['id' => 'cod', 'name' => 'Bayar di Tempat (COD)', 'group' => 'cod', 'logo' => '/images/products/cod.jpg', 'fee' => 0, 'desc' => 'Tersedia hanya di area tertentu'],
+            [
+                'id' => 'shopeepay',
+                'name' => 'ShopeePay',
+                'group' => 'ewallet',
+                'logo' => '/images/logo/shopeepay.png',
+                'fee' => 0,
+                'desc' => 'Saldo & Voucher',
+            ],
+            [
+                'id' => 'gopay',
+                'name' => 'GoPay',
+                'group' => 'ewallet',
+                'logo' => '/images/logo/gopay.png',
+                'fee' => 0,
+            ],
+            [
+                'id' => 'ovo',
+                'name' => 'OVO',
+                'group' => 'ewallet',
+                'logo' => '/images/logo/ovo.jpg',
+                'fee' => 0,
+            ],
+            [
+                'id' => 'dana',
+                'name' => 'DANA',
+                'group' => 'ewallet',
+                'logo' => '/images/logo/dana.jpg',
+                'fee' => 0,
+            ],
+            [
+                'id' => 'qris',
+                'name' => 'QRIS (Semua Aplikasi E-Wallet / Mobile Banking)',
+                'group' => 'qris',
+                'logo' => '/images/logo/qris.png',
+                'fee' => 0,
+                'desc' => 'Scan sekali untuk semua pembayaran',
+            ],
+            [
+                'id' => 'cod',
+                'name' => 'Bayar di Tempat (COD)',
+                'group' => 'cod',
+                'logo' => '/images/logo/cod.jpg',
+                'fee' => 0,
+                'desc' => 'Tersedia hanya di area tertentu',
+            ],
         ];
     }
 }
