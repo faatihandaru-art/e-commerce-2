@@ -5,6 +5,8 @@ namespace App\Domain\Catalog\Actions;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Models\Inventory;
+use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -72,14 +74,43 @@ final class UpdateProductAction
 
             if (! empty($v['id'])) {
                 $product->variants()->whereKey($v['id'])->update($payload);
+
+                $variant = $product->variants()->whereKey($v['id'])->first();
+                if ($variant) {
+                    $this->syncVariantInventory($variant, (int) ($payload['stock'] ?? 0));
+                }
             } else {
-                $product->variants()->create($payload);
+                $variant = $product->variants()->create($payload);
+                $this->syncVariantInventory($variant, (int) ($payload['stock'] ?? 0));
             }
         }
 
         if (! empty($deleteVariantIds)) {
             $product->variants()->whereIn('id', $deleteVariantIds)->delete();
         }
+    }
+
+    /**
+     * Menyalin nilai stok dari form produk ke catatan inventory gudang default.
+     */
+    private function syncVariantInventory(ProductVariant $variant, int $stock): void
+    {
+        $warehouse = Warehouse::query()->where('status', 'active')->orderBy('id')->first();
+
+        if (! $warehouse) {
+            return;
+        }
+
+        Inventory::updateOrCreate(
+            [
+                'warehouse_id' => $warehouse->id,
+                'product_variant_id' => $variant->id,
+            ],
+            [
+                'quantity_on_hand' => max(0, $stock),
+                'quantity_reserved' => 0,
+            ]
+        );
     }
 
     /**

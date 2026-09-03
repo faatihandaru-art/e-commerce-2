@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariant extends Model
@@ -48,5 +49,23 @@ class ProductVariant extends Model
     public function optionValues(): BelongsToMany
     {
         return $this->belongsToMany(ProductOptionValue::class, 'product_variant_option_values', 'variant_id', 'option_value_id');
+    }
+
+    public function inventories(): HasMany
+    {
+        return $this->hasMany(Inventory::class);
+    }
+
+    /**
+     * Total stok fisik gabungan varian ini dari seluruh gudang.
+     * Mengembalikan 0 jika belum ada catatan inventori.
+     */
+    public function totalStock(): int
+    {
+        if ($this->relationLoaded('inventories')) {
+            return (int) $this->inventories->sum('quantity_on_hand');
+        }
+
+        return (int) $this->inventories()->sum('quantity_on_hand');
     }
 }

@@ -5,6 +5,8 @@ namespace App\Domain\Catalog\Actions;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Models\Inventory;
+use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -51,7 +53,7 @@ final class CreateProductAction
     private function saveVariants(Product $product, array $variants): void
     {
         foreach ($variants as $v) {
-            ProductVariant::create([
+            $variant = ProductVariant::create([
                 'product_id' => $product->id,
                 'sku' => $v['sku'],
                 'barcode' => $v['barcode'] ?? null,
@@ -65,7 +67,33 @@ final class CreateProductAction
                     : 0,
                 'status' => 'active',
             ]);
+
+            $this->syncVariantInventory($variant, (int) ($v['stock'] ?? 0));
         }
+    }
+
+    /**
+     * Menyalin nilai stok dari form produk ke catatan inventory gudang default,
+     * supaya stok yang ditampilkan di storefront & halaman inventory konsisten.
+     */
+    private function syncVariantInventory(ProductVariant $variant, int $stock): void
+    {
+        $warehouse = Warehouse::query()->where('status', 'active')->orderBy('id')->first();
+
+        if (! $warehouse) {
+            return;
+        }
+
+        Inventory::updateOrCreate(
+            [
+                'warehouse_id' => $warehouse->id,
+                'product_variant_id' => $variant->id,
+            ],
+            [
+                'quantity_on_hand' => max(0, $stock),
+                'quantity_reserved' => 0,
+            ]
+        );
     }
 
     /**

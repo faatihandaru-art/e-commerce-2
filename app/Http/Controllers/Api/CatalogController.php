@@ -16,7 +16,7 @@ class CatalogController extends Controller
         $query = Product::query()
             ->where('status', 'published')
             ->whereNotNull('published_at')
-            ->with('brand', 'categories', 'images', 'variants.optionValues.option', 'options.values')
+            ->with('brand', 'categories', 'images', 'variants.optionValues.option', 'variants.inventories', 'options.values')
             ->withMin('variants', 'price')
             ->withCount('reviews');
 
@@ -79,7 +79,7 @@ class CatalogController extends Controller
         $product = Product::query()
             ->where('status', 'published')
             ->where(fn ($q) => $q->where('id', $idOrSlug)->orWhere('slug', $idOrSlug))
-            ->with('brand', 'categories', 'images', 'variants.optionValues.option', 'options.values')
+            ->with('brand', 'categories', 'images', 'variants.optionValues.option', 'variants.inventories', 'options.values')
             ->with([
                 'reviews' => fn ($q) => $q->where('status', 'approved')->orderByDesc('created_at')->with('user'),
             ])

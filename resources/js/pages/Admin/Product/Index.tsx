@@ -16,6 +16,7 @@ interface ProductRow {
     category_names?: string[];
     image?: string | null;
     variants?: { sku: string; price: number; stock?: number }[];
+    total_stock?: number;
     created_at?: string | null;
 }
 
@@ -196,7 +197,7 @@ export default function Index() {
                                                 {product.variants?.length ?? 0}
                                             </td>
                                             <td className="px-6 py-4 text-vgs-silver-mid whitespace-nowrap">
-                                                {(product.variants ?? []).reduce((sum, v) => sum + (v.stock ?? 0), 0)}
+                                                {product.total_stock ?? (product.variants ?? []).reduce((sum, v) => sum + (v.stock ?? 0), 0)}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Badge variant={statusVariant[product.status] ?? 'neutral'} dot>
