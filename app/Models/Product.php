@@ -57,7 +57,7 @@ class Product extends Model
             Inventory::class,
             ProductVariant::class,
             'product_id',
-            'product_variant_id'
+            'variant_id'
         );
     }
 

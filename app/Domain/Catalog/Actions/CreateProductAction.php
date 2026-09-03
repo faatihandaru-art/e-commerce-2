@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\Inventory;
 use App\Models\Warehouse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -87,7 +88,7 @@ final class CreateProductAction
         Inventory::updateOrCreate(
             [
                 'warehouse_id' => $warehouse->id,
-                'product_variant_id' => $variant->id,
+                'variant_id' => $variant->id,
             ],
             [
                 'quantity_on_hand' => max(0, $stock),
@@ -97,7 +98,7 @@ final class CreateProductAction
     }
 
     /**
-     * @param  array<int, \Illuminate\Http\UploadedFile>  $files
+     * @param  array<int, UploadedFile>  $files
      */
     private function saveImages(Product $product, array $files, int $primaryIndex): void
     {

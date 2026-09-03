@@ -104,7 +104,7 @@ final class UpdateProductAction
         Inventory::updateOrCreate(
             [
                 'warehouse_id' => $warehouse->id,
-                'product_variant_id' => $variant->id,
+                'variant_id' => $variant->id,
             ],
             [
                 'quantity_on_hand' => max(0, $stock),
@@ -174,6 +174,7 @@ final class UpdateProductAction
 
             if (($segments[0] ?? '') === 'existing' && isset($segments[1])) {
                 $product->images()->whereKey((int) $segments[1])->update(['is_primary' => true]);
+
                 return;
             }
 
@@ -184,6 +185,7 @@ final class UpdateProductAction
                 $image = $product->images()->where('sort_order', $sortOrder)->first();
                 if ($image) {
                     $image->update(['is_primary' => true]);
+
                     return;
                 }
             }

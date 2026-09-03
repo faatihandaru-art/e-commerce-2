@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventories', function (Blueprint $table) {
-            $table->foreign(['product_variant_id'], 'fk_inventories_variant')->references(['id'])->on('product_variants')->onUpdate('no action')->onDelete('no action');
-            $table->foreign(['warehouse_id'], 'fk_inventories_warehouse')->references(['id'])->on('warehouses')->onUpdate('no action')->onDelete('no action');
+            $table->foreign(['variant_id'], 'fk_inventories_variant')->references(['id'])->on('product_variants')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign(['warehouse_id'], 'fk_inventories_warehouse')->references(['id'])->on('warehouses')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

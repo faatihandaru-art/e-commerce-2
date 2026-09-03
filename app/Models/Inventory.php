@@ -9,7 +9,7 @@ class Inventory extends Model
 {
     protected $fillable = [
         'warehouse_id',
-        'product_variant_id',
+        'variant_id',
         'quantity_on_hand',
         'quantity_reserved',
         'reorder_level',
@@ -30,13 +30,13 @@ class Inventory extends Model
 
     public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
     /**
      * Stok tersedia (belum direservasi).
      */
-    public function available(): int
+    public function availableQuantity(): int
     {
         return $this->quantity_on_hand - $this->quantity_reserved;
     }
@@ -46,7 +46,7 @@ class Inventory extends Model
      */
     public function status(): string
     {
-        $available = $this->available();
+        $available = $this->availableQuantity();
 
         if ($available <= 0) {
             return 'out';

@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\Product;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -38,13 +38,12 @@ class UpdateProductRequest extends FormRequest
             'primary_ref' => ['nullable', 'string', 'max:50'],
             'variants' => ['required', 'array', 'min:1'],
             'variants.*.id' => ['nullable', 'integer'],
-'variants.*.sku' => [
-                    'required', 'string', 'max:100', 'distinct',
-                    Rule::unique('product_variants', 'sku')->whereNot('id', $existingVariantIds ?? []),
-                ],
+            'variants.*.sku' => [
+                'required', 'string', 'max:100', 'distinct',
+                Rule::unique('product_variants', 'sku')->whereNot('id', $existingVariantIds ?? []),
+            ],
             'variants.*.price' => ['required', 'numeric', 'min:0'],
             'variants.*.compare_at_price' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.stock' => ['nullable', 'integer', 'min:0'],
             'delete_variant_ids' => ['nullable', 'array'],
             'delete_variant_ids.*' => ['integer'],
         ];

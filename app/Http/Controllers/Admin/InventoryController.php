@@ -2,22 +2,30 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Inventory\Actions\AdjustStockAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdjustInventoryRequest;
 use App\Models\Inventory;
 use App\Models\Warehouse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class InventoryController extends Controller
 {
     /**
-     * Menampilkan tabel stok per varian per gudang.
+     * Menampilkan tabel stok per varian per gudang, lengkap dengan filter
+     * pencarian, filter gudang, toggle stok menipis, dan ringkasan statistik.
      */
     public function index(Request $request): Response
     {
         $query = Inventory::query()
-            ->with(['variant' => fn ($q) => $q->withTrashed(), 'variant.product' => fn ($q) => $q->withTrashed(), 'warehouse']);
+            ->with([
+                'warehouse',
+                'variant' => fn ($q) => $q->with('product:id,name'),
+            ]);
 
         // Filter gudang
         if ($request->filled('warehouse')) {
@@ -25,7 +33,8 @@ class InventoryController extends Controller
         }
 
         // Pencarian nama produk / SKU
-        if ($search = trim((string) $request->query('search', ''))) {
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
             $query->whereHas('variant', function ($q) use ($search) {
                 $q->where('sku', 'like', "%{$search}%")
                     ->orWhereHas('product', function ($p) use ($search) {
@@ -40,7 +49,7 @@ class InventoryController extends Controller
         }
 
         $paginator = $query
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('variant_id')
             ->paginate(10)
             ->withQueryString();
 
@@ -49,6 +58,7 @@ class InventoryController extends Controller
                 ->map(function (Inventory $inv) {
                     $variant = $inv->variant;
                     $product = $variant?->product;
+                    $available = $inv->availableQuantity();
 
                     return [
                         'id' => $inv->id,
@@ -57,16 +67,18 @@ class InventoryController extends Controller
                         'warehouse_name' => $inv->warehouse?->name ?? '-',
                         'quantity_on_hand' => $inv->quantity_on_hand,
                         'quantity_reserved' => $inv->quantity_reserved,
+                        'available_quantity' => $available,
                         'reorder_level' => $inv->reorder_level,
                         'status' => $inv->status(),
+                        'is_low' => $available > 0 && $available <= $inv->reorder_level,
+                        'is_out_of_stock' => $available <= 0,
                         'updated_at' => $inv->updated_at?->format('d M Y'),
                     ];
                 })
                 ->values()
         );
 
-        $all = Inventory::query()
-            ->whereHas('variant');
+        $all = Inventory::query();
         if ($request->filled('warehouse')) {
             $all->where('warehouse_id', $request->integer('warehouse'));
         }
@@ -85,10 +97,32 @@ class InventoryController extends Controller
                 ->get(['id', 'name']),
             'stats' => $stats,
             'filters' => [
-                'search' => $search ?? '',
+                'search' => $search,
                 'warehouse' => $request->integer('warehouse') ?: null,
                 'lowStock' => $request->boolean('lowStock'),
             ],
         ]);
+    }
+
+    public function adjust(
+        AdjustInventoryRequest $request,
+        Inventory $inventory,
+        AdjustStockAction $action
+    ): RedirectResponse {
+        try {
+            $action->execute(
+                $inventory,
+                (int) $request->validated('quantity'),
+                $request->validated('reason'),
+                Auth::id()
+            );
+        } catch (\LogicException $e) {
+            return back()->withErrors([
+                'quantity' => $e->getMessage(),
+            ])->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.inventory.index')
+            ->with('success', 'Stok berhasil disesuaikan.');
     }
 }
