@@ -4,7 +4,6 @@ namespace App\Domain\Catalog\Actions;
 
 use App\Models\Product;
 use App\Models\ProductImage;
-use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -64,9 +63,6 @@ final class UpdateProductAction
                     ? (int) round($v['compare_at_price'])
                     : null,
                 'cost_price' => isset($v['cost_price']) && $v['cost_price'] !== '' ? (int) round($v['cost_price']) : null,
-                'stock' => isset($v['stock']) && $v['stock'] !== '' && $v['stock'] !== null
-                    ? (int) $v['stock']
-                    : 0,
                 'status' => 'active',
             ];
 
@@ -143,6 +139,7 @@ final class UpdateProductAction
 
             if (($segments[0] ?? '') === 'existing' && isset($segments[1])) {
                 $product->images()->whereKey((int) $segments[1])->update(['is_primary' => true]);
+
                 return;
             }
 
@@ -153,6 +150,7 @@ final class UpdateProductAction
                 $image = $product->images()->where('sort_order', $sortOrder)->first();
                 if ($image) {
                     $image->update(['is_primary' => true]);
+
                     return;
                 }
             }

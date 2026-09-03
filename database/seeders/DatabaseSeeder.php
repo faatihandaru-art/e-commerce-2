@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\ProductReview;
-use App\Models\CustomerAddress;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -38,6 +37,9 @@ class DatabaseSeeder extends Seeder
 
         // Seed store reference data (coupons, shipping methods)
         $this->call(StoreSeeder::class);
+
+        // Seed default warehouse
+        $this->call(WarehouseSeeder::class);
 
         $this->seedCustomerAddress($user);
         $this->seedProductReviews($user);

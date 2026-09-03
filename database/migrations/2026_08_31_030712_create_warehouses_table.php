@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('warehouses', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name', 150);
-            $table->string('code', 30)->unique('uq_warehouses_code');
-            $table->string('address', 500)->nullable();
+            $table->string('code', 50)->unique('uq_warehouses_code');
+            $table->text('address')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
         });
     }
 

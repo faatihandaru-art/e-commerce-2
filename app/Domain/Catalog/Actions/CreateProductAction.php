@@ -5,6 +5,7 @@ namespace App\Domain\Catalog\Actions;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -60,16 +61,13 @@ final class CreateProductAction
                     ? (int) round($v['compare_at_price'])
                     : null,
                 'cost_price' => isset($v['cost_price']) && $v['cost_price'] !== '' ? (int) round($v['cost_price']) : null,
-                'stock' => isset($v['stock']) && $v['stock'] !== '' && $v['stock'] !== null
-                    ? (int) $v['stock']
-                    : 0,
                 'status' => 'active',
             ]);
         }
     }
 
     /**
-     * @param  array<int, \Illuminate\Http\UploadedFile>  $files
+     * @param  array<int, UploadedFile>  $files
      */
     private function saveImages(Product $product, array $files, int $primaryIndex): void
     {

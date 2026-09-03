@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('inventories', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('warehouse_id');
-            $table->unsignedBigInteger('product_variant_id')->index('fk_inventories_variant');
+            $table->unsignedBigInteger('variant_id')->index('fk_inventories_variant');
             $table->integer('quantity_on_hand')->default(0);
             $table->integer('quantity_reserved')->default(0);
             $table->integer('reorder_level')->default(0);
-            $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable()->useCurrent();
+            $table->timestamps();
 
-            $table->unique(['warehouse_id', 'product_variant_id'], 'uq_inventories_warehouse_variant');
+            $table->unique(['warehouse_id', 'variant_id'], 'uq_inventories_warehouse_variant');
         });
     }
 

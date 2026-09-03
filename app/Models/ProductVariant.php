@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariant extends Model
@@ -24,7 +25,6 @@ class ProductVariant extends Model
         'length_mm',
         'width_mm',
         'height_mm',
-        'stock',
         'status',
     ];
 
@@ -36,7 +36,6 @@ class ProductVariant extends Model
         'length_mm' => 'integer',
         'width_mm' => 'integer',
         'height_mm' => 'integer',
-        'stock' => 'integer',
         'deleted_at' => 'datetime',
     ];
 
@@ -48,5 +47,15 @@ class ProductVariant extends Model
     public function optionValues(): BelongsToMany
     {
         return $this->belongsToMany(ProductOptionValue::class, 'product_variant_option_values', 'variant_id', 'option_value_id');
+    }
+
+    public function inventories(): HasMany
+    {
+        return $this->hasMany(Inventory::class, 'variant_id');
+    }
+
+    public function totalStock(): int
+    {
+        return (int) $this->inventories()->sum('quantity_on_hand');
     }
 }
