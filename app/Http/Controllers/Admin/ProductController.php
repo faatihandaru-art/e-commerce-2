@@ -23,7 +23,7 @@ class ProductController extends Controller
                 'brand',
                 'categories',
                 'images' => fn ($q) => $q->orderBy('sort_order'),
-                'variants',
+                'variants.inventories',
             ])
             ->latest('id')
             ->paginate(10);
@@ -42,8 +42,9 @@ class ProductController extends Controller
                     'variants' => $product->variants->map(fn ($v) => [
                         'sku' => $v->sku,
                         'price' => (int) $v->price,
-                        'stock' => (int) $v->stock,
+                        'stock' => (int) $v->inventories->sum('quantity_on_hand'),
                     ])->values(),
+                    'total_stock' => (int) $product->variants->sum(fn ($v) => $v->inventories->sum('quantity_on_hand')),
                     'created_at' => $product->created_at?->format('d M Y'),
                 ])
                 ->values()

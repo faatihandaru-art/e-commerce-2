@@ -25,6 +25,7 @@ class ProductVariant extends Model
         'length_mm',
         'width_mm',
         'height_mm',
+        'stock',
         'status',
     ];
 
@@ -36,6 +37,7 @@ class ProductVariant extends Model
         'length_mm' => 'integer',
         'width_mm' => 'integer',
         'height_mm' => 'integer',
+        'stock' => 'integer',
         'deleted_at' => 'datetime',
     ];
 
@@ -54,8 +56,16 @@ class ProductVariant extends Model
         return $this->hasMany(Inventory::class, 'variant_id');
     }
 
+    /**
+     * Total stok fisik gabungan varian ini dari seluruh gudang.
+     * Mengembalikan 0 jika belum ada catatan inventori.
+     */
     public function totalStock(): int
     {
+        if ($this->relationLoaded('inventories')) {
+            return (int) $this->inventories->sum('quantity_on_hand');
+        }
+
         return (int) $this->inventories()->sum('quantity_on_hand');
     }
 }

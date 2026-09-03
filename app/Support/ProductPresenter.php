@@ -36,7 +36,7 @@ class ProductPresenter
         $approved = $reviews->filter(fn (ProductReview $r) => $r->status === 'approved');
 
         $activeVariants = $variants->filter(fn ($v) => $v->status === 'active');
-        $stock = $activeVariants->isNotEmpty() ? 100 : 0;
+        $stock = (int) $product->totalStock();
         $isNew = (bool) $product->published_at && $product->published_at->gte(now()->subDays(30));
 
         $formattedImages = $images->map(function ($img) {
@@ -97,7 +97,7 @@ class ProductPresenter
             'name' => $optionNames->implode(' · ') ?: 'Pilihan',
             'value' => $optionLiteral->implode(' / ') ?: $variant->sku,
             'priceModifier' => $variant->price - $base,
-            'stock' => $variant->status === 'active' ? 100 : 0,
+            'stock' => (int) $variant->totalStock(),
             'sku' => $variant->sku,
         ];
     }

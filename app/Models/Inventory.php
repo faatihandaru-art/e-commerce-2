@@ -19,6 +19,8 @@ class Inventory extends Model
         'quantity_on_hand' => 'integer',
         'quantity_reserved' => 'integer',
         'reorder_level' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function warehouse(): BelongsTo
@@ -31,8 +33,29 @@ class Inventory extends Model
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
+    /**
+     * Stok tersedia (belum direservasi).
+     */
     public function availableQuantity(): int
     {
         return $this->quantity_on_hand - $this->quantity_reserved;
+    }
+
+    /**
+     * Status stok: 'out' (habis), 'low' (menipis), atau 'normal'.
+     */
+    public function status(): string
+    {
+        $available = $this->availableQuantity();
+
+        if ($available <= 0) {
+            return 'out';
+        }
+
+        if ($available <= $this->reorder_level) {
+            return 'low';
+        }
+
+        return 'normal';
     }
 }

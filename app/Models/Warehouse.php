@@ -16,6 +16,8 @@ class Warehouse extends Model
 
     protected $casts = [
         'status' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function inventories(): HasMany
