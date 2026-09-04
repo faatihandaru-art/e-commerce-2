@@ -38,13 +38,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 {/* VGS Brand Emblem */}
                 <div className="flex flex-col items-center text-center mb-8">
                     <Link href="/" className="group inline-flex flex-col items-center">
-                        <div className="w-14 h-14 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-all shadow-lg mb-3">
-                            <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <polygon points="12 2, 21 7, 21 17, 12 22, 3 17, 3 7" stroke="#2B6FF6" strokeWidth="1.5" fill="#0A0A0C" />
-                                <path d="M7 8L12 17L17 8" stroke="#E8E9ED" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M10 8L12 12L14 8" stroke="#2B6FF6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
+                        <div className="w-30 h-30 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-all shadow-lg mb-3">
+                            <img
+                              src="/images/logo/logo..vgs2.png"
+                              alt="Vortix Gaming Store"
+                              className="w-30 h-30 object-contain"/>
+                            </div>
                         <h2 className="font-display font-extrabold text-2xl tracking-wider text-vgs-silver-bright">
                             VORTIX <span className="text-vgs-blue-electric">GAMING</span> STORE
                         </h2>
