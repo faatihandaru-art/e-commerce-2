@@ -38,11 +38,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                 {/* VGS Brand Emblem */}
                 <div className="flex flex-col items-center text-center mb-8">
                     <Link href="/" className="group inline-flex flex-col items-center">
-                        <div className="w-30 h-30 rounded-2xl bg-vgs-black-surface border border-vgs-gray-border flex items-center justify-center group-hover:border-vgs-blue-electric transition-all shadow-lg mb-3">
+                        <div className="w-30 h-30 ">
                             <img
                               src="/images/logo/logo..vgs2.png"
                               alt="Vortix Gaming Store"
-                              className="w-30 h-30 object-contain"/>
+                              className="w-30 h-30 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)]  "/>
                             </div>
                         <h2 className="font-display font-extrabold text-2xl tracking-wider text-vgs-silver-bright">
                             VORTIX <span className="text-vgs-blue-electric">GAMING</span> STORE
