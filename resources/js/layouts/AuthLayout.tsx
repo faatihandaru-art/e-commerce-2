@@ -42,7 +42,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
                             <img
                               src="/images/logo/logo..vgs2.png"
                               alt="Vortix Gaming Store"
-                              className="w-30 h-30 object-contain drop-shadow-[0_0_30px_var(--vgs-blue-electric)]  "/>
+                              className="w-30 h-30 object-contain drop-shadow-[0_0_14px_var(--vgs-blue-electric)]  "/>
                             </div>
                         <h2 className="font-display font-extrabold text-2xl tracking-wider text-vgs-silver-bright">
                             VORTIX <span className="text-vgs-blue-electric">GAMING</span> STORE
