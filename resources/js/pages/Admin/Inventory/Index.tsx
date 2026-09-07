@@ -97,10 +97,10 @@ export default function InventoryIndex() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 className="text-xl sm:text-2xl font-display font-bold text-vgs-silver-bright">
-                            Kelola Inventory
+                            Kelola Inventory 
                         </h2>
                         <p className="text-sm text-vgs-silver-mid mt-1">
-                            {inventories?.total ?? 0} product terkelola stoknya.
+                            {inventories?.total ?? 0} product terkelola stoknya
                         </p>
                     </div>
                 </div>
