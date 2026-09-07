@@ -30,7 +30,9 @@ interface OrderResultInfo {
 interface NewAddressFields {
     recipient: string;
     phone: string;
-    address_line1: string;
+    street: string;
+    village: string;
+    district: string;
     city: string;
     province: string;
     postal_code: string;
@@ -65,19 +67,22 @@ export default function Checkout() {
     const [newAddress, setNewAddress] = useState<NewAddressFields>({
         recipient: '',
         phone: '',
-        address_line1: '',
+        street: '',
+        village: '',
+        district: '',
         city: '',
         province: '',
         postal_code: '',
     });
-    const [addressView, setAddressView] = useState<'list' | 'form'>(
-        addressList.length > 0 ? 'list' : 'form'
-    );
-    const [usingNewAddress, setUsingNewAddress] = useState(addressList.length === 0);
+    const [addressView, setAddressView] = useState<'list' | 'form'>('list');
+    const [usingNewAddress, setUsingNewAddress] = useState(false);
     const [finalNewAddress, setFinalNewAddress] = useState<NewAddressFields | null>(null);
     const [saveNewAddress, setSaveNewAddress] = useState(false);
     const [savingAddress, setSavingAddress] = useState(false);
     const [addressError, setAddressError] = useState<string | null>(null);
+    const [addressMode, setAddressMode] = useState<'manual' | 'location'>('manual');
+    const [locationLoading, setLocationLoading] = useState(false);
+    const [locationError, setLocationError] = useState<string | null>(null);
 
     const paymentGroups = useMemo(() => {
         const groups: { id: string; name: string; methods: PaymentMethodPayload[] }[] = [];
@@ -136,12 +141,16 @@ export default function Checkout() {
         return groups;
     }, [shippingMethods]);
 
+    const newAddressLine2 = (a: NewAddressFields): string =>
+        [a.village, a.district].filter((x) => x.trim()).join(', ');
+
     const shippingPayload = useMemo(() => {
-        if (addressList.length === 0 || usingNewAddress) {
+        if (usingNewAddress) {
             return {
                 recipient: newAddress.recipient,
                 phone: newAddress.phone,
-                address_line1: newAddress.address_line1,
+                address_line1: newAddress.street,
+                address_line2: newAddressLine2(newAddress) || null,
                 city: newAddress.city,
                 province: newAddress.province,
                 postal_code: newAddress.postal_code,
@@ -163,6 +172,7 @@ export default function Checkout() {
             recipient: '',
             phone: '',
             address_line1: '',
+            address_line2: null,
             city: '',
             province: '',
             postal_code: '',
@@ -171,11 +181,11 @@ export default function Checkout() {
     }, [selectedAddress, newAddress, usingNewAddress, addressList.length]);
 
     const validateNewAddress = (): boolean => {
-        const { recipient, phone, address_line1, city, province, postal_code } = newAddress;
+        const { recipient, phone, street, city, province, postal_code } = newAddress;
         if (
             !recipient.trim() ||
             !phone.trim() ||
-            !address_line1.trim() ||
+            !street.trim() ||
             !city.trim() ||
             !province.trim() ||
             !postal_code.trim()
@@ -192,7 +202,9 @@ export default function Checkout() {
         const trimmed: NewAddressFields = {
             recipient: newAddress.recipient.trim(),
             phone: newAddress.phone.trim(),
-            address_line1: newAddress.address_line1.trim(),
+            street: newAddress.street.trim(),
+            village: newAddress.village.trim(),
+            district: newAddress.district.trim(),
             city: newAddress.city.trim(),
             province: newAddress.province.trim(),
             postal_code: newAddress.postal_code.trim(),
@@ -206,7 +218,9 @@ export default function Checkout() {
                 const result = await saveCheckoutAddress({
                     recipient: trimmed.recipient,
                     phone: trimmed.phone,
-                    street: trimmed.address_line1,
+                    street: trimmed.street,
+                    village: trimmed.village || undefined,
+                    district: trimmed.district || undefined,
                     city: trimmed.city,
                     province: trimmed.province,
                     postal_code: trimmed.postal_code,
@@ -238,13 +252,81 @@ export default function Checkout() {
 
     const openNewAddressForm = () => {
         setUsingNewAddress(false);
+        setAddressMode('manual');
+        setLocationError(null);
+        setAddressError(null);
         setAddressView('form');
     };
 
     const backToSavedList = () => {
         setUsingNewAddress(false);
-        setAddressView('list');
+        setAddressMode('manual');
+        setLocationError(null);
         setAddressError(null);
+        setAddressView('list');
+    };
+
+    const handleDetectLocation = () => {
+        if (!navigator.geolocation) {
+            setLocationError('Browser Anda tidak mendukung Geolocation.');
+            return;
+        }
+
+        setLocationLoading(true);
+        setLocationError(null);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+                        { headers: { 'Accept-Language': 'id' } }
+                    );
+
+                    if (!res.ok) throw new Error('Gagal mengambil data lokasi.');
+
+                    const result = await res.json();
+                    const addr = result.address || {};
+
+                    const street = [addr.road, addr.house_number].filter(Boolean).join(' ');
+
+                    setNewAddress((p) => ({
+                        ...p,
+                        street: street || p.street,
+                        village: addr.village || addr.suburb || p.village,
+                        district: addr.city_district || addr.district || p.district,
+                        city: addr.city || addr.county || p.city,
+                        province: addr.state || p.province,
+                        postal_code: addr.postcode || p.postal_code,
+                    }));
+
+                    setLocationError(null);
+                } catch {
+                    setLocationError('Gagal menghubungi layanan geocoding. Silakan isi manual.');
+                } finally {
+                    setLocationLoading(false);
+                }
+            },
+            (geoError) => {
+                setLocationLoading(false);
+                switch (geoError.code) {
+                    case geoError.PERMISSION_DENIED:
+                        setLocationError('Izin lokasi ditolak. Silakan izinkan akses lokasi di browser Anda.');
+                        break;
+                    case geoError.POSITION_UNAVAILABLE:
+                        setLocationError('Informasi lokasi tidak tersedia. Silakan isi manual.');
+                        break;
+                    case geoError.TIMEOUT:
+                        setLocationError('Permintaan lokasi habis waktu. Silakan coba lagi.');
+                        break;
+                    default:
+                        setLocationError('Gagal mendapatkan lokasi. Silakan isi manual.');
+                }
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
     };
 
     const handlePlaceOrder = async () => {
@@ -411,7 +493,9 @@ export default function Checkout() {
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-vgs-silver-mid mt-0.5">
-                                                    {finalNewAddress.address_line1}
+                                                    {finalNewAddress.street}
+                                                    {newAddressLine2(finalNewAddress) &&
+                                                        `, ${newAddressLine2(finalNewAddress)}`}
                                                 </p>
                                                 <p className="text-xs text-vgs-silver-muted">
                                                     {finalNewAddress.city}, {finalNewAddress.province}{' '}
@@ -435,23 +519,75 @@ export default function Checkout() {
                                                 </button>
                                             </div>
                                         </div>
-                                    ) : addressView === 'form' || addressList.length === 0 ? (
+                                    ) : addressView === 'form' ? (
                                         <div className="flex flex-col gap-3">
-                                            <p className="text-xs text-vgs-silver-muted">
-                                                {addressList.length > 0
-                                                    ? 'Isi alamat baru di bawah ini, lalu gunakan untuk pesanan ini.'
-                                                    : 'Anda belum memiliki alamat tersimpan. Lengkapi alamat pengiriman di bawah ini.'}
-                                            </p>
+                                            <div className="flex rounded-xl bg-vgs-black-surface border border-vgs-gray-border p-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setAddressMode('manual');
+                                                        setLocationError(null);
+                                                    }}
+                                                    className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+                                                        addressMode === 'manual'
+                                                            ? 'bg-vgs-blue-electric text-white shadow-sm'
+                                                            : 'text-vgs-silver-mid hover:text-vgs-silver-bright'
+                                                    }`}
+                                                >
+                                                    Isi Manual
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setAddressMode('location');
+                                                        handleDetectLocation();
+                                                    }}
+                                                    className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+                                                        addressMode === 'location'
+                                                            ? 'bg-vgs-blue-electric text-white shadow-sm'
+                                                            : 'text-vgs-silver-mid hover:text-vgs-silver-bright'
+                                                    }`}
+                                                >
+                                                    Gunakan Lokasi Saat Ini
+                                                </button>
+                                            </div>
+
+                                            {locationLoading && (
+                                                <div className="flex items-center gap-3 p-4 rounded-xl bg-vgs-blue-electric/10 border border-vgs-blue-electric/20">
+                                                    <svg className="w-5 h-5 text-vgs-blue-electric animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                    </svg>
+                                                    <span className="text-sm text-vgs-blue-electric font-medium">
+                                                        Mendeteksi lokasi Anda...
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {locationError && (
+                                                <div className="flex items-start gap-3 p-4 rounded-xl bg-vgs-danger/10 border border-vgs-danger/20">
+                                                    <svg className="w-5 h-5 text-vgs-danger shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span className="text-sm text-vgs-danger">{locationError}</span>
+                                                </div>
+                                            )}
+
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <Input
-                                                    placeholder="Nama Penerima"
+                                                    label="Nama Penerima"
+                                                    required
+                                                    placeholder="Nama lengkap penerima"
                                                     value={newAddress.recipient}
                                                     onChange={(e) =>
                                                         setNewAddress((p) => ({ ...p, recipient: e.target.value }))
                                                     }
                                                 />
                                                 <Input
-                                                    placeholder="No. HP (08xx)"
+                                                    label="Nomor Telepon"
+                                                    required
+                                                    placeholder="08xxxxxxxxxx"
+                                                    type="tel"
                                                     value={newAddress.phone}
                                                     onChange={(e) =>
                                                         setNewAddress((p) => ({ ...p, phone: e.target.value }))
@@ -459,28 +595,50 @@ export default function Checkout() {
                                                 />
                                                 <Input
                                                     containerClassName="sm:col-span-2"
-                                                    placeholder="Alamat Lengkap (Jalan, RT/RW, Kelurahan, Kecamatan)"
-                                                    value={newAddress.address_line1}
+                                                    label="Nama Jalan & Nomor Rumah"
+                                                    required
+                                                    placeholder="Jl. Contoh No. 123"
+                                                    value={newAddress.street}
                                                     onChange={(e) =>
-                                                        setNewAddress((p) => ({ ...p, address_line1: e.target.value }))
+                                                        setNewAddress((p) => ({ ...p, street: e.target.value }))
                                                     }
                                                 />
                                                 <Input
-                                                    placeholder="Kota / Kabupaten"
+                                                    label="Kelurahan/Desa"
+                                                    placeholder="Nama kelurahan/desa"
+                                                    value={newAddress.village}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, village: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    label="Kecamatan"
+                                                    placeholder="Nama kecamatan"
+                                                    value={newAddress.district}
+                                                    onChange={(e) =>
+                                                        setNewAddress((p) => ({ ...p, district: e.target.value }))
+                                                    }
+                                                />
+                                                <Input
+                                                    label="Kota/Kabupaten"
+                                                    required
                                                     value={newAddress.city}
                                                     onChange={(e) =>
                                                         setNewAddress((p) => ({ ...p, city: e.target.value }))
                                                     }
                                                 />
                                                 <Input
-                                                    placeholder="Provinsi"
+                                                    label="Provinsi"
+                                                    required
                                                     value={newAddress.province}
                                                     onChange={(e) =>
                                                         setNewAddress((p) => ({ ...p, province: e.target.value }))
                                                     }
                                                 />
                                                 <Input
-                                                    placeholder="Kode Pos"
+                                                    label="Kode Pos"
+                                                    required
+                                                    placeholder="12345"
                                                     value={newAddress.postal_code}
                                                     onChange={(e) =>
                                                         setNewAddress((p) => ({ ...p, postal_code: e.target.value }))
@@ -505,11 +663,9 @@ export default function Checkout() {
                                             )}
 
                                             <div className="flex items-center justify-end gap-3 pt-1 border-t border-vgs-gray-border/60">
-                                                {addressList.length > 0 && (
-                                                    <Button variant="ghost" onClick={backToSavedList} disabled={savingAddress}>
-                                                        Batal
-                                                    </Button>
-                                                )}
+                                                <Button variant="ghost" onClick={backToSavedList} disabled={savingAddress}>
+                                                    Batal
+                                                </Button>
                                                 <Button
                                                     variant="primary"
                                                     onClick={handleUseNewAddress}
@@ -519,6 +675,26 @@ export default function Checkout() {
                                                     Gunakan Alamat Ini
                                                 </Button>
                                             </div>
+                                        </div>
+                                    ) : addressList.length === 0 ? (
+                                        <div className="flex flex-col items-center text-center gap-4 py-6">
+                                            <div className="w-14 h-14 rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border flex items-center justify-center text-vgs-silver-muted">
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-vgs-silver-bright">
+                                                    Anda belum memiliki alamat
+                                                </p>
+                                                <p className="text-xs text-vgs-silver-muted mt-1">
+                                                    Tambahkan alamat untuk melanjutkan checkout.
+                                                </p>
+                                            </div>
+                                            <Button variant="primary" size="md" onClick={openNewAddressForm}>
+                                                + Tambah Alamat
+                                            </Button>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-2">
