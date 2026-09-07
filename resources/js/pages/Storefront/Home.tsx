@@ -109,10 +109,10 @@ export default function Home() {
                                     <span>Pilihan Pro Player</span>
                                 </div>
                                 <h2 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-4xl text-vgs-silver-bright tracking-tight">
-                                    Produk Unggulan Turnamen
+                                    Produk Unggulan 
                                 </h2>
                                 <p className="text-sm text-vgs-silver-mid mt-1.5 max-w-lg">
-                                    Perangkat dengan performa teruji di panggung kompetisi esports global.
+                                    Perangkat gaming dengan performa terbaik dan teruji kualitas nya.
                                 </p>
                             </div>
 
