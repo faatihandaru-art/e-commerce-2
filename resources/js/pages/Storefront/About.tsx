@@ -125,7 +125,7 @@ export default function About() {
                                 <img
                                     src='/images/logo/logo..vgs2.png'
                                     alt="VGS Esports Testing Lab & Battlestation"
-                                    className="w-full h-80 sm:h-96 object-contain transition-transform duration-700 group-hover:scale-105"
+                                    className="w-full h-80 sm:h-96 object-contain transition-transform duration-700 "
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-vgs-black-void via-vgs-black-void/30 to-transparent" />
 

@@ -23,7 +23,7 @@ export const HeroSection: React.FC = () => {
 
                         {/* Main Technical Hero Headline */}
                         <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-vgs-silver-bright tracking-tight leading-[1.1]">
-                            GEAR PILIHAN UNTUK<br />
+                            <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-vgs-silver-bright via-vgs-blue-glow to-vgs-blue-electric">
                                  SETUP ANDALAN.
                             </span>
