@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\CustomerAddress;
 use App\Models\ShippingMethod;
 use App\Models\User;
 
@@ -18,24 +19,35 @@ class CheckoutPresenter
         return $user->addresses()
             ->latest()
             ->get()
-            ->map(fn ($a) => [
-                'id' => $a->id,
-                'label' => $a->is_default ? 'Alamat Rumah' : 'Alamat Tambahan',
-                'recipient' => $a->recipient,
-                'phone' => $a->phone,
-                'line' => trim(implode(', ', array_filter([
-                    $a->street,
-                    $a->village,
-                    $a->district,
-                ], fn ($part) => ! empty($part)))),
-                'city' => trim("{$a->city}, {$a->province} {$a->postal_code}"),
-                'note' => $a->is_default ? 'Utama' : null,
-                'province' => $a->province,
-                'postal_code' => $a->postal_code,
-                'country' => $a->country ?? 'Indonesia',
-            ])
+            ->map(fn (CustomerAddress $a) => self::formatAddress($a))
             ->values()
             ->all();
+    }
+
+    /**
+     * Bentuk tunggal alamat yang sama dengan daftar di halaman checkout,
+     * dipakai juga setelah menyimpan alamat baru saat checkout.
+     *
+     * @return array<string, mixed>
+     */
+    public static function formatAddress(CustomerAddress $address): array
+    {
+        return [
+            'id' => $address->id,
+            'label' => $address->is_default ? 'Alamat Rumah' : 'Alamat Tambahan',
+            'recipient' => $address->recipient,
+            'phone' => $address->phone,
+            'line' => trim(implode(', ', array_filter([
+                $address->street,
+                $address->village,
+                $address->district,
+            ], fn ($part) => ! empty($part)))),
+            'city' => trim("{$address->city}, {$address->province} {$address->postal_code}"),
+            'note' => $address->is_default ? 'Utama' : null,
+            'province' => $address->province,
+            'postal_code' => $address->postal_code,
+            'country' => $address->country ?? 'Indonesia',
+        ];
     }
 
     /**
