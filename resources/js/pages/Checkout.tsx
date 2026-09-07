@@ -7,6 +7,7 @@ import { useCart, getCartItemKey } from '@/context/CartContext';
 import { formatRupiah } from '@/lib/format';
 import {
     placeOrder,
+    saveCheckoutAddress,
     ApiError,
     type CheckoutAddressPayload,
     type PaymentMethodPayload,
@@ -26,12 +27,23 @@ interface OrderResultInfo {
     paymentName: string;
 }
 
+interface NewAddressFields {
+    recipient: string;
+    phone: string;
+    address_line1: string;
+    city: string;
+    province: string;
+    postal_code: string;
+}
+
 export default function Checkout() {
     const page = usePage();
     const props = (page.props ?? {}) as unknown as CheckoutPageProps;
-    const addresses = props.addresses ?? [];
     const shippingMethods = props.shippingMethods ?? [];
     const paymentMethods = props.paymentMethods ?? [];
+    const [addressList, setAddressList] = useState<CheckoutAddressPayload[]>(
+        props.addresses ?? []
+    );
 
     const { items, selectedItems, selectedSubtotal, clearCart } = useCart();
 
@@ -40,7 +52,7 @@ export default function Checkout() {
         () => shippingMethods[0]?.id ?? ''
     );
     const [addressId, setAddressId] = useState<number | string>(
-        () => addresses[0]?.id ?? ''
+        () => addressList[0]?.id ?? ''
     );
     const [couponCode, setCouponCode] = useState('');
     const [notes, setNotes] = useState('');
@@ -49,8 +61,8 @@ export default function Checkout() {
     const [orderInfo, setOrderInfo] = useState<OrderResultInfo | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Inline shipping fields dipakai ketika user belum punya alamat tersimpan.
-    const [newAddress, setNewAddress] = useState({
+    // Inline shipping fields dipakai ketika user memilih alamat baru saat checkout.
+    const [newAddress, setNewAddress] = useState<NewAddressFields>({
         recipient: '',
         phone: '',
         address_line1: '',
@@ -58,6 +70,14 @@ export default function Checkout() {
         province: '',
         postal_code: '',
     });
+    const [addressView, setAddressView] = useState<'list' | 'form'>(
+        addressList.length > 0 ? 'list' : 'form'
+    );
+    const [usingNewAddress, setUsingNewAddress] = useState(addressList.length === 0);
+    const [finalNewAddress, setFinalNewAddress] = useState<NewAddressFields | null>(null);
+    const [saveNewAddress, setSaveNewAddress] = useState(false);
+    const [savingAddress, setSavingAddress] = useState(false);
+    const [addressError, setAddressError] = useState<string | null>(null);
 
     const paymentGroups = useMemo(() => {
         const groups: { id: string; name: string; methods: PaymentMethodPayload[] }[] = [];
@@ -99,11 +119,35 @@ export default function Checkout() {
     const grandTotal = subtotal + shippingCost + paymentFee;
 
     const selectedAddress =
-        addresses.find((a) => String(a.id) === String(addressId)) || addresses[0];
+        addressList.find((a) => String(a.id) === String(addressId)) || addressList[0];
 
     const count = itemsToCheckout.reduce((acc, i) => acc + i.quantity, 0);
 
+    const shippingGroups = useMemo(() => {
+        const groups: { provider: string; methods: ShippingOptionPayload[] }[] = [];
+        (shippingMethods ?? []).forEach((m) => {
+            let group = groups.find((g) => g.provider === m.provider);
+            if (!group) {
+                group = { provider: m.provider, methods: [] };
+                groups.push(group);
+            }
+            group.methods.push(m);
+        });
+        return groups;
+    }, [shippingMethods]);
+
     const shippingPayload = useMemo(() => {
+        if (addressList.length === 0 || usingNewAddress) {
+            return {
+                recipient: newAddress.recipient,
+                phone: newAddress.phone,
+                address_line1: newAddress.address_line1,
+                city: newAddress.city,
+                province: newAddress.province,
+                postal_code: newAddress.postal_code,
+                country: 'Indonesia',
+            };
+        }
         if (selectedAddress) {
             return {
                 recipient: selectedAddress.recipient,
@@ -116,15 +160,92 @@ export default function Checkout() {
             };
         }
         return {
-            recipient: newAddress.recipient,
-            phone: newAddress.phone,
-            address_line1: newAddress.address_line1,
-            city: newAddress.city,
-            province: newAddress.province,
-            postal_code: newAddress.postal_code,
+            recipient: '',
+            phone: '',
+            address_line1: '',
+            city: '',
+            province: '',
+            postal_code: '',
             country: 'Indonesia',
         };
-    }, [selectedAddress, newAddress]);
+    }, [selectedAddress, newAddress, usingNewAddress, addressList.length]);
+
+    const validateNewAddress = (): boolean => {
+        const { recipient, phone, address_line1, city, province, postal_code } = newAddress;
+        if (
+            !recipient.trim() ||
+            !phone.trim() ||
+            !address_line1.trim() ||
+            !city.trim() ||
+            !province.trim() ||
+            !postal_code.trim()
+        ) {
+            setAddressError('Lengkapi semua kolom alamat baru (penerima, HP, alamat, kota, provinsi, kode pos).');
+            return false;
+        }
+        return true;
+    };
+
+    const handleUseNewAddress = async () => {
+        if (!validateNewAddress()) return;
+
+        const trimmed: NewAddressFields = {
+            recipient: newAddress.recipient.trim(),
+            phone: newAddress.phone.trim(),
+            address_line1: newAddress.address_line1.trim(),
+            city: newAddress.city.trim(),
+            province: newAddress.province.trim(),
+            postal_code: newAddress.postal_code.trim(),
+        };
+
+        setSavingAddress(true);
+        setAddressError(null);
+
+        try {
+            if (saveNewAddress) {
+                const result = await saveCheckoutAddress({
+                    recipient: trimmed.recipient,
+                    phone: trimmed.phone,
+                    street: trimmed.address_line1,
+                    city: trimmed.city,
+                    province: trimmed.province,
+                    postal_code: trimmed.postal_code,
+                    country: 'Indonesia',
+                    is_default: false,
+                });
+                setAddressList((prev) =>
+                    [result.address, ...prev].filter(
+                        (a, i, arr) => arr.findIndex((x) => String(x.id) === String(a.id)) === i
+                    )
+                );
+                setAddressId(result.address.id);
+                setUsingNewAddress(false);
+                setAddressView('list');
+            } else {
+                setNewAddress(trimmed);
+                setFinalNewAddress(trimmed);
+                setUsingNewAddress(true);
+                setAddressView('list');
+            }
+        } catch (err) {
+            setAddressError(
+                err instanceof ApiError ? err.message : 'Gagal menyimpan alamat. Silakan coba lagi.'
+            );
+        } finally {
+            setSavingAddress(false);
+        }
+    };
+
+    const openNewAddressForm = () => {
+        setUsingNewAddress(false);
+        setAddressView('form');
+    };
+
+    const backToSavedList = () => {
+        setUsingNewAddress(false);
+        setAddressView('list');
+        setAddressError(null);
+    };
 
     const handlePlaceOrder = async () => {
         if (!payment) {
@@ -135,7 +256,14 @@ export default function Checkout() {
             setError('Pilih metode pengiriman terlebih dahulu.');
             return;
         }
-        if (!shippingPayload.recipient || !shippingPayload.address_line1 || !shippingPayload.city) {
+        if (
+            !shippingPayload.recipient ||
+            !shippingPayload.phone ||
+            !shippingPayload.address_line1 ||
+            !shippingPayload.city ||
+            !shippingPayload.province ||
+            !shippingPayload.postal_code
+        ) {
             setError('Lengkapi alamat pengiriman terlebih dahulu.');
             return;
         }
@@ -263,54 +391,56 @@ export default function Checkout() {
                                         Alamat Pengiriman
                                     </h2>
                                     <span className="text-[11px] font-mono text-vgs-silver-muted">
-                                        {addresses.length} tersimpan
+                                        {addressList.length} tersimpan
                                     </span>
                                 </div>
 
                                 <div className="p-5">
-                                    {addresses.length > 0 ? (
-                                        <div className="flex flex-col gap-2">
-                                            {addresses.map((addr) => (
-                                                <label
-                                                    key={addr.id}
-                                                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                                                        String(addressId) === String(addr.id)
-                                                            ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
-                                                            : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
-                                                    }`}
+                                    {usingNewAddress && finalNewAddress ? (
+                                        <div className="flex items-start justify-between gap-4 p-4 rounded-xl border border-vgs-blue-electric bg-vgs-blue-electric/10">
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-vgs-silver-bright text-sm">
+                                                        {finalNewAddress.recipient}
+                                                    </span>
+                                                    <span className="text-xs font-mono text-vgs-silver-muted">
+                                                        {finalNewAddress.phone}
+                                                    </span>
+                                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase text-vgs-blue-electric bg-vgs-blue-electric/15 border border-vgs-blue-electric/30">
+                                                        Baru
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-vgs-silver-mid mt-0.5">
+                                                    {finalNewAddress.address_line1}
+                                                </p>
+                                                <p className="text-xs text-vgs-silver-muted">
+                                                    {finalNewAddress.city}, {finalNewAddress.province}{' '}
+                                                    {finalNewAddress.postal_code} — Indonesia
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={openNewAddressForm}
+                                                    className="text-xs font-semibold text-vgs-blue-electric hover:underline cursor-pointer"
                                                 >
-                                                    <input
-                                                        type="radio"
-                                                        name="address"
-                                                        value={String(addr.id)}
-                                                        checked={String(addressId) === String(addr.id)}
-                                                        onChange={() => setAddressId(addr.id)}
-                                                        className="accent-vgs-blue-electric w-4 h-4 mt-1"
-                                                    />
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-semibold text-vgs-silver-bright text-sm">
-                                                                {addr.recipient}
-                                                            </span>
-                                                            <span className="text-xs font-mono text-vgs-silver-muted">
-                                                                {addr.phone}
-                                                            </span>
-                                                            {addr.note && (
-                                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase text-vgs-blue-electric bg-vgs-blue-electric/10 border border-vgs-blue-electric/30">
-                                                                    {addr.note}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-sm text-vgs-silver-mid mt-0.5">{addr.line}</p>
-                                                        <p className="text-xs text-vgs-silver-muted">{addr.city}</p>
-                                                    </div>
-                                                </label>
-                                            ))}
+                                                    Ubah
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={backToSavedList}
+                                                    className="text-xs font-semibold text-vgs-silver-mid hover:text-vgs-silver-bright cursor-pointer"
+                                                >
+                                                    Pilih alamat tersimpan
+                                                </button>
+                                            </div>
                                         </div>
-                                    ) : (
+                                    ) : addressView === 'form' || addressList.length === 0 ? (
                                         <div className="flex flex-col gap-3">
                                             <p className="text-xs text-vgs-silver-muted">
-                                                Anda belum memiliki alamat tersimpan. Lengkapi alamat pengiriman di bawah ini.
+                                                {addressList.length > 0
+                                                    ? 'Isi alamat baru di bawah ini, lalu gunakan untuk pesanan ini.'
+                                                    : 'Anda belum memiliki alamat tersimpan. Lengkapi alamat pengiriman di bawah ini.'}
                                             </p>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                 <Input
@@ -357,6 +487,84 @@ export default function Checkout() {
                                                     }
                                                 />
                                             </div>
+
+                                            <label className="flex items-center gap-3 cursor-pointer py-1.5 select-none">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={saveNewAddress}
+                                                    onChange={(e) => setSaveNewAddress(e.target.checked)}
+                                                    className="w-4 h-4 rounded border-vgs-gray-border bg-vgs-black-surface text-vgs-blue-electric focus:ring-vgs-blue-electric/30 cursor-pointer"
+                                                />
+                                                <span className="text-sm text-vgs-silver-mid">
+                                                    Simpan alamat ini ke buku alamat saya
+                                                </span>
+                                            </label>
+
+                                            {addressError && (
+                                                <p className="text-xs text-vgs-danger">{addressError}</p>
+                                            )}
+
+                                            <div className="flex items-center justify-end gap-3 pt-1 border-t border-vgs-gray-border/60">
+                                                {addressList.length > 0 && (
+                                                    <Button variant="ghost" onClick={backToSavedList} disabled={savingAddress}>
+                                                        Batal
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="primary"
+                                                    onClick={handleUseNewAddress}
+                                                    loading={savingAddress}
+                                                    disabled={savingAddress}
+                                                >
+                                                    Gunakan Alamat Ini
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-2">
+                                            {addressList.map((addr) => (
+                                                <label
+                                                    key={addr.id}
+                                                    className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                        String(addressId) === String(addr.id)
+                                                            ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
+                                                            : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="address"
+                                                        value={String(addr.id)}
+                                                        checked={String(addressId) === String(addr.id)}
+                                                        onChange={() => setAddressId(addr.id)}
+                                                        className="accent-vgs-blue-electric w-4 h-4 mt-1"
+                                                    />
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-semibold text-vgs-silver-bright text-sm">
+                                                                {addr.recipient}
+                                                            </span>
+                                                            <span className="text-xs font-mono text-vgs-silver-muted">
+                                                                {addr.phone}
+                                                            </span>
+                                                            {addr.note && (
+                                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase text-vgs-blue-electric bg-vgs-blue-electric/10 border border-vgs-blue-electric/30">
+                                                                    {addr.note}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-vgs-silver-mid mt-0.5">{addr.line}</p>
+                                                        <p className="text-xs text-vgs-silver-muted">{addr.city}</p>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                onClick={openNewAddressForm}
+                                                className="inline-flex items-center justify-center gap-2 mt-1 min-h-[44px] rounded-xl border border-dashed border-vgs-gray-border text-sm font-semibold text-vgs-blue-electric hover:border-vgs-blue-electric hover:bg-vgs-blue-electric/10 transition-colors cursor-pointer"
+                                            >
+                                                + Gunakan alamat baru untuk pesanan ini
+                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -376,46 +584,61 @@ export default function Checkout() {
                                     <span className="text-[11px] font-mono text-vgs-silver-muted">Pilih kurir</span>
                                 </div>
 
-                                <div className="p-3 flex flex-col gap-2">
-                                    {shippingMethods.map((opt) => (
-                                        <label
-                                            key={opt.id}
-                                            className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                                                String(shippingId) === String(opt.id)
-                                                    ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
-                                                    : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
-                                            }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="shipping"
-                                                value={String(opt.id)}
-                                                checked={String(shippingId) === String(opt.id)}
-                                                onChange={() => setShippingId(opt.id)}
-                                                className="accent-vgs-blue-electric w-4 h-4"
-                                            />
-                                            <div className="w-14 h-10 rounded-lg bg-white border border-vgs-gray-border flex items-center justify-center overflow-hidden shrink-0 p-1.5">
-                                                <img
-                                                    src={opt.logoUrl}
-                                                    alt={`Logo ${opt.name}`}
-                                                    className="max-w-full max-h-full w-auto h-auto object-contain block"
-                                                    loading="lazy"
-                                                />
-                                            </div>
-                                            <div className="flex-1 flex items-center justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-vgs-silver-bright text-sm">{opt.name}</p>
-                                                    <p className="text-xs text-vgs-silver-muted">Estimasi {opt.eta}</p>
+                                <div className="p-3 flex flex-col gap-4">
+                                    {shippingGroups.map((group) => (
+                                        <div key={group.provider}>
+                                            <div className="flex items-center gap-2 px-2 pb-2">
+                                                <div className="w-10 h-7 rounded-md bg-white border border-vgs-gray-border flex items-center justify-center overflow-hidden shrink-0 p-1">
+                                                    <img
+                                                        src={group.methods[0].logoUrl}
+                                                        alt={`Logo ${group.provider}`}
+                                                        className="max-w-full max-h-full w-auto h-auto object-contain block"
+                                                        loading="lazy"
+                                                    />
                                                 </div>
-                                                <span className="font-mono font-bold text-sm text-vgs-blue-electric shrink-0">
-                                                    {opt.cost === 0 ? (
-                                                        <span className="text-vgs-success uppercase text-xs font-bold">GRATIS</span>
-                                                    ) : (
-                                                        formatRupiah(opt.cost)
-                                                    )}
-                                                </span>
+                                                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-vgs-silver-muted">
+                                                    {group.provider}
+                                                </p>
                                             </div>
-                                        </label>
+                                            <div className="flex flex-col gap-2">
+                                                {group.methods.map((opt) => (
+                                                    <label
+                                                        key={opt.id}
+                                                        className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                            String(shippingId) === String(opt.id)
+                                                                ? 'border-vgs-blue-electric bg-vgs-blue-electric/10'
+                                                                : 'border-vgs-gray-border hover:border-vgs-silver-mid/50 bg-vgs-black-void'
+                                                        }`}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="shipping"
+                                                            value={String(opt.id)}
+                                                            checked={String(shippingId) === String(opt.id)}
+                                                            onChange={() => setShippingId(opt.id)}
+                                                            className="accent-vgs-blue-electric w-4 h-4"
+                                                        />
+                                                        <div className="flex-1 flex items-center justify-between gap-3">
+                                                            <div className="min-w-0">
+                                                                <p className="font-semibold text-vgs-silver-bright text-sm">
+                                                                    {opt.name}
+                                                                </p>
+                                                                <p className="text-xs text-vgs-silver-muted">
+                                                                    Estimasi {opt.eta}
+                                                                </p>
+                                                            </div>
+                                                            <span className="font-mono font-bold text-sm text-vgs-blue-electric shrink-0">
+                                                                {opt.cost === 0 ? (
+                                                                    <span className="text-vgs-success uppercase text-xs font-bold">GRATIS</span>
+                                                                ) : (
+                                                                    formatRupiah(opt.cost)
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
                                     ))}
                                     {shippingMethods.length === 0 && (
                                         <p className="p-3 text-sm text-vgs-silver-muted">

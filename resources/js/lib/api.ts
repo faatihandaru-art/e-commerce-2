@@ -112,6 +112,24 @@ export interface PlaceOrderResult {
     };
 }
 
+export interface SaveAddressPayload {
+    recipient: string;
+    phone: string;
+    street: string;
+    city: string;
+    province: string;
+    postal_code: string;
+    country?: string;
+    village?: string;
+    district?: string;
+    is_default?: boolean;
+}
+
+export interface SaveAddressResult {
+    message: string;
+    address: CheckoutAddressPayload;
+}
+
 export class ApiError extends Error {
     status: number;
     data: unknown;
@@ -233,4 +251,8 @@ export async function clearCartApi(): Promise<CartPayload> {
 
 export async function placeOrder(payload: PlaceOrderPayload): Promise<PlaceOrderResult> {
     return apiPost<PlaceOrderResult>('/api/checkout', payload);
+}
+
+export async function saveCheckoutAddress(payload: SaveAddressPayload): Promise<SaveAddressResult> {
+    return apiPost<SaveAddressResult>('/checkout/addresses', payload);
 }

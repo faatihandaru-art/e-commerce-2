@@ -23,6 +23,9 @@ Route::get('/cart', fn() => Inertia::render('Cart'))->name('cart');
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->middleware('auth')
     ->name('checkout');
+Route::post('/checkout/addresses', [CheckoutController::class, 'storeAddress'])
+    ->middleware('auth')
+    ->name('checkout.addresses.store');
 
 // Auth
 Route::get('/login', fn() => Inertia::render('Auth/Login'))->name('login');
