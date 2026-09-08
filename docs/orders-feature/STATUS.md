@@ -52,3 +52,71 @@ Dokumen ini mencatat status implementasi backend fondasi untuk fitur **Orders** 
 ---
 
 *Status Akhir: SELESAI (Ready for PR).*
+
+---
+
+# Status Frontend Admin — Halaman Orders (Branch: `feat/orders-admin-ui`)
+
+Dikerjakan oleh **OpenCode (Person 2 — Frontend Admin)** dengan referensi desain halaman
+Admin > Inventory (VGS / Vortix Gaming Store, dark theme).
+
+## Progress Checklist
+
+- [x] **Sidebar & Routing**
+  - [x] Menu "Orders" di sidebar admin diarahkan dari `#` (placeholder) ke `/admin/orders`.
+  - [x] Halaman `resources/js/pages/Admin/Orders/Index.tsx` terhubung ke route `admin.orders.index`.
+  - [x] Halaman `resources/js/pages/Admin/Orders/Show.tsx` terhubung ke route `admin.orders.show`.
+
+- [x] **Tipe & Mapping Bersama (`resources/js/types/orders.ts`)**
+  - [x] Tipe `OrderListItem`, `OrderPaginator`, `OrdersSummary`, `OrderFilters`, `OrderDetail`, `OrderItem`, dll —
+    bentuk mengikuti `API_CONTRACT.md`.
+  - [x] Mapping label + warna badge di `components/admin/orders/orderStatus.ts`
+    (`ORDER_STATUS_META`, `PAYMENT_STATUS_META`, `FULFILLMENT_STATUS_META`, `NEXT_ORDER_STATUSES`).
+
+- [x] **Komponen Reusable (`resources/js/components/admin/orders/`)**
+  - [x] `OrderStatusBadge.tsx` — menerima `type` (`order` | `payment` | `fulfillment`) + nilai status,
+        render warna berbeda; opsi `showType` untuk menampilkan label tipe status.
+  - [x] `OrderFilterBar.tsx` — input "Cari No. Order / Customer", dropdown status order, dapat diaktifkan
+        dropdown payment/fulfillment, dan date range opsional; controlled + tombol "Terapkan Filter".
+  - [x] `OrderItemsTable.tsx` — tabel item pesanan read-only (produk, varian, qty, harga satuan, diskon,
+        pajak, subtotal) — semua dari snapshot, TIDAK dihitung ulang di frontend.
+  - [x] `OrderStatusTimeline.tsx` — timeline histori status (siapa yang mengubah & kapan).
+  - [x] `useInertiaLoading.ts` — hook indicator loading untuk kunjungan Inertia
+        (dipakai halaman Index saat filter/pagination berubah).
+
+  > **Catatan koordinasi dengan Copilot (halaman User "Pesanan Saya"):**
+  > Komponen di atas sudah ada dan siap dipakai ulang — **jangan buat versi sendiri**.
+  > `OrderStatusBadge` dirancang agar bisa dipakai di halaman Account juga.
+
+- [x] **Halaman `Admin/Orders/Index.tsx` (Daftar Order)**
+  - [x] Header + subjudul ringkasan ("X pesanan perlu diproses") pola sama dengan Inventory.
+  - [x] 3 kartu statistik: **TOTAL ORDERS** / **PERLU DIPROSES** (warning) / **PERLU DIKIRIM** (blue).
+  - [x] Filter bar: cari no. order/customer, status order, payment status, fulfillment status, date range.
+  - [x] Tabel: No. Order, Customer, Tanggal, Grand Total, Order Status, Payment Status, Fulfillment Status,
+        aksi "Lihat Detail" (outline biru, sama gaya tombol "Sesuaikan Stok").
+  - [x] Pagination server-side (ikut props Inertia `orders.meta`).
+  - [x] Empty state + loading state saat filter berubah (`router.get` + `preserveState`).
+
+- [x] **Halaman `Admin/Orders/Show.tsx` (Detail Order)**
+  - [x] Header: No. Order, tanggal, 3 badge status TERPISAH (order/payment/fulfillment) — status independen.
+  - [x] Info customer + alamat pengiriman & penagihan (snapshot `shipping_address`/`billing_address`).
+  - [x] Tabel item pesanan read-only + ringkasan total (subtotal, diskon, ongkir, pajak, biaya lain, grand total).
+  - [x] Timeline histori status (`status_histories`).
+  - [x] Panel aksi admin:
+    - [x] Dropdown ubah `order_status` → `PATCH /admin/orders/{id}/status`, alasan (`notes`) wajib diisi,
+          pilihan status tujuan mengikuti state machine di `API_CONTRACT.md`.
+    - [x] Form catatan internal → `POST /admin/orders/{id}/notes` (dropdown visibilitas internal/customer).
+    - [x] Tombol "Batalkan Order" dengan dialog konfirmasi → `POST /admin/orders/{id}/cancel` (alasan opsional).
+  - [x] Toast/flash sukses & gagal; tombol di-disable saat submitting.
+  - [x] State terminal (`cancelled`/`refunded`) menyembunyikan aksi yang tidak valid.
+  - [x] Guard: aksi admin hanya tampil untuk status yang valid; policy backend tetap penjaga utama
+        (refund endpoint tidak tersedia di kontrak backend → tidak dibuat).
+
+- [ ] **Refund UI** — tidak dibuat; tidak ada route `POST /admin/orders/{id}/refund` di
+      `API_CONTRACT.md` maupun `routes/admin.php`. Akan ditambahkan bila backend menyediakan endpoint.
+
+- [x] **Verifikasi**
+  - [x] `npm run typecheck` (tsc --noEmit) lulus.
+  - [x] `npm run build` (vite build) lulus.
+
+*Status Akhir: SELESAI (Ready for PR) — `feat/admin: orders list & detail pages`.*
