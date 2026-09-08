@@ -61,4 +61,17 @@ Dokumen ini mencatat status implementasi backend fondasi untuk fitur **Orders**.
 
 ---
 
+## Admin storefront (UI)
+
+- [x] Reusable admin order components di `resources/js/components/admin/orders/`:
+  - [x] `OrderStatusBadge` (order/payment/fulfillment, warna konsisten dengan theme VGS)
+  - [x] `OrderFilterBar` (cari no order/customer, status, date range)
+  - [x] `OrderItemsTable` (snapshot read-only, opsional tampil cost_price untuk staff)
+  - [x] `OrderStatusTimeline` (riwayat histori status + siapa & kapan)
+- [x] Halaman `Admin/Orders/Index`: 3 kartu statistik, filter bar, tabel dengan badge status, pagination server-side, empty state, loading state.
+- [x] Halaman `Admin/Orders/Show`: header dengan 3 badge status terpisah, info customer & alamat, tabel item, ringkasan biaya, timeline status, panel aksi (ubah status, tambah catatan, batalkan) dengan modal konfirmasi & toast/error.
+- [x] Sidebar admin: item "Orders" tersambung ke `/admin/orders`.
+
+---
+
 *Status Akhir: SELESAI (Ready for PR).*
