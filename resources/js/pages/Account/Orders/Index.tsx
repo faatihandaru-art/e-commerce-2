@@ -1,9 +1,8 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AccountLayout from '@/layouts/AccountLayout';
-import OrderStatusBadge from '@/components/orders/OrderStatusBadge';
+import OrderStatusBadge from '@/components/admin/orders/OrderStatusBadge';
 import { formatRupiah } from '@/lib/format';
-import { paymentStatusLabel, orderStatusLabel } from '@/components/orders/orderStatus';
 
 interface Order {
     id: number;
@@ -107,10 +106,8 @@ export default function OrdersIndex({ orders, filters }: OrdersPageProps) {
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <OrderStatusBadge status={order.order_status} />
-                                            <span className="rounded-lg border border-vgs-gray-border bg-vgs-black-surface px-2.5 py-1 text-[11px] font-semibold text-vgs-silver-muted">
-                                                {paymentStatusLabel(order.payment_status)}
-                                            </span>
+                                            <OrderStatusBadge type="order" status={order.order_status} />
+                                            <OrderStatusBadge type="payment" status={order.payment_status} />
                                         </div>
                                     </div>
 

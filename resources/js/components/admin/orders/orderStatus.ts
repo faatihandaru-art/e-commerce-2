@@ -81,10 +81,6 @@ export function getStatusTypeLabel(type: OrderStatusType): string {
     return TYPE_LABELS[type];
 }
 
-const ORDER_STATUS_LABELS: Record<OrderStatus, string> = Object.fromEntries(
-    Object.entries(ORDER_STATUS_META).map(([key, meta]) => [key, meta.label])
-) as Record<OrderStatus, string>;
-
 /**
  * Status order yang valid sebagai tujuan transisi berikutnya.
  * Sesuai state machine di API_CONTRACT.md bagian 1.
@@ -103,7 +99,35 @@ export function getNextStatuses(current: OrderStatus | null | undefined): OrderS
     return NEXT_ORDER_STATUSES[current] ?? [];
 }
 
-export function orderStatusLabel(status: OrderStatus | null | undefined): string {
+export function orderStatusLabel(status: string | null | undefined): string {
     if (!status) return '—';
     return ORDER_STATUS_LABELS[status] ?? status;
+}
+
+// ---------------------------------------------------------------------------
+// Compatibility exports — label maps & helpers yang dipakai halaman Account
+// ("Pesanan Saya"). Single source of truth: semua label diturunkan dari *_META
+// di atas supaya tidak ada duplikasi wording antar halaman.
+// ---------------------------------------------------------------------------
+
+export const ORDER_STATUS_LABELS: Record<string, string> = Object.fromEntries(
+    Object.entries(ORDER_STATUS_META).map(([key, meta]) => [key, meta.label])
+);
+
+export const PAYMENT_STATUS_LABELS: Record<string, string> = Object.fromEntries(
+    Object.entries(PAYMENT_STATUS_META).map(([key, meta]) => [key, meta.label])
+);
+
+export const FULFILLMENT_STATUS_LABELS: Record<string, string> = Object.fromEntries(
+    Object.entries(FULFILLMENT_STATUS_META).map(([key, meta]) => [key, meta.label])
+);
+
+export function paymentStatusLabel(status: string | null | undefined): string {
+    if (!status) return '—';
+    return PAYMENT_STATUS_LABELS[status] ?? status;
+}
+
+export function fulfillmentStatusLabel(status: string | null | undefined): string {
+    if (!status) return '—';
+    return FULFILLMENT_STATUS_LABELS[status] ?? status;
 }

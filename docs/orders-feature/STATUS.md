@@ -95,8 +95,10 @@ Admin > Inventory (VGS / Vortix Gaming Store, dark theme).
         (dipakai halaman Index saat filter/pagination berubah).
 
   > **Catatan koordinasi dengan Copilot (halaman User "Pesanan Saya"):**
-  > Komponen di atas sudah ada dan siap dipakai ulang — **jangan buat versi sendiri**.
+  > Komponen di atas **sudah dipakai ulang** oleh halaman Account
+  > (`pages/Account/Orders/Index.tsx` & `Show.tsx`) — tidak ada duplikasi lagi.
   > `OrderStatusBadge` dirancang agar bisa dipakai di halaman Account juga.
+  > Label/single source of truth ada di `components/admin/orders/orderStatus.ts`.
 
 - [x] **Halaman `Admin/Orders/Index.tsx` (Daftar Order)**
   - [x] Header + subjudul ringkasan ("X pesanan perlu diproses") pola sama dengan Inventory.
@@ -128,5 +130,12 @@ Admin > Inventory (VGS / Vortix Gaming Store, dark theme).
 - [x] **Verifikasi**
   - [x] `npm run typecheck` (tsc --noEmit) lulus.
   - [x] `npm run build` (vite build) lulus.
+
+- [x] **Deduplikasi komponen (hasil sync dengan branch utama Copilot)**
+  - [x] Halaman Account `pages/Account/Orders/Index.tsx` & `Show.tsx` kini memakai
+        `components/admin/orders/OrderStatusBadge` + `orderStatus.ts` (label diturunkan dari *_META).
+  - [x] Folder duplikat `resources/js/components/orders/` dihapus.
+  - [x] `components/admin/orders/orderStatus.ts` mendapat compatibility exports
+        (`PAYMENT_STATUS_LABELS`, `FULFILLMENT_STATUS_LABELS`, `paymentStatusLabel`, dll).
 
 *Status Akhir: SELESAI (Ready for PR) — `feat/admin: orders list & detail pages`.*

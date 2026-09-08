@@ -1,9 +1,9 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AccountLayout from '@/layouts/AccountLayout';
-import OrderStatusBadge from '@/components/orders/OrderStatusBadge';
+import OrderStatusBadge from '@/components/admin/orders/OrderStatusBadge';
 import { formatRupiah } from '@/lib/format';
-import { FULFILLMENT_STATUS_LABELS, PAYMENT_STATUS_LABELS, paymentStatusLabel, orderStatusLabel } from '@/components/orders/orderStatus';
+import { FULFILLMENT_STATUS_LABELS, PAYMENT_STATUS_LABELS, paymentStatusLabel, orderStatusLabel } from '@/components/admin/orders/orderStatus';
 
 interface OrderItem {
     id: number;
@@ -104,7 +104,7 @@ export default function OrdersShow({ order }: ShowProps) {
                             <h1 className="mt-1 font-mono text-xl font-bold text-vgs-blue-electric">{order.order_number}</h1>
                             <p className="mt-1 text-xs text-vgs-silver-muted">{formatDate(order.placed_at)}</p>
                         </div>
-                        <OrderStatusBadge status={order.order_status} className="self-start" />
+                        <OrderStatusBadge type="order" status={order.order_status} className="self-start" />
                     </div>
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
                         <InfoRow label="Pembayaran" value={paymentStatusLabel(order.payment_status)} />
