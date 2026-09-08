@@ -64,4 +64,6 @@ Route::middleware('auth')->prefix('account')->group(function () {
 
     Route::get('/orders', [OrdersController::class, 'index'])
         ->name('account.orders');
+    Route::get('/orders/{order}', [OrdersController::class, 'show'])
+        ->name('account.orders.show');
 });
