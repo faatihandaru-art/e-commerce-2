@@ -1,0 +1,68 @@
+====================================================================
+PROMPT UNTUK: ORANG 3 (FRONTEND — USER/CUSTOMER) — AI: COPILOT
+Branch: feat/orders-user-ui
+Wajib baca dulu: 00_KONTEKS_BERSAMA.txt (jangan minta dijelaskan ulang di chat)
+====================================================================
+
+PERAN KAMU
+Kamu membangun halaman "Pesanan Saya" di sisi storefront/customer (bukan admin),
+pakai Inertia 3 + React 19 + TypeScript + Tailwind, mengikuti struktur folder
+resources/js/pages/Account/ dan layouts/AccountLayout.tsx yang sudah ada.
+
+DEPENDENCY
+- Sama seperti frontend admin: cek docs/orders-feature/API_CONTRACT.md dari
+  Antigravity untuk bentuk data final. Kalau belum tersedia, kerjakan UI dulu
+  dengan mock data sesuai kontrak baseline di 00_KONTEKS_BERSAMA.txt bagian 5.
+- CEK docs/orders-feature/STATUS.md sebelum bikin komponen baru — kalau OpenCode
+  (frontend admin) sudah bikin OrderStatusBadge.tsx / OrderItemsTable.tsx yang
+  reusable, PAKAI ULANG komponen itu (import dari components/admin/orders atau
+  minta dipindah ke components/shared/orders jika memang dipakai 2 sisi),
+  JANGAN duplikat implementasi.
+
+CATATAN GAYA VISUAL: halaman customer ini BUKAN dark admin theme — pakai gaya
+storefront/customer yang sudah ada di layouts/AccountLayout.tsx (biasanya lebih
+terang/ramah customer, beda dengan dark theme Admin Panel VGS yang dipakai
+OpenCode). Tapi TETAP reuse logika/format badge status & label bahasa Indonesia
+yang sama supaya konsisten istilah dengan admin (lihat mapping status di
+00_KONTEKS_BERSAMA.txt bagian 3 & 7), hanya beda warna/tone komponen visual.
+
+HALAMAN YANG DIBUAT
+1. resources/js/pages/Account/Orders/Index.tsx — Daftar pesanan milik user
+   - List/card per order: No. Order, tanggal, jumlah item, grand total, badge
+     status (order_status saja yang paling relevan ditampilkan besar ke customer;
+     payment/fulfillment status bisa jadi info sekunder/tooltip).
+   - Filter sederhana: status (Semua/Diproses/Dikirim/Selesai/Dibatalkan) —
+     mapping dari order_status backend, jangan expose nama enum mentah ke UI,
+     tampilkan label bahasa Indonesia yang ramah (mis. "processing" -> "Diproses").
+   - Empty state ramah untuk user yang belum pernah belanja (dengan CTA ke
+     halaman katalog/home).
+   - Pagination.
+
+2. resources/js/pages/Account/Orders/Show.tsx — Detail pesanan
+   - Ringkasan order: No. Order, tanggal, status (order_status besar/utama,
+     status pembayaran & pengiriman sebagai info tambahan).
+   - Daftar item dibeli (dari snapshot order_items): gambar produk (jika ada),
+     nama produk & varian, qty, harga saat itu, subtotal.
+   - Alamat pengiriman (snapshot, bukan address book aktif).
+   - Ringkasan biaya: subtotal, diskon, ongkir, pajak, grand total.
+   - Info pengiriman/tracking jika ada shipment (nomor resi, kurir, status).
+   - Timeline status sederhana versi customer (bukan versi admin yang detail —
+     cukup tampilkan tahapan besar: Dikonfirmasi -> Diproses -> Dikemas ->
+     Dikirim -> Selesai, highlight tahap saat ini). JANGAN tampilkan catatan
+     internal staff (order_notes visibility=internal) — itu privat untuk admin,
+     dan backend seharusnya sudah tidak mengirimkannya, tapi tetap JANGAN render
+     field itu kalau ternyata ada di response sebagai jaga-jaga.
+   - (Opsional, jika waktu cukup) Tombol "Unduh Invoice" -> GET /account/orders/{id}/invoice.
+
+3. Pastikan halaman ini TIDAK BISA diakses untuk order milik user lain
+   (kalau backend mengembalikan 403/404, tampilkan halaman error yang wajar,
+   jangan expose detail teknis ke customer).
+
+DEFINITION OF DONE
+- State loading, empty, error (403/404/500), berhasil — semua tertangani dengan
+  pesan yang ramah untuk customer (bahasa Indonesia, bukan pesan teknis backend).
+- Mobile-first responsive (halaman customer WAJIB nyaman di HP, beda prioritas
+  dengan halaman admin punya OpenCode).
+- Reuse komponen dari frontend admin kalau memang cocok (lihat bagian DEPENDENCY).
+- Update docs/orders-feature/STATUS.md setiap unit kerja selesai.
+- Push ke feat/orders-user-ui, PR judul: "feat(account): my orders list & detail pages"

@@ -159,7 +159,7 @@ export default function Home() {
                         <div className="text-center max-w-2xl mx-auto mb-12">
                             <div className="inline-flex items-center gap-2 text-xs font-mono text-vgs-blue-electric font-semibold uppercase tracking-wider mb-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-vgs-blue-electric" />
-                                <span>Standart aris gimang</span>
+                                <span></span>
                             </div>
                             <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-vgs-silver-bright tracking-tight">
                                 gear terbaik, pengalaman <span className="text-blue-500">tanpa kompromi</span>

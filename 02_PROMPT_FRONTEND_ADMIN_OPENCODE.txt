@@ -1,0 +1,85 @@
+====================================================================
+PROMPT UNTUK: ORANG 2 (FRONTEND — ADMIN) — AI: OPENCODE
+Branch: feat/orders-admin-ui
+Wajib baca dulu: 00_KONTEKS_BERSAMA.txt (jangan minta dijelaskan ulang di chat)
+====================================================================
+
+PERAN KAMU
+Kamu membangun halaman ADMIN untuk mengelola Orders, pakai Inertia 3 + React 19 +
+TypeScript + Tailwind + shadcn/ui, mengikuti struktur folder resources/js/ yang
+sudah ada di project (components/admin, pages/Admin, layouts/AdminLayout.tsx).
+
+DEPENDENCY
+- Sebelum memanggil API sungguhan, cek apakah docs/orders-feature/API_CONTRACT.md
+  sudah di-commit oleh Antigravity (backend). Kalau BELUM ada / masih versi lama:
+  tetap kerjakan UI dengan MOCK DATA yang bentuknya mengikuti kontrak baseline di
+  00_KONTEKS_BERSAMA.txt bagian 5, supaya tidak nunggu/idle.
+- Jangan tanya ulang ke chat "apa nama field-nya" — cek langsung
+  docs/orders-feature/API_CONTRACT.md, itu single source of truth.
+
+WAJIB SEBELUM MULAI: buka halaman Admin > Inventory yang sudah jadi di project ini
+(referensi screenshot yang diberikan user — brand VGS/Vortix Gaming Store, dark
+theme). Halaman Orders yang kamu buat HARUS terasa satu keluarga desain dengan
+halaman itu, bukan gaya baru. Lihat detail pola di 00_KONTEKS_BERSAMA.txt bagian 7
+(header + subjudul ringkasan, 3 kartu statistik, filter bar, tabel dengan badge
+status berwarna, tombol aksi outline biru di kolom kanan). Cek juga apakah menu
+"Orders" sudah ada di sidebar admin (kemungkinan besar sudah ada tapi halaman
+kosong) — jangan tambah menu baru kalau sudah ada, cukup isi routing/pagenya.
+REUSE komponen StatCard/FilterBar/DataTable/StatusBadge yang dipakai halaman
+Inventory — jangan bikin versi baru dari nol (lihat aturan reuse di 00_KONTEKS_BERSAMA.txt).
+
+HALAMAN YANG DIBUAT
+1. resources/js/pages/Admin/Orders/Index.tsx — Daftar order
+   - Header: judul "Kelola Orders" + subjudul kecil abu-abu berisi ringkasan
+     (pola sama seperti "5 product terkelola stoknya" di Inventory), misal
+     "X pesanan perlu diproses".
+   - 3 kartu statistik di atas tabel (pola sama seperti TOTAL PRODUCT/STOK
+     MENIPIS/STOK HABIS): mis. TOTAL ORDERS, PERLU DIPROSES, PERLU DIKIRIM —
+     reuse komponen kartu yang sama, jangan buat ulang stylingnya.
+   - Filter bar (pola sama seperti "CARI PRODUK/SKU" + dropdown "GUDANG" +
+     checkbox): input "Cari No. Order / Customer", dropdown status order,
+     opsional date range.
+   - Tabel: No. Order, Customer, Tanggal, Grand Total, Order Status (badge warna
+     sesuai mapping di 00_KONTEKS_BERSAMA.txt bagian 7), Payment Status (badge),
+     Fulfillment Status (badge), kolom aksi kanan dengan tombol outline biru
+     "Lihat Detail" (gaya sama seperti tombol "Sesuaikan Stok").
+   - Pagination (server-side, ikuti props Inertia dari backend).
+   - Empty state kalau tidak ada order sesuai filter (gaya konsisten dark theme).
+   - Loading state saat filter berubah (gunakan Inertia router.reload dengan preserveState).
+
+2. resources/js/pages/Admin/Orders/Show.tsx — Detail order
+   - Header: No. Order, tanggal, badge 3 status (order/payment/fulfillment) TERPISAH
+     (jangan digabung jadi satu badge — ini prinsip arsitektur, statusnya independen).
+   - Info customer & alamat (billing + shipping, dari snapshot, BUKAN address book).
+   - Tabel item pesanan: produk, varian, qty, harga satuan, diskon, pajak, subtotal
+     (semua dari snapshot order_items — read-only, TIDAK BOLEH dihitung ulang di frontend).
+   - Ringkasan total: subtotal, diskon, ongkir, pajak, biaya lain, grand total.
+   - Timeline histori status (dari order_status_histories) — tampilkan siapa yang
+     ubah & kapan.
+   - Panel aksi admin:
+       * Dropdown ubah order_status -> kirim PATCH ke /admin/orders/{id}/status
+         dengan field notes (alasan perubahan wajib diisi).
+       * Form tambah catatan internal -> POST /admin/orders/{id}/notes.
+       * Tombol Batalkan Order (konfirmasi dulu via dialog) -> POST /cancel.
+       * (Jika waktu cukup) Tombol proses refund -> POST /refund, dengan input
+         nominal yang tidak boleh melebihi sisa captured amount (validasi di
+         frontend HANYA untuk UX, validasi asli tetap di backend).
+   - Semua aksi tampilkan toast sukses/gagal dan disable tombol saat submitting.
+
+3. Komponen reusable (taruh di resources/js/components/admin/orders/):
+   - OrderStatusBadge.tsx (terima order_status | payment_status | fulfillment_status
+     + tipe, render warna berbeda sesuai status)
+   - OrderFilterBar.tsx
+   - OrderItemsTable.tsx
+   - OrderStatusTimeline.tsx
+   (Komponen ini SEBAIKNYA reusable juga untuk halaman User punya Copilot —
+   koordinasikan penamaan lewat docs/orders-feature/STATUS.md supaya Copilot tahu
+   komponen mana yang sudah ada dan bisa dipakai ulang, bukan bikin punya sendiri.)
+
+DEFINITION OF DONE
+- Semua state: loading, empty, error (403/404/500), berhasil — tertangani.
+- Role admin tanpa permission tidak melihat tombol aksi yang tidak diizinkan
+  (tapi tetap andalkan backend policy sebagai penjaga utama).
+- Responsive minimal untuk layar desktop/tablet admin (mobile tidak prioritas).
+- Update docs/orders-feature/STATUS.md setiap unit kerja selesai.
+- Push ke feat/orders-admin-ui, PR judul: "feat(admin): orders list & detail pages"

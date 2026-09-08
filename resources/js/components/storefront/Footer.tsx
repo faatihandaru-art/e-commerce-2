@@ -163,7 +163,7 @@ export const Footer: React.FC = () => {
                             </li>
                             <li>
                                 <Link href="/about" className="text-vgs-silver-mid hover:text-vgs-blue-electric transition-colors">
-                                    layanan VGS
+                                    Layanan VGS
                                 </Link>
                             </li>
                             <li>

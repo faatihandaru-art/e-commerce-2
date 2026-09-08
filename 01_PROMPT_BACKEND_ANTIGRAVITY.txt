@@ -1,0 +1,85 @@
+====================================================================
+PROMPT UNTUK: ORANG 1 (BACKEND) — AI: ANTIGRAVITY
+Branch: feat/orders-backend
+Wajib baca dulu: 00_KONTEKS_BERSAMA.txt (jangan minta dijelaskan ulang di chat)
+====================================================================
+
+PERAN KAMU
+Kamu adalah backend engineer di project Laravel e-commerce modular monolith ini.
+Tugasmu: siapkan semua fondasi backend untuk fitur "Orders" — baik untuk halaman
+Admin maupun halaman "Pesanan Saya" milik user — sehingga 2 developer frontend
+(OpenCode & Copilot) bisa langsung konsumsi API/Inertia props tanpa menebak-nebak.
+
+LANGKAH KERJA
+1. Cek dulu struktur project yang sudah ada (app/Domain, database/migrations,
+   routes/*.php). Jangan bikin tabel/route duplikat kalau sudah ada dari fitur
+   checkout. Kalau order-related migration BELUM ada, buat berdasarkan skema di
+   00_KONTEKS_BERSAMA.txt bagian 4 (orders, order_items, order_addresses,
+   order_status_histories, order_adjustments, order_notes).
+   CATATAN: dari screenshot Admin Panel yang ada (brand VGS - Vortix Gaming
+   Store), menu "Orders" sudah muncul di sidebar admin (grup "PENJUALAN &
+   OPERASIONAL") — cek juga apakah OrderController/route admin sudah ada
+   kerangkanya (mungkin dummy/kosong) sebelum bikin baru, supaya tidak konflik
+   dengan routing yang mungkin sudah didaftarkan.
+   Untuk kartu statistik ringkasan di halaman admin (mengikuti pola 3 kartu di
+   halaman Inventory: TOTAL PRODUCT/STOK MENIPIS/STOK HABIS), sediakan juga
+   endpoint/props berisi angka ringkasan order, mis.: total_orders,
+   perlu_diproses (count order_status IN pending_payment, confirmed),
+   perlu_dikirim (count order_status = packed). Sertakan di response index
+   sebagai `summary` object supaya frontend tidak perlu hitung sendiri di client.
+
+2. Domain layer: app/Domain/Order/
+   - Queries/ListAdminOrdersQuery.php   (filter: status, tanggal, search no order/nama customer, pagination)
+   - Queries/GetOrderDetailQuery.php    (items, address snapshot, histori status, payment, shipment)
+   - Queries/ListUserOrdersQuery.php    (scoped ke user login)
+   - Actions/UpdateOrderStatusAction.php
+       * validasi transisi status TIDAK asal (contoh: tidak bisa loncat dari
+         pending_payment langsung ke shipped). Gunakan diagram siklus di
+         spesifikasi arsitektur (Confirmed -> Processing -> Packed -> Shipped
+         -> Completed; Cancelled/Refunded bisa dari beberapa titik).
+       * setiap perubahan status WAJIB insert ke order_status_histories.
+   - Actions/CancelOrderAction.php  (lepas stock_reservations jika order belum dibayar)
+   - Actions/AddOrderNoteAction.php
+
+3. Policy: app/Policies/OrderPolicy.php
+   - admin: viewAny/view/update sesuai role (Order manager, Finance/payment operator, dst — lihat tabel roles di spesifikasi).
+   - customer: view HANYA jika order->user_id === auth()->id().
+
+4. HTTP layer:
+   - app/Http/Controllers/Admin/OrderController.php (index, show, updateStatus, addNote, cancel)
+   - app/Http/Controllers/Account/OrderController.php (index, show)
+   - app/Http/Requests/Admin/UpdateOrderStatusRequest.php, AddOrderNoteRequest.php
+   - app/Http/Resources/OrderResource.php, OrderListResource.php, OrderItemResource.php
+     * OrderListResource: field ringkas untuk tabel (no order, customer, tanggal,
+       grand_total, order_status, payment_status, fulfillment_status)
+     * OrderResource: detail lengkap + items + addresses + status_history + payment + shipment
+     * PASTIKAN OrderResource versi /account/* TIDAK menyertakan cost_price,
+       staff notes (visibility=internal), atau data provider payment mentah.
+
+5. Routes:
+   - routes/admin.php dan routes/web.php sesuai kontrak di 00_KONTEKS_BERSAMA.txt bagian 5.
+   - Gunakan middleware sesuai project (auth, verified, staff authorization untuk admin).
+
+6. Test (Pest, feature test) minimal:
+   - Admin bisa list & filter order.
+   - Admin update status mengikuti aturan transisi (transisi tidak valid -> ditolak).
+   - Customer HANYA bisa lihat order miliknya sendiri (403 untuk order orang lain).
+   - order_status_histories tercatat setiap perubahan status.
+   - Endpoint /account/orders tidak bocorkan cost_price/internal notes.
+
+7. WAJIB SEBELUM SELESAI:
+   a. Tulis/commit docs/orders-feature/API_CONTRACT.md berisi: daftar route final,
+      method, request body (contoh JSON), response shape (contoh JSON), nama
+      enum status. Ini yang akan dibaca OpenCode & Copilot — JANGAN jelaskan ini
+      ulang secara manual ke mereka via chat.
+   b. Update docs/orders-feature/STATUS.md dengan checklist selesai/belum.
+   c. Jalankan Pint + Larastan sebelum commit.
+   d. Push ke branch feat/orders-backend, buka PR dengan judul:
+      "feat(orders): backend foundation for admin & account order pages"
+
+CATATAN PENTING
+- Jangan hitung ulang total di frontend nanti — semua total sudah snapshot di
+  order_items/orders saat checkout, kamu hanya perlu SERVE data tsb, bukan
+  hitung ulang.
+- Jangan lupa idempotensi kalau ada aksi refund — refund tidak boleh melebihi
+  captured amount dikurangi refund sebelumnya (lihat aturan 7.4 di spesifikasi arsitektur).
