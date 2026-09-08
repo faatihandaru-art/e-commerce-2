@@ -3,9 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\CustomerAddress;
-use App\Models\Order;
-use App\Models\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -48,7 +45,7 @@ class User extends Authenticatable
             return false;
         }
 
-        return $this->roles->contains(fn(Role $role) => $role->slug !== 'customer');
+        return $this->roles->contains(fn (Role $role) => $role->slug !== 'customer');
     }
 
     public function isCustomer(): bool

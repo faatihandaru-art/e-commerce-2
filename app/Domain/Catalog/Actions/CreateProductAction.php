@@ -2,10 +2,10 @@
 
 namespace App\Domain\Catalog\Actions;
 
+use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
-use App\Models\Inventory;
 use App\Models\Warehouse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;

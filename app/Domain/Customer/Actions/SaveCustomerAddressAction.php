@@ -9,7 +9,7 @@ final class SaveCustomerAddressAction
 {
     public function execute(User $user, array $data): CustomerAddress
     {
-        if (!empty($data['is_default'])) {
+        if (! empty($data['is_default'])) {
             $user->addresses()->where('is_default', true)->update(['is_default' => false]);
         }
 

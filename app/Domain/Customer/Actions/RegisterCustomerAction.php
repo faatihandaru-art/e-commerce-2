@@ -2,8 +2,8 @@
 
 namespace App\Domain\Customer\Actions;
 
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 
 final class RegisterCustomerAction
 {

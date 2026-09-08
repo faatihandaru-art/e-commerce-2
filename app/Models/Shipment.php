@@ -33,4 +33,14 @@ class Shipment extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    public function method(): BelongsTo
+    {
+        return $this->belongsTo(ShippingMethod::class, 'method_id');
+    }
 }

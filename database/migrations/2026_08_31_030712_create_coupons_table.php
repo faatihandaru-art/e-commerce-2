@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('coupons')) {
+            return;
+        }
         Schema::create('coupons', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('code', 50)->unique('uq_coupons_code');

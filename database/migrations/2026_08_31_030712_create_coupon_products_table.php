@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('coupon_products')) {
+            return;
+        }
         Schema::create('coupon_products', function (Blueprint $table) {
             $table->unsignedBigInteger('coupon_id');
             $table->unsignedBigInteger('product_id')->index('fk_coupon_products_product');

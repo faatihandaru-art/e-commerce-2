@@ -74,7 +74,7 @@ class CheckoutPresenter
                 'provider' => $method->provider,
                 'eta' => $eta[$method->code] ?? '2-5 hari',
                 'cost' => (int) $method->base_price,
-                'logoUrl' => '/images/products/' . strtolower((string) $method->provider) . '.png',
+                'logoUrl' => '/images/products/'.strtolower((string) $method->provider).'.png',
             ])
             ->values()
             ->all();

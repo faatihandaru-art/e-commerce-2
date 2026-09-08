@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\Product;
 
+use App\Domain\Product\Actions\CreateProductOptionsAction;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductOption;
-use App\Domain\Product\Actions\CreateProductOptionsAction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,7 +15,7 @@ class ProductOptionController extends Controller
 
     public function __construct()
     {
-        $this->action = new CreateProductOptionsAction();
+        $this->action = new CreateProductOptionsAction;
     }
 
     /**
@@ -72,7 +72,7 @@ class ProductOptionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create options: ' . $e->getMessage(),
+                'message' => 'Failed to create options: '.$e->getMessage(),
             ], 422);
         }
     }
@@ -135,7 +135,7 @@ class ProductOptionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to copy options: ' . $e->getMessage(),
+                'message' => 'Failed to copy options: '.$e->getMessage(),
             ], 422);
         }
     }
@@ -166,7 +166,7 @@ class ProductOptionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create options: ' . $e->getMessage(),
+                'message' => 'Failed to create options: '.$e->getMessage(),
             ], 422);
         }
     }

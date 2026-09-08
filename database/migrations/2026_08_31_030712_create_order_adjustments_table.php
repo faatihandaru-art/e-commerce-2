@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('order_adjustments')) {
+            return;
+        }
         Schema::create('order_adjustments', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('order_id')->index('fk_order_adjustments_order');

@@ -852,7 +852,7 @@ class ProductOptionSeeder extends Seeder
                 'featured' => $productData['featured'] ?? false,
                 'short_description' => $productData['short_description'],
                 'description' => $productData['short_description'],
-                'meta_title' => 'Jual ' . $productData['name'] . ' | Vortix Gaming Store',
+                'meta_title' => 'Jual '.$productData['name'].' | Vortix Gaming Store',
                 'meta_description' => $productData['short_description'],
                 'published_at' => now(),
             ]
@@ -867,7 +867,7 @@ class ProductOptionSeeder extends Seeder
 
             if ($category) {
                 $product->categories()->syncWithoutDetaching([
-                    $category->id
+                    $category->id,
                 ]);
             }
         }
@@ -913,8 +913,7 @@ class ProductOptionSeeder extends Seeder
             ->with('values')
             ->get()
             ->map(
-                fn(ProductOption $option) =>
-                $option->values->values()->all()
+                fn (ProductOption $option) => $option->values->values()->all()
             )
             ->all();
 
@@ -950,7 +949,7 @@ class ProductOptionSeeder extends Seeder
             $variant = ProductVariant::firstOrCreate(
                 [
                     'product_id' => $product->id,
-                    'sku' => $skuPrefix . '-' .
+                    'sku' => $skuPrefix.'-'.
                         str_pad(
                             (string) ($index + 1),
                             3,
@@ -960,8 +959,7 @@ class ProductOptionSeeder extends Seeder
                 ],
                 [
                     'price' => $productData['price'],
-                    'compare_at_price' =>
-                    $productData['compare_at_price'],
+                    'compare_at_price' => $productData['compare_at_price'],
                     'stock' => $productData['stock'] ?? 0,
                     'status' => 'active',
                 ]

@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('wishlist_items')) {
+            return;
+        }
         Schema::create('wishlist_items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('wishlist_id')->index('fk_wishlist_items_wishlist');

@@ -12,13 +12,11 @@ class CreateProductOptionsAction
     /**
      * Create product options from provided data.
      *
-     * @param Product $product
-     * @param array $optionsData Array of options with format:
-     *        [
-     *            ['name' => 'Size', 'values' => ['S', 'M', 'L']],
-     *            ['name' => 'Color', 'values' => ['Red', 'Blue']]
-     *        ]
-     * @return Collection
+     * @param  array  $optionsData  Array of options with format:
+     *                              [
+     *                              ['name' => 'Size', 'values' => ['S', 'M', 'L']],
+     *                              ['name' => 'Color', 'values' => ['Red', 'Blue']]
+     *                              ]
      */
     public function execute(Product $product, array $optionsData): Collection
     {
@@ -41,10 +39,10 @@ class CreateProductOptionsAction
         return ProductOption::firstOrCreate(
             [
                 'product_id' => $product->id,
-                'name' => $optionData['name']
+                'name' => $optionData['name'],
             ],
             [
-                'sort_order' => $sortOrder
+                'sort_order' => $sortOrder,
             ]
         );
     }
@@ -58,10 +56,10 @@ class CreateProductOptionsAction
             ProductOptionValue::firstOrCreate(
                 [
                     'option_id' => $option->id,
-                    'value' => $value
+                    'value' => $value,
                 ],
                 [
-                    'sort_order' => $index
+                    'sort_order' => $index,
                 ]
             );
         }
@@ -70,13 +68,13 @@ class CreateProductOptionsAction
     /**
      * Create options for multiple products
      *
-     * @param array $productsData Array of products with options:
-     *        [
-     *            'product_id' => 1,
-     *            'options' => [
-     *                ['name' => 'Size', 'values' => ['S', 'M', 'L']]
-     *            ]
-     *        ]
+     * @param  array  $productsData  Array of products with options:
+     *                               [
+     *                               'product_id' => 1,
+     *                               'options' => [
+     *                               ['name' => 'Size', 'values' => ['S', 'M', 'L']]
+     *                               ]
+     *                               ]
      */
     public function executeBulk(array $productsData): Collection
     {
@@ -89,7 +87,7 @@ class CreateProductOptionsAction
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'options_count' => $options->count(),
-                'options' => $options
+                'options' => $options,
             ]);
         }
 
@@ -107,7 +105,7 @@ class CreateProductOptionsAction
         foreach ($sourceOptions as $sourceOption) {
             $optionData = [
                 'name' => $sourceOption->name,
-                'values' => $sourceOption->values->pluck('value')->toArray()
+                'values' => $sourceOption->values->pluck('value')->toArray(),
             ];
 
             $option = $this->createOption($targetProduct, $optionData, $sourceOption->sort_order);

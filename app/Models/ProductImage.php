@@ -35,7 +35,8 @@ class ProductImage extends Model
         if (str_starts_with($this->path, 'http://') || str_starts_with($this->path, 'https://')) {
             return $this->path;
         }
-        return asset('storage/' . ltrim($this->path, '/'));
+
+        return asset('storage/'.ltrim($this->path, '/'));
     }
 
     public function product(): BelongsTo

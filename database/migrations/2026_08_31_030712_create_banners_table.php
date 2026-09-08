@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('banners')) {
+            return;
+        }
         Schema::create('banners', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title');

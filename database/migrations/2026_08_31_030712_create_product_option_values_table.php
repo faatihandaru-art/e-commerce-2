@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('product_option_values')) {
+            return;
+        }
         Schema::create('product_option_values', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('option_id')->index('idx_product_option_values_option');

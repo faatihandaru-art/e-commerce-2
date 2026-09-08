@@ -23,7 +23,7 @@ class CatalogController extends Controller
         if ($categorySlug = $request->string('category')->toString()) {
             $query->whereHas('categories', function ($q) use ($categorySlug) {
                 $q->where('categories.slug', $categorySlug)
-                  ->orWhere('categories.id', $categorySlug);
+                    ->orWhere('categories.id', $categorySlug);
             });
         }
 

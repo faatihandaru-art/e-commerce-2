@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Support\ProductPresenter;
 
 /**
  * Menyusun data yang dikirim ke halaman admin Catalog (Create / Edit).
@@ -85,7 +86,7 @@ class CatalogPresenter
             ->values()
             ->map(fn (ProductImage $img) => [
                 'id' => $img->id,
-                'url' => \App\Support\ProductPresenter::imageUrl($img->path),
+                'url' => ProductPresenter::imageUrl($img->path),
                 'sort_order' => $img->sort_order,
                 'is_primary' => (bool) $img->is_primary,
             ])

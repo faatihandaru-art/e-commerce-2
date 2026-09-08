@@ -3,10 +3,9 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Symfony\Component\HttpFoundation\Response;
+use Inertia\Middleware;
 
-class HandleInertiaRequests extends \Inertia\Middleware
+class HandleInertiaRequests extends Middleware
 {
     public function share(Request $request): array
     {

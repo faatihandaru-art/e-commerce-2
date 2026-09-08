@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('webhook_logs')) {
+            return;
+        }
         Schema::create('webhook_logs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('provider', 50);
