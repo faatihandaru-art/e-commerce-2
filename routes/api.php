@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\CheckoutController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/catalog/products', [CatalogController::class, 'index']);
 Route::get('/catalog/products/{idOrSlug}', [CatalogController::class, 'show']);

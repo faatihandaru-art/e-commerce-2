@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('promotion_actions')) {
+            return;
+        }
         Schema::create('promotion_actions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('promotion_id')->index('fk_promotion_actions_promotion');

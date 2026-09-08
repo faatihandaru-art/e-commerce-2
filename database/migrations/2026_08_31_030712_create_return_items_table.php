@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('return_items')) {
+            return;
+        }
         Schema::create('return_items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('return_id')->index('fk_return_items_return');

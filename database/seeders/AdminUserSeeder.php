@@ -16,8 +16,9 @@ class AdminUserSeeder extends Seeder
 
         $superAdminRole = Role::where('slug', 'super_admin')->first();
 
-        if (!$superAdminRole) {
+        if (! $superAdminRole) {
             $this->command->error('Role super_admin not found. Please run RoleSeeder first.');
+
             return;
         }
 
@@ -31,15 +32,15 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        if (!$adminUser->hasRole('super_admin')) {
+        if (! $adminUser->hasRole('super_admin')) {
             $adminUser->roles()->syncWithoutDetaching([$superAdminRole->id]);
         }
 
-        $this->command->info("========================================");
-        $this->command->info("ADMIN USER CREATED SUCCESSFULLY");
+        $this->command->info('========================================');
+        $this->command->info('ADMIN USER CREATED SUCCESSFULLY');
         $this->command->info("Email    : {$email}");
         $this->command->info("Password : {$randomPassword}");
-        $this->command->info("Role     : super_admin");
-        $this->command->info("========================================");
+        $this->command->info('Role     : super_admin');
+        $this->command->info('========================================');
     }
 }

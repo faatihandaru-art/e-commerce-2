@@ -4,7 +4,6 @@ namespace App\Domain\Order\Actions;
 
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
-use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
 class CompleteOrderAction

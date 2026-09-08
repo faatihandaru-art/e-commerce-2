@@ -3,7 +3,6 @@
 namespace App\Domain\Catalog\Actions;
 
 use App\Models\Product;
-use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;

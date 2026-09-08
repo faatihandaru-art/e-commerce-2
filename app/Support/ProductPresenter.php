@@ -40,7 +40,10 @@ class ProductPresenter
         $isNew = (bool) $product->published_at && $product->published_at->gte(now()->subDays(30));
 
         $formattedImages = $images->map(function ($img) {
-            if (empty($img->path)) return '';
+            if (empty($img->path)) {
+                return '';
+            }
+
             return self::imageUrl($img->path);
         })->filter()->values()->all();
 
@@ -150,8 +153,6 @@ class ProductPresenter
      * Path disimpan dalam dua bentuk:
      *  - 'images/...'  : relatif thd folder public/ (data seed/demo), cukup dipanggil via asset().
      *  - 'products/...': path Storage disk public (hasil upload form CRUD), harus lewat symlink /storage.
-     *
-     * @return string|null
      */
     public static function imageUrl(?string $path): ?string
     {
@@ -173,7 +174,7 @@ class ProductPresenter
             return asset($trimmed);
         }
 
-        return asset('storage/' . $trimmed);
+        return asset('storage/'.$trimmed);
     }
 
     private static function badge(int $price, ?int $compareAt, int $stock, bool $isNew): ?string

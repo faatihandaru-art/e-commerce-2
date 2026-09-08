@@ -2,53 +2,96 @@
 
 namespace App\Http\Controllers\Account;
 
+use App\Domain\Order\Actions\CancelOrderAction;
+use App\Domain\Order\Queries\GetOrderDetailQuery;
+use App\Domain\Order\Queries\ListUserOrdersQuery;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderListResource;
+use App\Http\Resources\OrderResource;
+use App\Models\Order;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class OrdersController extends Controller
 {
-    public function index(Request $request): Response
+    /**
+     * Display a listing of orders belonging to the authenticated customer.
+     */
+    public function index(Request $request, ListUserOrdersQuery $query): Response|JsonResponse
     {
-        $orders = $request->user()
-            ->orders()
-            ->with(['items', 'shippingAddress', 'payments'])
-            ->latest()
-            ->get()
-            ->map(fn ($order) => [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'order_status' => $order->order_status,
-                'payment_status' => $order->payment_status,
-                'subtotal' => $order->subtotal,
-                'discount_total' => $order->discount_total,
-                'shipping_total' => $order->shipping_total,
-                'fee_total' => $order->fee_total,
-                'grand_total' => $order->grand_total,
-                'placed_at' => optional($order->placed_at)->translatedFormat('d F Y, H:i'),
-                'item_count' => $order->items->sum('quantity'),
-                'items' => $order->items->map(fn ($item) => [
-                    'sku' => $item->sku,
-                    'product_name' => $item->product_name,
-                    'variant_name' => $item->variant_name,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unit_price,
-                    'total' => $item->total,
-                    'image' => data_get($item->metadata, 'image'),
-                ])->values(),
-                'shipping' => $order->shippingAddress ? [
-                    'recipient' => $order->shippingAddress->recipient,
-                    'phone' => $order->shippingAddress->phone,
-                    'line' => $order->shippingAddress->address_line1,
-                    'city' => "{$order->shippingAddress->city}, {$order->shippingAddress->province} {$order->shippingAddress->postal_code}",
-                ] : null,
-                'payment' => $order->payments->first() ? [
-                    'method' => $order->payments->first()->method,
-                    'status' => $order->payments->first()->status,
-                ] : null,
-            ]);
+        $filters = $request->only(['status', 'search', 'page', 'per_page']);
+        $paginatedOrders = $query->execute($request->user(), $filters);
 
-        return Inertia::render('Account/Orders', ['orders' => $orders]);
+        $ordersResource = OrderListResource::collection($paginatedOrders)->response()->getData(true);
+
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'orders' => $ordersResource,
+                'filters' => $filters,
+            ]);
+        }
+
+        return Inertia::render('Account/Orders', [
+            'orders' => $ordersResource,
+            'filters' => $filters,
+        ]);
+    }
+
+    /**
+     * Display full detail of a specific order belonging to the authenticated customer.
+     */
+    public function show(Order $order, GetOrderDetailQuery $query, Request $request): Response|JsonResponse
+    {
+        if ($order->user_id !== $request->user()->id) {
+            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
+        }
+
+        $detailedOrder = $query->execute($order);
+        $resource = new OrderResource($detailedOrder);
+
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'order' => $resource->resolve($request),
+            ]);
+        }
+
+        return Inertia::render('Account/OrderShow', [
+            'order' => $resource->resolve($request),
+        ]);
+    }
+
+    /**
+     * Cancel an order if it belongs to the customer and is still pending payment.
+     */
+    public function cancel(Order $order, Request $request, CancelOrderAction $action): RedirectResponse|JsonResponse
+    {
+        if ($order->user_id !== $request->user()->id) {
+            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
+        }
+
+        if ($order->order_status !== 'pending_payment') {
+            if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+                return response()->json(['message' => 'Hanya pesanan pending_payment yang dapat dibatalkan.'], 422);
+            }
+
+            return redirect()->back()->withErrors(['message' => 'Hanya pesanan pending_payment yang dapat dibatalkan.']);
+        }
+
+        $reason = $request->input('reason', 'Dibatalkan oleh pembeli');
+        $cancelledOrder = $action->execute($order, $reason, $request->user()->id);
+
+        $resource = new OrderResource($cancelledOrder);
+
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'message' => 'Pesanan berhasil dibatalkan.',
+                'order' => $resource->resolve($request),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan.');
     }
 }
