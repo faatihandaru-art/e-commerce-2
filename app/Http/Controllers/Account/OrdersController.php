@@ -34,7 +34,7 @@ class OrdersController extends Controller
             ]);
         }
 
-        return Inertia::render('Account/Orders', [
+        return Inertia::render('Account/Orders/Index', [
             'orders' => $ordersResource,
             'filters' => $filters,
         ]);
@@ -58,7 +58,7 @@ class OrdersController extends Controller
             ]);
         }
 
-        return Inertia::render('Account/OrderShow', [
+        return Inertia::render('Account/Orders/Show', [
             'order' => $resource->resolve($request),
         ]);
     }

@@ -1,8 +1,18 @@
-# Feature Status: Orders Backend Foundation
+# Orders Feature Status
 
-Dokumen ini mencatat status implementasi backend fondasi untuk fitur **Orders** (Branch: `feat/orders-backend`).
+## Customer storefront (UI)
+
+- [x] Customer order list with status filters and pagination
+- [x] Customer order detail with snapshot items, address, totals, shipment, and timeline
+- [x] User ownership check on order detail route
+- [x] Indonesian customer-friendly status labels and empty states
+- [x] React components: `Account/Orders/Index` & `Account/Orders/Show`
 
 ---
+
+## Backend Foundation
+
+Dokumen ini mencatat status implementasi backend fondasi untuk fitur **Orders**.
 
 ## Progress Checklist
 
