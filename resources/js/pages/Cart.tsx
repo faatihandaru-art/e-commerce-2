@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import CartItem from '@/components/cart/CartItem';
 import CartSummary from '@/components/cart/CartSummary';
 import Button from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { useCart, getCartItemKey } from '@/context/CartContext';
 
 export default function Cart() {
@@ -20,9 +21,16 @@ export default function Cart() {
         clearCart,
     } = useCart();
 
+    const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+
     const handleCheckout = () => {
         if (selectedItems.length === 0) return;
         router.visit('/checkout');
+    };
+
+    const handleClearAll = () => {
+        clearCart();
+        setIsClearModalOpen(false);
     };
 
     const hasSelection = selectedItems.length > 0;
@@ -81,10 +89,10 @@ export default function Cart() {
                             </span>
                             <button
                                 type="button"
-                                onClick={clearCart}
+                                onClick={() => setIsClearModalOpen(true)}
                                 className="text-xs font-mono text-vgs-silver-muted hover:text-vgs-danger underline cursor-pointer"
                             >
-                                Kosongkan Keranjang
+                                Hapus Semua Produk
                             </button>
                         </div>
                     )}
@@ -192,6 +200,39 @@ export default function Cart() {
                     </div>
                 )}
             </div>
+
+            {/* Popup Konfirmasi Hapus Semua Produk */}
+            <Modal
+                isOpen={isClearModalOpen}
+                onClose={() => setIsClearModalOpen(false)}
+                title="Hapus Semua Produk"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-vgs-silver-mid leading-relaxed">
+                        Yakin untuk menghapus semua produk di keranjang?
+                    </p>
+
+                    <div className="pt-3 border-t border-vgs-gray-border flex items-center justify-end gap-3">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="md"
+                            onClick={() => setIsClearModalOpen(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="danger"
+                            size="md"
+                            onClick={handleClearAll}
+                        >
+                            Ya, Hapus Semua
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </StorefrontLayout>
     );
 }

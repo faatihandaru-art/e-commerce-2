@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import { useCart, getCartItemKey } from '@/context/CartContext';
 import CartItem from './CartItem';
 import CartSummary from './CartSummary';
 import Button from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 export interface CartDropdownProps {
     isOpen: boolean;
@@ -20,7 +21,9 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose }) =
         toggleSelect,
         updateQuantity,
         removeFromCart,
+        clearCart,
     } = useCart();
+    const [isClearModalOpen, setIsClearModalOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
 
     // Close on escape key
@@ -151,9 +154,18 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose }) =
                                     </span>
                                 </label>
 
-                                <span className="text-xs font-mono text-vgs-silver-mid">
-                                    {selectedItems.length} / {items.length} dipilih
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs font-mono text-vgs-silver-mid">
+                                        {selectedItems.length} / {items.length} dipilih
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsClearModalOpen(true)}
+                                        className="text-xs font-mono text-vgs-silver-muted hover:text-vgs-danger underline cursor-pointer"
+                                    >
+                                        Hapus Semua Produk
+                                    </button>
+                                </div>
                             </div>
 
                             <CartSummary
@@ -176,6 +188,42 @@ export const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose }) =
                     )}
                 </div>
             </div>
+
+            {/* Popup Konfirmasi Hapus Semua Produk */}
+            <Modal
+                isOpen={isClearModalOpen}
+                onClose={() => setIsClearModalOpen(false)}
+                title="Hapus Semua Produk"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <p className="text-sm text-vgs-silver-mid leading-relaxed">
+                        Yakin untuk menghapus semua produk di keranjang?
+                    </p>
+
+                    <div className="pt-3 border-t border-vgs-gray-border flex items-center justify-end gap-3">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="md"
+                            onClick={() => setIsClearModalOpen(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="danger"
+                            size="md"
+                            onClick={() => {
+                                clearCart();
+                                setIsClearModalOpen(false);
+                            }}
+                        >
+                            Ya, Hapus Semua
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
