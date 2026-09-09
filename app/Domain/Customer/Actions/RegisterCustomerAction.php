@@ -4,6 +4,7 @@ namespace App\Domain\Customer\Actions;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Activity;
 
 final class RegisterCustomerAction
 {
@@ -23,6 +24,12 @@ final class RegisterCustomerAction
         if ($customerRole) {
             $user->roles()->attach($customerRole->id);
         }
+
+        Activity::record('customer_registered', $user, [
+            'label' => "'{$user->name}'",
+            'after' => ['email' => $user->email],
+            'link' => route('admin.customers.show', $user),
+        ]);
 
         return $user;
     }
