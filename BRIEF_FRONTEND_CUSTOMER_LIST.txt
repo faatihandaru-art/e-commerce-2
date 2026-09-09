@@ -1,0 +1,167 @@
+====================================================================
+PROMPT UNTUK AI FRONTEND -- LISTING CUSTOMER (ADMIN)
+BAGIAN KAMU: Halaman Admin/Customers/Index -- tabel semua customer
+Vortix Gaming Store (VGS) -- Modul Customers di Admin
+Kompatibel dipakai di: Antigravity, OpenCode, Copilot, atau AI
+coding assistant lain apapun -- ikuti instruksi ini apa adanya.
+====================================================================
+
+CARA PAKAI FILE INI
+--------------------------------------------------------------------
+Tempel SELURUH isi file ini ke AI coding tool pilihanmu sebagai
+prompt awal. Simpan juga file ini di project sebagai
+BRIEF_FRONTEND_CUSTOMER_LIST.md.
+
+Ada rekan yang mengerjakan BACKEND (BRIEF_BACKEND_CUSTOMER.md) dan
+rekan lain yang mengerjakan DETAIL satu customer
+(BRIEF_FRONTEND_CUSTOMER_DETAIL.md). Tugas kamu BERGANTUNG PADA
+Controller dan route dari backend -- TUNGGU dia menyelesaikan
+Controller+Route (cek CATATAN_CUSTOMER.md yang akan dia buat)
+sebelum mulai. Tugas kamu TIDAK bergantung pada hasil Rekan 3 --
+kamu hanya perlu membuat LINK ke halaman detail yang dia bangun,
+bukan menunggu isinya selesai.
+
+====================================================================
+KONTEKS PROJECT
+====================================================================
+
+Toko online Vortix Gaming Store (VGS), Laravel 13 + Inertia 3 +
+React 19 + TypeScript + Tailwind CSS. Area admin SUDAH ADA dengan
+AdminLayout, Sidebar (menu "Customers" sudah ada di sidebar tapi
+belum mengarah ke halaman fungsional), Header, Dashboard, CRUD
+Product, Inventory, dan Orders yang sudah berjalan lengkap -- SEMUA
+ITU bisa jadi REFERENSI GAYA untuk halaman Customers (tabel, filter,
+badge, paginasi sudah punya pola konsisten dari fitur-fitur itu,
+IKUTI pola yang sama, JANGAN membuat gaya baru yang berbeda). Style
+memakai warna dari tailwind.config yang sudah ada dan komponen dari
+components/ui/ yang sudah ada.
+
+====================================================================
+STRUKTUR DATA YANG AKAN KAMU PAKAI
+====================================================================
+
+CEK file CATATAN_CUSTOMER.md di root project (dibuat rekan backend)
+untuk bentuk PERSIS:
+- Route admin.customers.index dan admin.customers.show (untuk link
+  ke halaman detail yang dibangun Rekan 3)
+- Props yang dikirim ke halaman Index: daftar customer dengan field
+  agregasi totalOrders, totalSpent, lastOrderAt yang SUDAH DIHITUNG
+  backend
+
+====================================================================
+TUGAS KAMU
+====================================================================
+
+1. HALAMAN: resources/js/pages/Admin/Customers/Index.tsx
+   Dibungkus AdminLayout yang sudah ada. Berisi:
+
+   a. HEADER HALAMAN
+      - Judul "Kelola Customer" atau serupa
+      - Ringkasan singkat (opsional tapi bagus, mirip gaya kartu
+        statistik yang sudah ada di Dashboard, Inventory, dan
+        Orders): "Total Customer", "Customer Baru Bulan Ini" (jika
+        data ini tersedia dari backend, jika tidak, cukup "Total
+        Customer" saja dan catat di ringkasan sebagai hal yang bisa
+        ditambahkan nanti)
+
+   b. FILTER DAN PENCARIAN
+      - Search box: cari berdasarkan nama, email, atau nomor HP
+      - Filter status (aktif/nonaktif) jika backend menyediakan data
+        ini
+      - Sort/urutkan: berdasarkan totalSpent (customer paling
+        banyak belanja), lastOrderAt (paling baru order), atau nama
+        (alfabetis) -- dropdown sederhana
+
+   c. TABEL CUSTOMER
+      Kolom per baris:
+      - Nama dan email (bisa digabung dua baris kecil dalam satu
+        kolom, seperti pola yang mungkin sudah dipakai di tempat
+        lain)
+      - Nomor HP
+      - Total order (angka)
+      - Total belanja (format rupiah, dari totalSpent)
+      - Order terakhir (tanggal, dari lastOrderAt -- tampilkan
+        "Belum pernah order" jika null)
+      - Status: Badge dari ui/ untuk aktif/nonaktif jika data ini
+        tersedia
+      - Kolom aksi: tombol/link "Lihat Detail" ke
+        route('admin.customers.show', customer.id) -- HALAMAN INI
+        dibangun Rekan 3, kamu HANYA membuat link ke sana
+
+   d. PAGINASI
+      Sama seperti pola yang sudah dipakai di halaman admin lain,
+      untuk konsistensi
+
+   e. STATE KOSONG
+      Jika belum ada customer sama sekali, tampilkan pesan jelas
+
+2. AKTIFKAN LINK SIDEBAR
+   Cek components/admin/Sidebar.tsx yang sudah ada -- menu
+   "Customers" kemungkinan sudah ada sebagai placeholder. PASTIKAN
+   link ini sekarang mengarah ke route('admin.customers.index') yang
+   sebenarnya.
+
+3. UJI COBA
+   - Buka halaman Customers, VERIFIKASI daftar customer muncul
+     dengan benar
+   - PENTING -- VERIFIKASI KEAMANAN: pastikan akun STAF (termasuk
+     akun admin yang sedang kamu pakai untuk login) TIDAK IKUT
+     MUNCUL di daftar ini -- hanya akun dengan role customer yang
+     boleh tampil. Jika ternyata staf ikut muncul, ini menandakan
+     scope customersOnly() di backend belum diterapkan dengan
+     benar -- LAPORKAN temuan ini ke rekan backend, JANGAN
+     memperbaiki sendiri dengan filter tambahan di frontend (itu
+     harus diperbaiki di sumbernya/backend)
+   - Coba search dan sort, VERIFIKASI hasilnya berubah sesuai
+   - Klik "Lihat Detail" salah satu customer, VERIFIKASI mengarah
+     ke URL yang benar (walau halamannya sendiri mungkin belum
+     selesai dibangun Rekan 3 saat kamu menguji ini)
+
+RESPONSIVENESS DAN AKSESIBILITAS
+--------------------------------------------------------------------
+Sama seperti pola yang sudah dipakai di halaman admin lain untuk
+konsistensi.
+
+====================================================================
+YANG TIDAK PERLU/BOLEH KAMU KERJAKAN DI TAHAP INI
+====================================================================
+
+- JANGAN membangun halaman Admin/Customers/Show (detail satu
+  customer) -- itu tugas Rekan 3, kamu hanya membuat LINK ke sana
+- JANGAN membangun fitur catatan support (customer_notes) di
+  halaman ini -- itu bagian dari halaman detail milik Rekan 3
+- JANGAN mengubah AdminLayout/Sidebar struktur besar di luar
+  mengaktifkan link Customers
+- JANGAN menambahkan filter untuk menyaring staf dari daftar di
+  SISI FRONTEND -- itu tanggung jawab backend lewat scope, kalau
+  ternyata staf muncul, itu bug backend yang harus dilaporkan bukan
+  ditambal di frontend
+
+====================================================================
+WAJIB: DOKUMENTASI SETELAH SELESAI
+====================================================================
+
+Tambahkan section baru di file CATATAN_CUSTOMER.md yang sudah ada
+(JANGAN timpa isi yang sudah ada, tambahkan di bagian bawah dengan
+heading "## Frontend: Listing Customer"), berisi:
+
+1. Daftar file yang dibuat/diubah.
+2. Konfirmasi hasil uji coba, TERUTAMA konfirmasi bahwa staf TIDAK
+   muncul di daftar customer (atau laporan jika ternyata muncul).
+3. Catatan jika ada penyesuaian dari yang didokumentasikan backend.
+
+Tulis dalam Bahasa Indonesia, jelas dan tidak terlalu teknis.
+
+====================================================================
+ATURAN TAMBAHAN
+====================================================================
+
+- Kerjakan bertahap: (a) tabel dengan data dasar dulu, (b) filter
+  dan search, (c) sort, (d) link ke halaman detail, (e) aktifkan
+  link sidebar, (f) uji coba termasuk verifikasi keamanan staf tidak
+  muncul, (g) dokumentasi.
+- Tampilkan ringkasan tiap bagian selesai sebelum lanjut, supaya
+  bisa dicek dan commit git bertahap.
+- Jika data dari backend TIDAK SESUAI dokumentasi, JANGAN menebak
+  -- laporkan dengan jelas di ringkasan.
+====================================================================
