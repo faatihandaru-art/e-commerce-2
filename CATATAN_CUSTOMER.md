@@ -287,3 +287,61 @@ mencakup:
 
 Status pengujian: seluruh suite (`php artisan test`) **passing (16 test)**, dan
 formatting kode dicek dengan Laravel Pint (`vendor/bin/pint`).
+
+---
+
+## Frontend: Listing Customer
+
+Dokumentasi hasil kerja **Rekan 2 (Frontend Halaman Listing Customer)** setalah
+backend modul Customers selesai.
+
+### 1. File yang Dibuat / Diubah
+
+- **Dibuat** `resources/js/pages/Admin/Customers/Index.tsx` — halaman Admin
+  Customers/Index (dibungkus `AdminLayout`). Berisi:
+  - Header "Kelola Customer" + kartu ringkasan **Total Customer**.
+  - **Filter & pencarian** (`components/admin/customers/CustomerFilterBar.tsx`):
+    pencarian nama / email / nomor HP, filter status (aktif / nonaktif /
+    dibanned), urutkan (terbaru daftar, nama, total order, total belanja,
+    order terakhir), dan arah urutan (menurun / menaik).
+  - **Tabel customer**: nama + email, nomor HP, total order, total belanja
+    (format rupiah), order terakhir (menampilkan "Belum pernah order" jika
+    `last_order_at` kosong), badge status, dan tombol **Lihat Detail**.
+  - **Paginasi** mengikuti pola halaman admin lain (Orders / Inventory).
+  - **State kosong** jika belum ada customer / hasil filter kosong.
+- **Dibuat** `resources/js/components/admin/customers/CustomerFilterBar.tsx` —
+  komponen filter terpisah, mengikuti pola `OrderFilterBar` yang sudah ada.
+- **Diubah** `resources/js/components/admin/Sidebar.tsx` — link menu **Customers**
+  diaktifkan dari `href="#"` menjadi `/admin/customers` (route
+  `admin.customers.index`).
+
+### 2. Hasil Uji Coba
+
+- **TypeScript & build**: `npm run typecheck` dan `npm run build` **berhasil**
+  tanpa error.
+- **Keamanan (staf TIDAK muncul di daftar customer)**: diverifikasi melalui
+  test backend `tests/Feature/CustomerManagementTest.php` (8 test, semua
+  **passing**) yang antara lain memastikan listing hanya menampilkan akun
+  ber-role `customer` — staf dan admin tidak ikut muncul. Halaman frontend ini
+  **tidak menambahkan filter apa pun untuk menyaring staf**, sesuai aturan:
+  isolasi kewenangan sepenuhnya milik backend via scope `customersOnly()`.
+  Tidak ada temuan staf yang bocor di daftar.
+- **Search, filter status, dan sort**: parameternya (`search`, `status`,
+  `sort_by`, `sort_order`) dikirim ke endpoint persis sesuai kontrak di
+  dokumentasi ini dan dipertahankan saat pindah halaman (paginasi). Manual
+  interaksi dapat dicoba dengan membuka `/admin/customers` pada panel admin.
+- **Link "Lihat Detail"**: mengarah ke `/admin/customers/{id}` (route
+  `admin.customers.show` — halaman detail milik Rekan 3).
+
+### 3. Catatan Penyesuaian
+
+- Data **"Customer Baru Bulan Ini"** tidak dikirim oleh backend saat ini,
+  sehingga kartu ringkasan hanya menampilkan **Total Customer** (nilai diambil
+  dari `customers.total` dari paginator). Kartu tambahan bisa ditambahkan nanti
+  bila backend menyediakan prop `created_this_month` / sejenisnya.
+- Filter status mendukung nilai `active`, `inactive`, dan `banned` sesuai
+  kolom `users.status` di backend (dokumentasi brief hanya menyebut aktif /
+  nonaktif, tapi `banned` sudah didukung endpoint, jadi ikut dimasukkan).
+- Semua tipe data (jenis kolom tabel, nama route, struktur props `customers` +
+  `filters`) mengikuti persis `CATATAN_CUSTOMER.md` — tidak ada penyimpangan
+  dari kontrak backend.
