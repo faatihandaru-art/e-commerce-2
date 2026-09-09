@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
@@ -19,6 +20,13 @@ Route::middleware(['auth', 'staff'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', CategoryController::class)
         ->except(['create', 'show', 'edit'])
         ->names('categories');
+
+    // Customers Management
+    Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('customers/{user}', [CustomerController::class, 'show'])->name('customers.show');
+    Route::post('customers/{user}/notes', [CustomerController::class, 'storeNote'])->name('customers.notes.store');
+    Route::delete('customers/notes/{note}', [CustomerController::class, 'destroyNote'])->name('customers.notes.destroy');
+    Route::post('customers/{user}/status', [CustomerController::class, 'updateStatus'])->name('customers.update-status');
 
     // Orders Management
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
