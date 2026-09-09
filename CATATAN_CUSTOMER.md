@@ -345,3 +345,56 @@ backend modul Customers selesai.
 - Semua tipe data (jenis kolom tabel, nama route, struktur props `customers` +
   `filters`) mengikuti persis `CATATAN_CUSTOMER.md` — tidak ada penyimpangan
   dari kontrak backend.
+
+---
+
+## 7. FRONTEND: DETAIL CUSTOMER (`Admin/Customers/Show`)
+
+Implementasi antarmuka frontend halaman detail customer admin telah selesai dibangun menggunakan React 19, Inertia.js v2/v3, TypeScript, dan Tailwind CSS. Halaman ini terintegrasi langsung dengan controller dan route backend yang telah disediakan.
+
+### 7.1 Daftar File Yang Dibuat & Diubah
+
+1. **`BRIEF_FRONTEND_CUSTOMER_DETAIL.md`** *(File Baru)* — Salinan brief spesifikasi teknis untuk pengembangan antarmuka detail customer.
+2. **`resources/js/pages/Admin/Customers/Show.tsx`** *(File Baru)* — Komponen halaman detail customer lengkap yang mencakup:
+   - Header profil pengguna, status badge, tombol aksi ubah status, dan ringkasan metrik belanja (total belanja paid, total order, order terakhir, login terakhir).
+   - Tabel ringkasan riwayat order dengan 3 badge status (`OrderStatusBadge`), nilai grand total rupiah, dan tautan langsung ke detail order (`/admin/orders/{id}`).
+   - Daftar kartu alamat tersimpan milik customer dengan mode read-only (konsisten dengan tampilan kartu alamat storefront/akun customer).
+   - Panel Catatan Support Internal berpenanda visual gembok & label internal staf, form penambahan catatan reaktif, serta tombol hapus catatan.
+   - Modal dialog konfirmasi perubahan status akun (Aktif / Nonaktif / Banned) beserta deskripsi konsekuensi login.
+   - Modal dialog konfirmasi penghapusan catatan support.
+3. **`tests/Feature/CustomerManagementTest.php`** *(Pembaruan)* — Ditambahkan pengujian render halaman Inertia `Admin/Customers/Show`.
+4. **`CATATAN_CUSTOMER.md`** *(Pembaruan)* — Penambahan dokumentasi teknis implementasi frontend detail customer.
+
+---
+
+### 7.2 Fitur yang Diimplementasikan & Hasil Verifikasi
+
+1. **Info Profil & Metrik Ringkasan:**
+   - Menampilkan inisial avatar, nama lengkap, status akun, email, nomor HP, dan tanggal bergabung (`created_at`).
+   - 4 kartu statistik belanja teragregasi: Total Belanja (`total_spent` berstatus lunas dalam format Rupiah), Total Order (`total_orders`), Tanggal Order Terakhir (`last_order_at`), dan Waktu Login Terakhir (`last_login_at`).
+2. **Ubah Status Akun Customer:**
+   - Tombol "Ubah Status Akun" membuka modal konfirmasi interaktif.
+   - Tiga pilihan status didukung (`active`, `inactive`, `banned`) dengan penjelasan konsekuensi jelas di UI (misal: "Customer tidak akan bisa login ke akun mereka").
+   - Terhubung ke endpoint `POST /admin/customers/{user}/status`.
+3. **Daftar Alamat Pengiriman (Read-Only):**
+   - Menampilkan seluruh alamat dari relasi `customerAddresses`.
+   - Mempertahankan konsistensi visual layout kartu dari halaman *Alamat Saya* (`Account/Addresses.tsx`).
+   - Bersifat murni *read-only* dilengkapi penanda visual gembok privasi customer (admin tidak dapat menyunting atau menghapus alamat dari halaman admin).
+4. **Ringkasan Riwayat Order & Tautan Detail:**
+   - Tabel daftar pesanan menampilkan nomor order, tanggal transaksi (`placed_at`), nominal `grand_total` (Rupiah), serta 3 badge status: Order, Pembayaran, dan Pengiriman.
+   - Tombol "Lihat Detail" mengarah langsung ke `/admin/orders/{order}` (`admin.orders.show`).
+   - Menangani empty state jika customer belum pernah berbelanja.
+5. **Catatan Support Internal (Fitur Baru):**
+   - Diberi penanda visual jelas berupa ikon gembok, badge peringatan "Internal Staf", dan teks penjelasan bahwa catatan tidak akan pernah dapat diakses oleh customer.
+   - Form pembuatan catatan baru dilengkapi counter 2000 karakter, validasi karakter spasi kosong, dan status loading submit (`POST /admin/customers/{user}/notes`).
+   - Catatan baru langsung muncul di daftar secara instan tanpa perlu reload manual halaman.
+   - Fitur hapus catatan telah aktif dan terhubung ke endpoint backend `DELETE /admin/customers/notes/{note}` dengan konfirmasi modal.
+
+---
+
+### 7.3 Hasil Pengujian & Kompilasi
+
+- **PHPUnit Feature Tests:** 17 tests passed (100% passing) termasuk pengujian isolasi role staf vs customer, perhitungan total spent, pencatatan note, update status, dan render komponen Inertia `Admin/Customers/Show`.
+- **PHP Code Style:** Lolos pengecekan Laravel Pint (`vendor/bin/pint --test`).
+- **TypeScript Typecheck:** `npm run typecheck` (`tsc --noEmit`) berhasil tanpa error tipe data.
+- **Frontend Production Build:** `npm run build` berhasil menghasilkan bundle `public/build/assets/Show-*.js` dan asset terkait secara optimal.
