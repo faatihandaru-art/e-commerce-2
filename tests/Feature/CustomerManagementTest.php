@@ -207,4 +207,13 @@ class CustomerManagementTest extends TestCase
             'status' => 'active',
         ]);
     }
+
+    public function test_customer_detail_renders_admin_customers_show_inertia_page(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->get("/admin/customers/{$this->customer->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Admin\/Customers\/Show', false);
+    }
 }
