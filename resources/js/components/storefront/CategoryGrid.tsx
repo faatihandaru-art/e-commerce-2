@@ -98,7 +98,7 @@ export const CategoryGrid: React.FC = () => {
     };
 
     return (
-        <section className="py-14 sm:py-20 border-t border-vgs-gray-border/60">
+        <section className="py-8 border-t border-vgs-gray-border/60">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
@@ -137,7 +137,7 @@ export const CategoryGrid: React.FC = () => {
                         ? Array.from({ length: 8 }).map((_, i) => (
                               <div
                                   key={i}
-                                  className="min-h-[140px] rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border animate-pulse"
+                                  className=" rounded-2xl bg-vgs-black-elevated border border-vgs-gray-border animate-pulse"
                               />
                           ))
                         : featuredCategories.map((cat) => (

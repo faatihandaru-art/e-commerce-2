@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
     const popularCategories = categories.slice(0, 6);
 
     return (
-        <footer className="mt-28 bg-vgs-black-surface border-t border-vgs-gray-border relative overflow-hidden">
+        <footer className="mt-3 bg-vgs-black-surface border-t border-vgs-gray-border relative overflow-hidden"> bagian lembar gelap
             {/* Subtle Ambient Top Glow for technical depth */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-4xl h-px bg-gradient-to-r from-transparent via-vgs-blue-electric/40 to-transparent" />
 

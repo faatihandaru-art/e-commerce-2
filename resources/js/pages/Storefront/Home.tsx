@@ -99,14 +99,14 @@ export default function Home() {
                 <CategoryGrid />
 
                 {/* c. PRODUK UNGGULAN / TERLARIS */}
-                <section className="py-14 sm:py-20 border-t border-vgs-gray-border/60">
+                <section className="mt-5 sm:py-3 border-t border-vgs-gray-border/60">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         {/* Section Header */}
                         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
                             <div>
                                 <div className="inline-flex items-center gap-2 text-xs font-mono text-vgs-blue-electric font-semibold uppercase tracking-wider mb-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-vgs-blue-electric" />
-                                    <span>Pilihan Pro Player</span>
+                                    <span>Pilihan Pro Player   ada di homee</span>
                                 </div>
                                 <h2 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-4xl text-vgs-silver-bright tracking-tight">
                                     Produk Unggulan 
@@ -154,13 +154,9 @@ export default function Home() {
                 <PromoBanner />
 
                 {/* e. KENAPA MEMILIH VGS (Pillars / Keunggulan) */}
-                <section className="py-14 sm:py-20 border-t border-vgs-gray-border/60 bg-vgs-black-surface/40">
+                <section className="py-5 sm:py-5 border-t border-vgs-gray-border/60 bg-vgs-black-surface/40"> 'py untuk hp  sm:py laptop home.tsx'
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center max-w-2xl mx-auto mb-12">
-                            <div className="inline-flex items-center gap-2 text-xs font-mono text-vgs-blue-electric font-semibold uppercase tracking-wider mb-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-vgs-blue-electric" />
-                                <span></span>
-                            </div>
                             <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-vgs-silver-bright tracking-tight">
                                 gear terbaik, pengalaman <span className="text-blue-500">tanpa kompromi</span>
                             </h3>

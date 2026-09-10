@@ -22,7 +22,7 @@
     @inertiaHead
 </head>
 
-<body class="bg-vgs-black-void text-vgs-silver-bright font-sans antialiased min-h-screen selection:bg-vgs-blue-electric selection:text-white">
+<body class="bg-vgs-black-void text-vgs-silver-bright font-sans antialiased min-h-screen selection:bg-vgs-red selection:text-white">
     @inertia
 </body>
 

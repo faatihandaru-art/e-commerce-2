@@ -3,7 +3,7 @@ import Button from '@/components/ui/Button';
 
 export const HeroSection: React.FC = () => {
     return (
-        <section className="relative pt-6 pb-16 lg:pt-12 lg:pb-24 overflow-hidden">
+        <section className="-mt-1 py-5 sm:py-3 border-t border-vgs-gray-border/60">
             {/* Ambient Technical Grid with subtle radial vignette */}
             <div className="absolute inset-0 bg-[radial-gradient(#1C1F26_1px,transparent_1px)] [background-size:32px_32px] opacity-30 pointer-events-none" />
 
@@ -22,7 +22,7 @@ export const HeroSection: React.FC = () => {
                         </div>
 
                         {/* Main Technical Hero Headline */}
-                        <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-vgs-silver-bright tracking-tight leading-[1.1]">
+                        <h1 className="mb-0 font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-vgs-silver-bright tracking-tight leading-[1.1]">
                             GEAR PILIHAN UNTUK<br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-vgs-silver-bright via-vgs-blue-glow to-vgs-blue-electric">
                                  SETUP ANDALAN.
@@ -35,7 +35,7 @@ export const HeroSection: React.FC = () => {
                         </p>
 
                         {/* Key Technical Badges */}
-                        <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg py-2">
+                        <div className="grid grid-cols-3 gap-4 sm:gap-4 max-w-lg pt-0 pb-1">
                             <div className="p-3 rounded-xl bg-vgs-black-surface/70 border border-vgs-gray-border">
                                 <div className="text-lg sm:text-xl font-bold font-mono text-vgs-blue-electric leading-none">
                                    27
@@ -56,12 +56,12 @@ PRODUK GAMING
                         </div>
 
                         {/* CTAs Row */}
-                        <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <div className="mb-1 flex flex-wrap items-center gap-4 pt-0">
                             <Button
                                 href="/products"
                                 variant="primary"
                                 size="lg"
-                                className="shadow-lg shadow-vgs-blue-electric/25"
+                                className="shadow-lg shadow-red-500/25"
                                 rightIcon={
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
